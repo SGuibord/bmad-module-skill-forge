@@ -1,0 +1,10 @@
+# Ferris Sidecar: User Preferences
+# Written by setup-forge workflow on first run
+
+# Language defaults
+output_language: ~
+skill_format_version: ~
+
+# Output preferences
+citation_style: ~
+confidence_display: ~

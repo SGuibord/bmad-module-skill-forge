@@ -230,6 +230,8 @@ function buildMetadataSchema(expectedModule) {
     icon: createNonEmptyString('agent.metadata.icon'),
     module: createNonEmptyString('agent.metadata.module').optional(),
     hasSidecar: z.boolean(),
+    'sidecar-folder': createNonEmptyString('agent.metadata.sidecar-folder').optional(),
+    'sidecar-path': createNonEmptyString('agent.metadata.sidecar-path').optional(),
   };
 
   return z.object(schemaShape).strict();

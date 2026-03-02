@@ -1,0 +1,156 @@
+---
+name: 'step-05-write-brief'
+description: 'Generate and write skill-brief.yaml to the forge data folder'
+
+briefSchemaFile: '../data/skill-brief-schema.md'
+---
+
+# Step 5: Write Brief
+
+## STEP GOAL:
+
+To generate the complete skill-brief.yaml from the approved brief data and write it to the forge data folder, completing the brief-skill workflow.
+
+## MANDATORY EXECUTION RULES (READ FIRST):
+
+### Universal Rules:
+
+- 🛑 NEVER generate content without user input
+- 📖 CRITICAL: Read the complete step file before taking any action
+- 📋 YOU ARE A FACILITATOR, not a content generator
+- ✅ YOU MUST ALWAYS SPEAK OUTPUT In your Agent communication style with the config `{communication_language}`
+- ⚙️ TOOL/SUBPROCESS FALLBACK: If any instruction references a subprocess, subagent, or tool you do not have access to, you MUST still achieve the outcome in your main context thread
+
+### Role Reinforcement:
+
+- ✅ You are a skill brief generator in Ferris Architect mode
+- ✅ If you already have been given a name, communication_style and identity, continue to use those while playing this new role
+- ✅ Generate output precisely matching the schema — no creative embellishment
+- ✅ This is the final step — deliver clean, validated output
+
+### Step-Specific Rules:
+
+- 🎯 Focus only on writing the file — all decisions have been made
+- 🚫 FORBIDDEN to change any field values without user request — the brief was already approved
+- 💬 Approach: Prescriptive — generate exact YAML matching the schema template
+- 📋 Create the output directory if it doesn't exist
+
+## EXECUTION PROTOCOLS:
+
+- 🎯 Follow the MANDATORY SEQUENCE exactly
+- 💾 Write skill-brief.yaml to {forge_data_folder}/{skill-name}/
+- 📖 This is the final step — mark workflow complete
+- 🚫 FORBIDDEN to modify approved field values
+
+## CONTEXT BOUNDARIES:
+
+- Available context: Complete approved brief data from steps 01-04
+- Focus: File generation and writing
+- Limits: No field changes — write exactly what was approved
+- Dependencies: Explicit user approval from step 04
+
+## MANDATORY SEQUENCE
+
+**CRITICAL:** Follow this sequence exactly. Do not skip, reorder, or improvise unless user explicitly requests a change.
+
+### 1. Load Schema Template
+
+Load `{briefSchemaFile}` to reference the YAML template structure.
+
+### 2. Create Output Directory
+
+Create the directory `{forge_data_folder}/{skill-name}/` if it doesn't already exist.
+
+If `{forge_data_folder}` is not set or doesn't exist:
+- Fall back to `{output_folder}/forge-data/{skill-name}/`
+- Inform user: "**Note:** forge_data_folder not configured. Writing to {output_folder}/forge-data/{skill-name}/ instead."
+
+### 3. Generate skill-brief.yaml
+
+Generate the YAML file using the approved field values and the schema template:
+
+```yaml
+---
+name: "{approved skill name}"
+version: "1.0.0"
+source_repo: "{approved source repo}"
+language: "{approved language}"
+description: "{approved description}"
+forge_tier: "{approved forge tier}"
+created: "{current date}"
+created_by: "{user_name}"
+scope:
+  type: "{approved scope type}"
+  include:
+    - "{approved include patterns}"
+  exclude:
+    - "{approved exclude patterns}"
+  notes: "{approved scope notes or empty string}"
+---
+```
+
+### 4. Write the File
+
+Write the generated YAML to `{forge_data_folder}/{skill-name}/skill-brief.yaml`.
+
+If write fails: **HALT** — "**Error:** Failed to write skill-brief.yaml. Please check that the directory is writable and try again."
+
+### 5. Display Success Summary
+
+"**Skill brief written successfully.**
+
+---
+
+**File:** `{forge_data_folder}/{skill-name}/skill-brief.yaml`
+**Skill:** {name}
+**Language:** {language}
+**Scope:** {scope type}
+**Forge Tier:** {forge tier}
+
+---
+
+## Next Steps
+
+Your skill brief is ready. To compile the actual skill from this brief, run:
+
+**create-skill** — Reads your skill-brief.yaml and compiles a complete SKILL.md with AST-backed analysis.
+
+After compilation, you can:
+- **test-skill** — Validate the compiled skill
+- **export-skill** — Package the skill for distribution
+
+---
+
+**Brief-skill workflow complete.**"
+
+### 6. End Workflow
+
+This is the final step. No next step file to load. The workflow is complete.
+
+## CRITICAL STEP COMPLETION NOTE
+
+This is the FINAL step of the brief-skill workflow. After writing the file and displaying the success summary, the workflow ends.
+
+---
+
+## 🚨 SYSTEM SUCCESS/FAILURE METRICS
+
+### ✅ SUCCESS:
+
+- Schema loaded for template reference
+- Output directory created (or fallback used with notification)
+- skill-brief.yaml generated with all required fields matching approved values
+- File written successfully to correct location
+- Success summary displayed with next steps recommendation
+- Workflow marked as complete
+
+### ❌ SYSTEM FAILURE:
+
+- Modifying approved field values without user request
+- Writing to wrong location
+- Missing required fields in generated YAML
+- Not creating output directory before writing
+- Not displaying next steps recommendation
+- Not handling write failure gracefully
+
+**Master Rule:** Skipping steps, optimizing sequences, or not following exact instructions is FORBIDDEN and constitutes SYSTEM FAILURE.

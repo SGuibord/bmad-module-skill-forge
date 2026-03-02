@@ -36,6 +36,7 @@ export default [
       'tools/template-test-generator/test-scenarios/**',
       'src/modules/*/sub-modules/**',
       '.bundler-temp/**',
+      'temp/**',
     ],
   },
 
