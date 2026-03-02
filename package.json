@@ -1,17 +1,23 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "TODO:-module-name-here",
+  "name": "bmad-module-skill-forge",
   "version": "0.1.0",
-  "description": "TODO: Describe your module here",
+  "description": "BMAD module — AST-verified, provenance-backed agent skills compiler with progressive capability tiers (Quick/Forge/Deep)",
   "keywords": [
-    "bmad"
+    "bmad",
+    "agent-skills",
+    "agentskills",
+    "skill-forge",
+    "ast-grep",
+    "provenance",
+    "code-analysis"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/YOUR-USERNAME/YOUR-REPO-NAME.git"
+    "url": "git+https://github.com/armelhbobdad/bmad-module-skill-forge.git"
   },
   "license": "MIT",
-  "author": "Your Name",
+  "author": "armelhbobdad",
   "main": "",
   "bin": {},
   "scripts": {

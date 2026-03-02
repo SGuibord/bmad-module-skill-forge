@@ -1,28 +1,19 @@
-code: code
-name: "CODE: Display in installer"
-header: "Header"
-subheader: "Subheader"
-description: "Longer description of why someone would use or install this, along with if it needs other modules to also be installed"
+code: skf
+name: "SKF: Skill Forge — Evidence-Based Agent Skills Compiler"
+header: "Automated skill compiler — AST-verified, provenance-backed agent skills from source code"
+subheader: "Zero hallucination tolerance. Every instruction traces to code."
+description: "Skill Forge transforms source code into agentskills.io-compliant, version-pinned, provenance-backed agent skills. Uses ast-grep for structural truth, QMD for knowledge intelligence, and a progressive capability model (Quick/Forge/Deep). Standalone module — no other modules required. Recommended alongside BMM for full development workflow integration."
 default_selected: false
 
-# module custom questions and variable configuration
+skills_output_folder:
+  prompt: "Where should generated skills be saved?"
+  default: "skills"
+  result: "{project-root}/{value}"
 
-# Optional to add in this section
-# -- Example, this will ask the prompt to the user during install and save the result in the module.config file that gets created upon install ---
-
-# project_name:
-#   prompt: "What is your game dev experience level?"
-#   default: "intermediate"
-#   result: "{value}"
-#   single-select:
-#     - value: "beginner"
-#       label: "Beginner - New to game development, explain concepts clearly"
-#     - value: "intermediate"
-#       label: "Intermediate - Familiar with game dev concepts, balance explanation with efficiency"
-#     - value: "expert"
-#       label: "Expert - Experienced game developer, be direct and technical"
-
-# -- End Example --
+forge_data_folder:
+  prompt: "Where should forge workspace artifacts be stored?"
+  default: "forge-data"
+  result: "{project-root}/{value}"
 
 # Variables from Core Config inserted:
 ## user_name
