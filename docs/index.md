@@ -7,7 +7,7 @@ hero:
   tagline: AST-verified, provenance-backed agent skills from code repositories, documentation, and developer discourse
   actions:
     - text: Getting Started
-      link: /getting-started/
+      link: ./getting-started/
       icon: right-arrow
       variant: primary
     - text: View on GitHub
@@ -54,10 +54,10 @@ Then interact with the forge agent:
 
 ## Documentation
 
-- **[Getting Started](getting-started.md)** — Installation, prerequisites, first steps
-- **[Agents](agents.md)** — Ferris agent: modes, capabilities, communication style
-- **[Workflows](workflows.md)** — All 10 workflows with commands and connection diagram
-- **[Examples](examples.md)** — Real-world scenarios, tips, and troubleshooting
+- **[Getting Started](./getting-started.md)** — Installation, prerequisites, first steps
+- **[Agents](./agents.md)** — Ferris agent: modes, capabilities, communication style
+- **[Workflows](./workflows.md)** — All 10 workflows with commands and connection diagram
+- **[Examples](./examples.md)** — Real-world scenarios, tips, and troubleshooting
 
 ## Support
 

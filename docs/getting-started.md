@@ -155,9 +155,9 @@ Your existing skill is now out of date. Audit detects the drift, Update regenera
 
 ## What's Next?
 
-- Check out the [Agents Reference](agents.md) to learn about Ferris
-- Browse the [Workflows Reference](workflows.md) to see all available commands
-- See [Examples](examples.md) for real-world usage scenarios
+- Check out the [Agents Reference](../agents.md) to learn about Ferris
+- Browse the [Workflows Reference](../workflows.md) to see all available commands
+- See [Examples](../examples.md) for real-world usage scenarios
 
 ---
 
