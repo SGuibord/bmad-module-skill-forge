@@ -7,8 +7,8 @@
    COLOR PALETTE - Light Mode
    ============================================ */
 :root {
-  /* Full-width content */
-  --sl-content-width: 100%;
+  --ai-banner-height: 2.75rem;
+  --sl-nav-height: 6.25rem; /* Base nav height (~3.5rem) + banner height (2.75rem) */
 
   /* Primary accent colors - amber/orange forge palette */
   --sl-color-accent-low: #fef3c7;
@@ -38,9 +38,6 @@
    COLOR PALETTE - Dark Mode (Primary Focus)
    ============================================ */
 :root[data-theme='dark'] {
-  /* Full-width content */
-  --sl-content-width: 100%;
-
   /* Primary accent colors - amber/orange forge palette */
   --sl-color-accent-low: #451a03;
   --sl-color-accent: #f59e0b;
@@ -163,7 +160,17 @@ main {
    NAVBAR
    ============================================ */
 header.header {
+  padding: 0 !important; /* Remove all padding for full-width banner */
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  height: var(--sl-nav-height) !important;
+  display: flex;
+  flex-direction: column;
+}
+
+header.header .header.sl-flex {
+  padding: 0 1.5rem;
+  height: calc(var(--sl-nav-height) - var(--ai-banner-height));
+  width: 100%;
 }
 
 :root[data-theme='dark'] header.header {
@@ -172,6 +179,14 @@ header.header {
 
 .site-title {
   font-weight: 700;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+/* Logo sizing - constrain to reasonable size */
+.site-title img {
+  height: 2.5rem;
+  width: auto;
 }
 
 /* Social links styling */
@@ -387,5 +402,20 @@ footer {
 @media (max-width: 72rem) {
   .content-panel {
     max-width: 100%;
+  }
+}
+
+/* Responsive padding on navbar row only - banner stays full-width */
+@media (min-width: 50rem) {
+  header.header .header.sl-flex {
+    padding-left: 1rem;
+    padding-right: 2.5rem;
+  }
+}
+
+@media (min-width: 72rem) {
+  header.header .header.sl-flex {
+    padding-left: 1rem;
+    padding-right: 3rem;
   }
 }

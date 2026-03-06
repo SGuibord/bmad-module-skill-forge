@@ -2,7 +2,7 @@
 
 SKF (Skill Forge) is a standalone BMAD module that transforms code repositories, documentation websites, and developer discourse into agentskills.io-compliant, version-pinned, provenance-backed agent skills. It provides a single expert agent (Ferris, Skill Architect & Integrity Guardian) and ten workflows spanning source analysis, skill briefing, AST-backed compilation, integrity testing, and ecosystem-ready export across progressive capability tiers (Quick/Forge/Deep).
 
-Docs: [Getting Started with SKF](./docs/getting-started.md)
+Docs: <https://armelhbobdad.github.io/bmad-module-skill-forge/>
 
 ## Why SKF
 

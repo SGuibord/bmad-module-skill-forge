@@ -1,10 +1,10 @@
 ---
 title: Skill Forge (SKF)
-description: AST-verified, provenance-backed agent skills compiler with progressive capability tiers
+description: AST-verified, provenance-backed agent skills from code repositories, documentation, and developer discourse
 template: splash
 hero:
   title: Skill Forge (SKF)
-  tagline: AST-verified, provenance-backed agent skills compiler with progressive capability tiers (Quick/Forge/Deep)
+  tagline: AST-verified, provenance-backed agent skills from code repositories, documentation, and developer discourse
   actions:
     - text: Getting Started
       link: /getting-started/
@@ -17,7 +17,7 @@ hero:
 
 ## What is Skill Forge?
 
-Skill Forge is an automated skill compiler for the AI agent ecosystem. It transforms source code into [agentskills.io](https://agentskills.io)-compliant, version-pinned, provenance-backed agent skills. Every instruction traces to actual code — zero hallucination tolerance.
+Skill Forge is an automated skill compiler for the AI agent ecosystem. It transforms code repositories, documentation, and developer discourse into [agentskills.io](https://agentskills.io)-compliant, version-pinned, provenance-backed agent skills. Every instruction traces to verifiable sources — zero hallucination tolerance.
 
 - **AST-Verified**: Structural truth via ast-grep — no guessing, no hallucination.
 - **Provenance-Backed**: Every claim traces to source code with file and line references.
