@@ -3,21 +3,37 @@
 .gitignore
 .github
 
-# Documentation (keep package.json)
-README.md
-*.md
-!README.md
+# Documentation (root-level .md files except README)
+/*.md
+!/README.md
 docs/
 
-# CI/CD
-.npmrc
+# Website and build output
+website/
+build/
 
-# Development
+# BMAD framework and IDE config (not part of the module)
+_bmad/
+_bmad-output/
+.claude/
+.cursor/
+.entire/
+
+# Development tools and config
 test/
+tools/
 *.test.js
+eslint.config.mjs
+prettier.config.mjs
+.markdownlint-cli2.yaml
+.prettierignore
 .eslintrc.*
 .prettierrc.*
 .husky/
+.npmrc
+
+# Output and temp
+temp/
 
 # IDE
 .vscode/
@@ -29,7 +45,7 @@ test/
 .DS_Store
 Thumbs.db
 
-# Node (but not dependencies)
+# Node
 node_modules/
 
 # Misc
