@@ -14,7 +14,7 @@ Docs: <https://armelhbobdad.github.io/bmad-module-skill-forge/>
 
 ## How BMad Works
 
-BMad works because it turns big, fuzzy work into **repeatable workflows**. Each workflow is broken into small steps with clear instructions, so the AI follows the same path every time. It also uses a **shared knowledge base** (standards and patterns) so outputs are consistent, not random. In short: **structured steps + shared standards = reliable results**.
+[BMad Method](https://github.com/bmad-code-org/BMAD-METHOD) works because it turns big, fuzzy work into **repeatable workflows**. Each workflow is broken into small steps with clear instructions, so the AI follows the same path every time. It also uses a **shared knowledge base** (standards and patterns) so outputs are consistent, not random. In short: **structured steps + shared standards = reliable results**.
 
 ## How SKF Fits In
 
@@ -169,77 +169,6 @@ src/
         ├── test-skill/
         └── export-skill/
 ```
-
-## Contributing
-
-See `CONTRIBUTING.md` for guidelines.
-
----
-
-<details>
-<summary><strong>Release Guide (for Maintainers)</strong></summary>
-
-## Publishing SKF to NPM
-
-SKF uses release scripts that handle versioning, tagging, and publishing.
-
-### Prerequisites (One-Time Setup)
-
-1. **NPM Token Configuration:**
-   - Generate NPM automation token: [npmjs.com/settings/tokens](https://www.npmjs.com/settings/your-username/tokens)
-   - Add to GitHub Secrets: `Settings` > `Secrets and variables` > `Actions` > `New repository secret`
-   - Name: `NPM_TOKEN`
-
-2. **Verify Package Configuration:**
-
-   ```bash
-   cat package.json | grep -A 3 "publishConfig"
-   # Should show: "access": "public"
-   ```
-
-### Release Process
-
-From your local terminal after merging to `main`:
-
-```bash
-# Patch release (bug fixes)
-npm run release
-
-# Minor release (new features, backwards compatible)
-npm run release:minor
-
-# Major release (breaking changes)
-npm run release:major
-
-# Prerelease (testing)
-npm run release:prerelease
-```
-
-These scripts:
-
-1. Update the version in package.json
-2. Create a git tag
-3. Push the tag to GitHub
-4. Trigger the publish workflow which publishes to npm
-
-### Verify Publication
-
-```bash
-npm view bmad-module-skill-forge
-```
-
-### Release Checklist
-
-Before releasing:
-
-- [ ] All tests passing: `npm test`
-- [ ] Documentation up to date
-- [ ] No uncommitted changes
-- [ ] On `main` branch
-- [ ] NPM token configured in GitHub Secrets
-
-</details>
-
 ---
 
 ## License
