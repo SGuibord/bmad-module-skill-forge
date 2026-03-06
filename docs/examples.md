@@ -13,13 +13,13 @@ This section provides practical examples for using SKF: Skill Forge.
 
 ### Quick Skill — 47 Seconds
 
-Developer adds `spacetimedb` to a Next.js project. Agent keeps hallucinating methods.
+Developer adds [cognee](https://github.com/topoteretes/cognee) to a Python project for AI memory management. Agent keeps hallucinating method signatures and config options.
 
 ```
-@Ferris QS spacetimedb
+@Ferris QS https://github.com/topoteretes/cognee
 ```
 
-Ferris resolves to GitHub, extracts 14 public functions via source reading, validates against spec. Skill appears in `skills/spacetimedb/`. Agent stops hallucinating. Forty-seven seconds. Done.
+Ferris reads the repository, extracts the public API via source reading, validates against spec. Skill appears in `skills/cognee/`. Agent stops hallucinating. Forty-seven seconds. Done.
 
 ### Brownfield Platform — 8 Minutes
 
@@ -101,7 +101,7 @@ Generate from docs + QMD-indexed content. T2/T3 confidence only. `source_authori
 
 ### Progressive Capability
 
-Start with Quick mode (no setup required), upgrade to Forge (install ast-grep), then Deep (QMD already included). Each tier builds on the previous — you never lose capability.
+Start with Quick mode (no setup required), upgrade to Forge (install ast-grep), then Deep (install QMD). Each tier builds on the previous — you never lose capability.
 
 ### Batch Operations
 
@@ -137,7 +137,8 @@ Quick mode reads source without AST analysis. Install ast-grep to upgrade to For
 
 ## Getting More Help
 
+- Run `/bmad-help` — analyzes your current state and suggests what to do next
+  (e.g. `/bmad-help my batch creation failed halfway, how do I resume?`)
 - Run `@Ferris SF` to check your current tier and tool availability
 - Review `forge-config.yaml` for runtime configuration
 - Check module configuration in your BMAD settings
-- Consult the broader BMAD documentation

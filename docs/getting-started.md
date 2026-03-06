@@ -20,7 +20,8 @@ Skill Forge is an automated skill compiler for the AI agent ecosystem. It transf
 If you haven't installed the module yet:
 
 ```bash
-bmad install skf
+npx bmad-method install
+# Select: Skill Forge (SKF)
 ```
 
 Follow the prompts to configure the module for your needs.
@@ -33,7 +34,7 @@ Follow the prompts to configure the module for your needs.
 |------------------------------------------------------------------------|--------------------|-----------------------------|
 | `gh` (GitHub CLI)                                                      | All modes          | <https://cli.github.com>      |
 | `ast-grep`  (CLI tool for code structural search, lint, and rewriting) | Forge + Deep modes | <https://ast-grep.github.io>  |
-| `qmd` (Query Markup Documents)                                         | Deep mode          | <https://github.com/tobi/qmd> |
+| `qmd` (local hybrid search engine for markdown)                        | Deep mode          | <https://github.com/tobi/qmd> |
 
 Don't worry if you don't have all tools — SKF detects what's available and sets your tier automatically.
 
@@ -53,10 +54,10 @@ This detects your tools, sets your capability tier, and initializes the forge en
 
 **Fastest path (Quick Skill):**
 ```
-@Ferris QS spacetimedb
+@Ferris QS https://github.com/bmad-code-org/BMAD-METHOD
 ```
 
-Ferris resolves the package to GitHub, reads the source, and generates a skill in under a minute.
+Ferris reads the repository, extracts the public API, and generates a skill in under a minute.
 
 **Full quality path:**
 ```
@@ -78,17 +79,78 @@ Analyzes your project's dependencies and generates a consolidated stack skill wi
 
 ## Common Use Cases
 
-### I need skills for my dependencies
-Use Quick Skill (`QS`) for each dependency. It resolves package names to repos automatically.
+### My agent keeps hallucinating API calls
+
+Your agent invents function signatures that don't exist. Generate a verified skill so it works from structural truth instead of guessing.
+
+```
+@Ferris QS https://github.com/org/library
+```
+
+The skill pins every function to its actual source location. Hallucinations stop.
+
+### I'm adopting a new library and need my agent to use it correctly
+
+You added a dependency but your agent doesn't know its API yet. Quick Skill resolves package names across npm, PyPI, and crates.io.
+
+```
+@Ferris QS cognee
+```
+
+Ferris resolves the package to its GitHub repo, extracts the public API, and generates a skill your agent can reference immediately.
+
+### I want my agent to understand my entire project stack
+
+Individual skills cover single libraries. Stack Skill maps how your dependencies interact — shared types, co-import patterns, integration points.
+
+```
+@Ferris SS
+```
+
+Ferris detects your manifests, ranks dependencies by significance, and generates a consolidated skill with cross-library integration patterns.
 
 ### I'm onboarding a large existing codebase
-Use Analyze Source (`AN`) to discover what to skill, then batch-create with Create Skill (`CS --batch`).
 
-### I maintain an OSS library
-Use Brief Skill (`BS`) + Create Skill (`CS`) for maximum quality. Export with `source_authority: official`.
+A brownfield repo with dozens of modules. You need to know what's worth skilling before you start.
 
-### I want my agent to understand my whole project
-Use Stack Skill (`SS`) for a consolidated skill with cross-library integration patterns.
+```
+@Ferris AN
+```
+
+Analyze Source scans the project, identifies skillable units, maps exports, and generates recommended briefs you can batch-create with `@Ferris CS --batch`.
+
+### I want the highest accuracy possible
+
+Quick mode reads source files. Forge mode adds AST parsing for structural truth. Deep mode goes further — QMD indexes your project's markdown (docs, changelogs, issues, migration guides) into searchable collections, then uses BM25 keyword search, vector semantic search, and LLM-powered re-ranking to surface context no other tool can find.
+
+```
+@Ferris SF    # Setup detects your tools and sets tier automatically
+```
+
+If `ast-grep` and `qmd` are available, Ferris activates Deep mode. Every skill gets AST-verified signatures (T1) enriched with deep knowledge search (T2) — deprecation warnings, breaking change history, common pitfalls surfaced by hybrid search across your indexed documentation.
+
+### I maintain an OSS library and want official skills
+
+You want maximum quality with full provenance for distribution. Use the full pipeline with Deep mode for the richest output.
+
+```
+@Ferris BS    # Scope and design the skill
+@Ferris CS    # Compile — AST extraction + QMD enrichment (Deep)
+@Ferris TS    # Verify completeness before publishing
+@Ferris EX    # Package for distribution
+```
+
+Export with `source_authority: official`. Consumers get verified skills that update with each release.
+
+### A dependency shipped breaking changes
+
+Your existing skill is now out of date. Audit detects the drift, Update regenerates while preserving your manual additions.
+
+```
+@Ferris AS    # Find what changed
+@Ferris US    # Regenerate — [MANUAL] sections survive
+@Ferris TS    # Verify the update
+```
 
 ---
 
@@ -103,6 +165,7 @@ Use Stack Skill (`SS`) for a consolidated skill with cross-library integration p
 ## Need Help?
 
 If you run into issues:
-1. Run `@Ferris SF` to check your tool availability and tier
-2. Check `forge-config.yaml` for your current configuration
-3. Review the module configuration in your BMAD settings
+1. Run `/bmad-help` — analyzes your current state and suggests what to do next
+   (e.g. `/bmad-help my quick skill has low confidence scores, how do I improve them?`)
+2. Run `@Ferris SF` to check your tool availability and tier
+3. Check `forge-config.yaml` for your current configuration
