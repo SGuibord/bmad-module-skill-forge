@@ -39,8 +39,13 @@ export default defineConfig({
     sitemap(),
     starlight({
       title: 'Skill Forge (SKF)',
-      tagline: 'AST-verified, provenance-backed agent skills compiler with progressive capability tiers.',
+      tagline: 'AST-verified, provenance-backed agent skills from code repositories, documentation, and developer discourse.',
 
+      logo: {
+        src: './public/img/skf-logo.svg',
+        alt: 'Skill Forge (SKF)',
+        replacesTitle: false,
+      },
       favicon: '/favicon.ico',
 
       // Social links
@@ -100,6 +105,12 @@ export default defineConfig({
 
       // Use our docs/404.md instead of Starlight's built-in 404
       disable404Route: true,
+
+      // Custom components
+      components: {
+        Header: './src/components/Header.astro',
+        MobileMenuFooter: './src/components/MobileMenuFooter.astro',
+      },
 
       // Table of contents
       tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 3 },

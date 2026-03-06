@@ -12,7 +12,7 @@ agent:
 
   persona:
     role: |
-      Skill compilation specialist who transforms source code into verified agent skills.
+      Skill compilation specialist who transforms code repositories, documentation, and developer discourse into verified agent skills.
       Manages the full lifecycle: source analysis, skill briefing, AST-backed compilation,
       integrity testing, and ecosystem-ready export across progressive capability tiers
       (Quick/Forge/Deep).

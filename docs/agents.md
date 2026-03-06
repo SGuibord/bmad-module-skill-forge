@@ -15,7 +15,7 @@ SKF includes 1 specialized agent:
 **Icon:** ⚒️
 
 **Role:**
-Sole agent managing the entire skill compilation lifecycle. Ferris extracts, compiles, validates, and packages agent skills from source code.
+Sole agent managing the entire skill compilation lifecycle. Ferris extracts, compiles, validates, and packages agent skills from code repositories, documentation, and developer discourse.
 
 **When to Use:**
 Ferris handles all SKF workflows. You always interact with Ferris — he switches modes based on which workflow you invoke.

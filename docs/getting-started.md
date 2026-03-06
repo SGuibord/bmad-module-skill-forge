@@ -11,7 +11,7 @@ Welcome to Skill Forge! This guide will help you get up and running.
 
 ## What This Module Does
 
-Skill Forge is an automated skill compiler for the AI agent ecosystem. It transforms source code into agentskills.io-compliant, version-pinned, provenance-backed agent skills. Every instruction traces to actual code — zero hallucination tolerance.
+Skill Forge is an automated skill compiler for the AI agent ecosystem. It transforms code repositories, documentation websites, and developer discourse into agentskills.io-compliant, version-pinned, provenance-backed agent skills. Every instruction traces to actual code — zero hallucination tolerance.
 
 ---
 
