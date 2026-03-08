@@ -143,6 +143,49 @@ async function collectWorkflows(skfDir, skfFolder) {
 }
 
 /**
+ * Remove SKF-related command files from an IDE target directory.
+ * Only removes files matching the bmad-skf-* and bmad-agent-skf-* patterns.
+ */
+async function cleanSkfCommands(targetDir) {
+  if (!(await fs.pathExists(targetDir))) return 0;
+
+  const files = await fs.readdir(targetDir);
+  let removed = 0;
+  for (const file of files) {
+    if (file.startsWith('bmad-skf-') || file.startsWith('bmad-agent-skf-')) {
+      await fs.remove(path.join(targetDir, file));
+      removed++;
+    }
+  }
+
+  // Remove empty parent directories (e.g. .cursor/commands/ then .cursor/)
+  if (removed > 0) {
+    const remaining = await fs.readdir(targetDir);
+    if (remaining.length === 0) {
+      await fs.remove(targetDir);
+      const parentDir = path.dirname(targetDir);
+      const parentRemaining = await fs.readdir(parentDir);
+      if (parentRemaining.length === 0) {
+        await fs.remove(parentDir);
+      }
+    }
+  }
+
+  return removed;
+}
+
+/**
+ * Remove stale SKF command files from all known IDE directories.
+ * Called before generating new commands to handle IDE selection changes.
+ */
+async function cleanAllSkfCommands(projectDir) {
+  for (const targetRelDir of Object.values(IDE_TARGETS)) {
+    const targetDir = path.join(projectDir, targetRelDir);
+    await cleanSkfCommands(targetDir);
+  }
+}
+
+/**
  * Generate IDE command files for all selected IDEs.
  *
  * @param {string} projectDir - Project root directory
@@ -151,6 +194,9 @@ async function collectWorkflows(skfDir, skfFolder) {
  * @returns {{ generated: number, ides: string[] }}
  */
 async function generateIdeCommands(projectDir, skfFolder, ides) {
+  // Always clean old SKF commands from all IDEs first
+  await cleanAllSkfCommands(projectDir);
+
   if (!ides || ides.length === 0) return { generated: 0, ides: [] };
 
   const skfDir = path.join(projectDir, skfFolder);
