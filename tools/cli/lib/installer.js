@@ -8,6 +8,7 @@ const fs = require('fs-extra');
 const ora = require('ora');
 const yaml = require('js-yaml');
 const { compileAgentFile } = require('./compiler');
+const { generateIdeCommands } = require('./ide-commands');
 
 class Installer {
   constructor() {
@@ -113,6 +114,23 @@ class Installer {
         learnSpinner.succeed('Learning material added to _skf-learn/ (safe to remove when no longer needed)');
       } catch (error) {
         learnSpinner.fail('Failed to copy learning material');
+        throw error;
+      }
+    }
+
+    // Step 7: Generate IDE command files
+    const selectedIdes = config.ides || [];
+    if (selectedIdes.length > 0 && !selectedIdes.every((ide) => ide === 'other')) {
+      const ideSpinner = ora('Generating IDE commands...').start();
+      try {
+        const ideResult = await generateIdeCommands(projectDir, skfFolder, selectedIdes);
+        if (ideResult.generated > 0) {
+          ideSpinner.succeed(`IDE commands generated for ${ideResult.ides.join(', ')}`);
+        } else {
+          ideSpinner.info('No IDE commands to generate');
+        }
+      } catch (error) {
+        ideSpinner.fail('Failed to generate IDE commands');
         throw error;
       }
     }
