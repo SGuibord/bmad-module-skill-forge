@@ -59,7 +59,7 @@ The installer detects the existing `_bmad/` directory and installs SKF alongside
 |------------------------------------------------------------------------|--------------------|-----------------------------|
 | `gh` (GitHub CLI)                                                      | All modes          | <https://cli.github.com>      |
 | `ast-grep`  (CLI tool for code structural search, lint, and rewriting) | Forge + Deep modes | <https://ast-grep.github.io>  |
-| `qmd` (local hybrid search engine for markdown)                        | Deep mode          | <https://github.com/tobi/qmd> |
+| `qmd` (local hybrid search engine for project files)                   | Deep mode          | <https://github.com/tobi/qmd> |
 
 Don't worry if you don't have all tools — SKF detects what's available and sets your tier automatically.
 
@@ -146,7 +146,7 @@ Analyze Source scans the project, identifies skillable units, maps exports, and 
 
 ### I want the highest accuracy possible
 
-Quick mode reads source files. Forge mode adds AST parsing for structural truth. Deep mode goes further — QMD indexes your project's markdown (docs, changelogs, issues, migration guides) into searchable collections, then uses BM25 keyword search, vector semantic search, and LLM-powered re-ranking to surface context no other tool can find.
+Quick mode reads source files. Forge mode adds AST parsing for structural truth. Deep mode goes further — QMD smart-indexes your project's source code, documentation, and configuration files into per-directory collections (excluding module internals and build artifacts), then uses BM25 keyword search, vector semantic search, and LLM-powered re-ranking to surface context no other tool can find.
 
 ```
 @Ferris SF    # Setup detects your tools and sets tier automatically
