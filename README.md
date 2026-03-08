@@ -1,8 +1,24 @@
+<div align="center">
+
+<img src="website/public/img/skf-logo.svg" alt="Skill Forge Logo" width="120" />
+
 # Skill Forge (SKF)
 
-SKF (Skill Forge) is a standalone BMAD module that transforms code repositories, documentation websites, and developer discourse into agentskills.io-compliant, version-pinned, provenance-backed agent skills. It provides a single expert agent (Ferris, Skill Architect & Integrity Guardian) and ten workflows spanning source analysis, skill briefing, AST-backed compilation, integrity testing, and ecosystem-ready export across progressive capability tiers (Quick/Forge/Deep).
+**Agent Skill Compiler — AST-verified, version-pinned, zero hallucination**
 
-Docs: <https://armelhbobdad.github.io/bmad-module-skill-forge/>
+[![Quality & Validation](https://github.com/armelhbobdad/bmad-module-skill-forge/actions/workflows/quality.yaml/badge.svg)](https://github.com/armelhbobdad/bmad-module-skill-forge/actions/workflows/quality.yaml)
+[![npm](https://img.shields.io/npm/v/bmad-module-skill-forge)](https://www.npmjs.com/package/bmad-module-skill-forge)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![BMad Module](https://img.shields.io/badge/BMad-module-blue)](https://github.com/bmad-code-org/BMAD-METHOD)
+[![Docs](https://img.shields.io/badge/docs-online-green)](https://armelhbobdad.github.io/bmad-module-skill-forge/)
+
+*Transforms code repositories, documentation, and developer discourse into [agentskills.io](https://agentskills.io)-compliant agent skills with AST-backed provenance.*
+
+</div>
+
+---
+
+SKF is a standalone BMAD module that provides a single expert agent (Ferris, Skill Architect & Integrity Guardian) and ten workflows spanning source analysis, skill briefing, AST-backed compilation, integrity testing, and ecosystem-ready export across progressive capability tiers (Quick/Forge/Deep).
 
 ## Why SKF
 
