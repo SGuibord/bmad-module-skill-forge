@@ -7,6 +7,7 @@ const figlet = require('figlet');
 const inquirer = require('inquirer').default || require('inquirer');
 const path = require('node:path');
 const fs = require('fs-extra');
+const yaml = require('js-yaml');
 
 const SKF_FOLDER = '_bmad/skf';
 
@@ -82,39 +83,55 @@ class UI {
       };
     }
 
+    // Load saved config to pre-populate defaults on fresh reinstall
+    const savedConfig = await this.loadSavedConfig(projectDir, skfFolder);
+    if (savedConfig) {
+      console.log(chalk.dim('  Previous configuration detected — defaults pre-populated.\n'));
+    }
+
+    const ideChoices = [
+      { name: 'Claude Code', value: 'claude-code' },
+      { name: 'Cline', value: 'cline' },
+      { name: 'Codex', value: 'codex' },
+      { name: 'Cursor', value: 'cursor' },
+      { name: 'GitHub Copilot', value: 'github-copilot' },
+      { name: 'Roo Code', value: 'roo' },
+      { name: 'Windsurf', value: 'windsurf' },
+      { name: 'Other', value: 'other' },
+    ];
+
+    // Pre-check previously selected IDEs
+    const savedIdes = savedConfig?.ides || [];
+    if (savedIdes.length > 0) {
+      for (const choice of ideChoices) {
+        choice.checked = savedIdes.includes(choice.value);
+      }
+    }
+
     const answers = await inquirer.prompt([
       {
         type: 'input',
         name: 'project_name',
         message: 'Project name:',
-        default: defaultProjectName,
+        default: savedConfig?.project_name || defaultProjectName,
       },
       {
         type: 'input',
         name: 'skills_output_folder',
         message: 'Where should generated skills be saved?',
-        default: 'skills',
+        default: savedConfig?.skills_output_folder || 'skills',
       },
       {
         type: 'input',
         name: 'forge_data_folder',
         message: 'Where should forge workspace artifacts be stored?',
-        default: 'forge-data',
+        default: savedConfig?.forge_data_folder || 'forge-data',
       },
       {
         type: 'checkbox',
         name: 'ides',
         message: 'Which tools/IDEs are you using? (use spacebar to select)',
-        choices: [
-          { name: 'Claude Code', value: 'claude-code' },
-          { name: 'Cline', value: 'cline' },
-          { name: 'Codex', value: 'codex' },
-          { name: 'Cursor', value: 'cursor' },
-          { name: 'GitHub Copilot', value: 'github-copilot' },
-          { name: 'Roo Code', value: 'roo' },
-          { name: 'Windsurf', value: 'windsurf' },
-          { name: 'Other', value: 'other' },
-        ],
+        choices: ideChoices,
         validate: (answers) => {
           if (!answers || answers.length === 0) {
             return 'At least one IDE must be selected';
@@ -138,6 +155,19 @@ class UI {
       _action: action,
       cancelled: false,
     };
+  }
+
+  async loadSavedConfig(projectDir, skfFolder) {
+    const configPath = path.join(projectDir, skfFolder, 'config.yaml');
+    try {
+      if (await fs.pathExists(configPath)) {
+        const content = await fs.readFile(configPath, 'utf8');
+        return yaml.load(content) || null;
+      }
+    } catch {
+      // ignore parse errors
+    }
+    return null;
   }
 
   displaySuccess(skfFolder, ides = []) {
