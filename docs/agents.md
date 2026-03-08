@@ -11,7 +11,7 @@ SKF includes 1 specialized agent:
 
 ## Ferris — Skill Architect & Integrity Guardian
 
-**ID:** `_bmad/skf/agents/ferris.md`
+**ID:** `_bmad/skf/agents/forger.md`
 **Icon:** ⚒️
 
 **Role:**
@@ -70,4 +70,4 @@ DELIVER:
 ```
 
 **Memory:**
-Ferris has a sidecar (`_bmad/_memory/ferris-sidecar/`) that persists user preferences and tool availability across sessions.
+Ferris has a sidecar (`_bmad/_memory/forger-sidecar/`) that persists user preferences and tool availability across sessions.

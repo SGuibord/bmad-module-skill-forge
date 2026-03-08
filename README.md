@@ -30,7 +30,7 @@ Each workflow directory contains these files, and each has a specific job:
 
 | File | What it does | When it loads |
 | --- | --- | --- |
-| `skf.agent.yaml` | Expert persona — identity, principles, critical actions, menu of triggers | First — always in context |
+| `forger.agent.yaml` | Expert persona — identity, principles, critical actions, menu of triggers | First — always in context |
 | `workflow.md` | Human-readable entry point — goals, mode menu (Create/Edit/Validate), routes to first step | Second — presents mode choice |
 | `steps-c/*.md` | **Create** steps — primary execution, 4-9 sequential files | One at a time (just-in-time) |
 | `data/*.md` | Workflow-specific reference data — schemas, heuristics, rules, patterns | Read by steps on demand |
@@ -50,8 +50,8 @@ flowchart LR
 
 ### How It Works at Runtime
 
-1. **Trigger** — User types `@Ferris CS` (or fuzzy match like `create-skill`). The agent menu in `skf.agent.yaml` maps the trigger to the workflow path.
-2. **Agent loads** — `skf.agent.yaml` injects the persona (identity, principles, critical actions) into the context window. Sidecar files (`forge-tier.yaml`, `preferences.yaml`) are loaded for persistent state.
+1. **Trigger** — User types `@Ferris CS` (or fuzzy match like `create-skill`). The agent menu in `forger.agent.yaml` maps the trigger to the workflow path.
+2. **Agent loads** — `forger.agent.yaml` injects the persona (identity, principles, critical actions) into the context window. Sidecar files (`forge-tier.yaml`, `preferences.yaml`) are loaded for persistent state.
 3. **Workflow loads** — `workflow.md` presents the mode choice and routes to the first step file.
 4. **Step-by-step execution** — Only the current step file is in context (just-in-time loading). Each step explicitly names the next one. The LLM reads, executes, saves output, then loads the next step. No future steps are ever preloaded.
 5. **Knowledge injection** — Steps consult `skf-knowledge-index.csv` and selectively load fragments from `knowledge/` by tags and relevance. Cross-cutting principles (zero hallucination, confidence tiers, provenance) are loaded only when a step directs — not preloaded.
@@ -72,14 +72,41 @@ Ferris operates in four workflow-driven modes (mode is determined by which workf
 
 ## Install
 
+There are three ways to install SKF, depending on your setup.
+
+### Method 1: Standalone (recommended for trying SKF)
+
 ```bash
-npx bmad-module-skill-forge install
+npx skill-forge install
 ```
 
-You'll be prompted for:
+Or equivalently: `npx bmad-module-skill-forge install`
 
-- **Skills output folder** — Where generated skills are saved (default: `skills/`)
-- **Forge data folder** — Where workspace artifacts are stored (default: `forge-data/`)
+Installs SKF on its own. You'll be prompted for project name, output folders, and which IDEs to configure. The installer generates IDE-specific command files (e.g. `.claude/commands/`, `.cursor/commands/`) so workflows appear in your IDE's command palette.
+
+### Method 2: As a custom module during BMad Method installation
+
+```bash
+npx bmad-method install
+```
+
+When prompted **"Add custom modules from your computer?"**, select Yes and provide the path to the SKF `src/` folder (clone this repo first):
+
+```
+Path to custom module folder: /path/to/bmad-module-skill-forge/src/
+```
+
+This installs BMad core + SKF together with full IDE integration, manifests, and help catalog. Best when you want the complete BMad development workflow.
+
+### Method 3: Add SKF to an existing BMad project
+
+If you already have BMad installed, you can add SKF afterward by running the standalone installer in the same directory:
+
+```bash
+npx skill-forge install
+```
+
+The installer detects the existing `_bmad/` directory and installs SKF alongside your current modules. IDE command files are generated for SKF workflows.
 
 ## Quickstart
 
@@ -147,8 +174,8 @@ src/
 │   ├── workflows.md
 │   └── examples.md
 ├── agents/
-│   └── skf.agent.yaml
-├── ferris/
+│   └── forger.agent.yaml
+├── forger/
 │   ├── forge-tier.yaml
 │   ├── preferences.yaml
 │   └── README.md
