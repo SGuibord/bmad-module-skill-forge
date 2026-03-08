@@ -5,7 +5,7 @@
 
 const path = require('node:path');
 const fs = require('fs-extra');
-const ora = require('ora');
+const { spinner } = require('@clack/prompts');
 const yaml = require('js-yaml');
 const { compileAgentFile } = require('./compiler');
 const { generateIdeCommands } = require('./ide-commands');
@@ -23,6 +23,7 @@ class Installer {
     const { projectDir, skfFolder } = config;
     const skfDir = path.join(projectDir, skfFolder);
     const action = config._action || 'fresh';
+    const s = spinner();
 
     // Handle update vs fresh for existing installation
     if (action === 'update' && (await fs.pathExists(skfDir))) {
@@ -43,37 +44,35 @@ class Installer {
         }
       }
 
-      const removeSpinner = ora('Updating SKF files...').start();
+      s.start('Updating SKF files...');
       await fs.remove(skfDir);
-      removeSpinner.succeed('Old files cleared');
+      s.stop('Old files cleared');
     } else if (action === 'fresh' && (await fs.pathExists(skfDir))) {
-      const removeSpinner = ora('Removing existing SKF installation...').start();
+      s.start('Removing existing SKF installation...');
       await fs.remove(skfDir);
-      removeSpinner.succeed('Old installation removed');
+      s.stop('Old installation removed');
     }
 
     // Ensure parent directory exists (for _bmad/skf/)
     await fs.ensureDir(path.dirname(skfDir));
 
-    console.log('');
-
     // Step 1: Copy source files
-    const spinner = ora('Copying SKF files...').start();
+    s.start('Copying SKF files...');
     try {
       await this.copySrcFiles(skfDir);
-      spinner.succeed('SKF files copied');
+      s.stop('SKF files copied');
     } catch (error) {
-      spinner.fail('Failed to copy SKF files');
+      s.stop('Failed to copy SKF files');
       throw error;
     }
 
     // Step 2: Setup agent sidecar
-    const sidecarSpinner = ora('Setting up agent sidecar...').start();
+    s.start('Setting up agent sidecar...');
     try {
       await this.setupSidecar(projectDir);
-      sidecarSpinner.succeed('Agent sidecar initialized');
+      s.stop('Agent sidecar initialized');
     } catch (error) {
-      sidecarSpinner.fail('Failed to setup sidecar');
+      s.stop('Failed to setup sidecar');
       throw error;
     }
 
@@ -81,43 +80,43 @@ class Installer {
     await this.updateGitignore(projectDir);
 
     // Step 3: Write config.yaml
-    const configSpinner = ora('Writing configuration...').start();
+    s.start('Writing configuration...');
     try {
       await this.writeConfig(skfDir, config);
-      configSpinner.succeed('Configuration saved');
+      s.stop('Configuration saved');
     } catch (error) {
-      configSpinner.fail('Failed to write configuration');
+      s.stop('Failed to write configuration');
       throw error;
     }
 
     // Step 4: Compile agents
-    const agentSpinner = ora('Compiling agents...').start();
+    s.start('Compiling agents...');
     try {
       const agents = await this.compileAgents(skfDir, skfFolder);
-      agentSpinner.succeed(`Compiled ${agents.length} agent${agents.length === 1 ? '' : 's'}`);
+      s.stop(`Compiled ${agents.length} agent${agents.length === 1 ? '' : 's'}`);
     } catch (error) {
-      agentSpinner.fail('Failed to compile agents');
+      s.stop('Failed to compile agents');
       throw error;
     }
 
     // Step 5: Create output folders
-    const foldersSpinner = ora('Creating project folders...').start();
+    s.start('Creating project folders...');
     try {
       await this.createOutputFolders(projectDir, config);
-      foldersSpinner.succeed('Project folders created');
+      s.stop('Project folders created');
     } catch (error) {
-      foldersSpinner.fail('Failed to create project folders');
+      s.stop('Failed to create project folders');
       throw error;
     }
 
     // Step 6: Copy learning material (optional)
     if (config.install_learning !== false) {
-      const learnSpinner = ora('Copying learning & reference material...').start();
+      s.start('Copying learning & reference material...');
       try {
         await this.copyLearningMaterial(projectDir);
-        learnSpinner.succeed('Learning material added to _skf-learn/ (safe to remove when no longer needed)');
+        s.stop('Learning material added to _skf-learn/');
       } catch (error) {
-        learnSpinner.fail('Failed to copy learning material');
+        s.stop('Failed to copy learning material');
         throw error;
       }
     }
@@ -126,32 +125,32 @@ class Installer {
     let ideFiles = [];
     const selectedIdes = config.ides || [];
     if (selectedIdes.length > 0 && !selectedIdes.every((ide) => ide === 'other')) {
-      const ideSpinner = ora('Generating IDE commands...').start();
+      s.start('Generating IDE commands...');
       try {
         const ideResult = await generateIdeCommands(projectDir, skfFolder, selectedIdes);
         ideFiles = ideResult.files || [];
         if (ideResult.generated > 0) {
-          ideSpinner.succeed(`IDE commands generated for ${ideResult.ides.join(', ')}`);
+          s.stop(`IDE commands generated for ${ideResult.ides.join(', ')}`);
         } else {
-          ideSpinner.info('No IDE commands to generate');
+          s.stop('No IDE commands to generate');
         }
       } catch (error) {
-        ideSpinner.fail('Failed to generate IDE commands');
+        s.stop('Failed to generate IDE commands');
         throw error;
       }
     }
 
     // Step 8: Write installation manifest
-    const manifestSpinner = ora('Writing manifest...').start();
+    s.start('Writing manifest...');
     try {
       const packageJson = require('../../../package.json');
       await writeManifest(projectDir, config, {
         version: packageJson.version,
         ideFiles,
       });
-      manifestSpinner.succeed('Installation manifest saved');
+      s.stop('Installation manifest saved');
     } catch (error) {
-      manifestSpinner.fail('Failed to write manifest');
+      s.stop('Failed to write manifest');
       throw error;
     }
 

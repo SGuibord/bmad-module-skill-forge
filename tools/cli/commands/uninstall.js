@@ -7,8 +7,7 @@
 const chalk = require('chalk');
 const path = require('node:path');
 const fs = require('fs-extra');
-const inquirer = require('inquirer').default || require('inquirer');
-const ora = require('ora');
+const { confirm, isCancel, spinner, log, outro } = require('@clack/prompts');
 const { readManifest, MANIFEST_DIR, MANIFEST_FILE } = require('../lib/manifest');
 
 /**
@@ -36,10 +35,6 @@ async function countExistingFiles(projectDir, manifest) {
  * Display what will be removed, grouped by category.
  */
 async function displayRemovalPlan(projectDir, manifest) {
-  console.log('');
-  console.log(chalk.white.bold('  The following will be removed:'));
-  console.log('');
-
   const categories = [
     { key: 'skf', label: 'SKF module files', dir: manifest.skf_folder },
     { key: 'sidecar', label: 'Agent sidecar state', dir: '_bmad/_memory/forger-sidecar' },
@@ -48,6 +43,7 @@ async function displayRemovalPlan(projectDir, manifest) {
     { key: 'output', label: 'Output folder scaffolding' },
   ];
 
+  const lines = [];
   for (const cat of categories) {
     const files = manifest.files[cat.key] || [];
     if (files.length === 0) continue;
@@ -61,15 +57,16 @@ async function displayRemovalPlan(projectDir, manifest) {
     if (existCount === 0) continue;
 
     if (cat.dir) {
-      console.log(`    ${chalk.red('×')} ${cat.label} ${chalk.dim(`(${cat.dir}/ — ${existCount} files)`)}`);
+      lines.push(`${chalk.red('×')} ${cat.label} ${chalk.dim(`(${cat.dir}/ — ${existCount} files)`)}`);
     } else {
-      console.log(`    ${chalk.red('×')} ${cat.label} ${chalk.dim(`(${existCount} files)`)}`);
+      lines.push(`${chalk.red('×')} ${cat.label} ${chalk.dim(`(${existCount} files)`)}`);
     }
   }
 
   // Manifest itself
-  console.log(`    ${chalk.red('×')} Installation manifest ${chalk.dim(`(${MANIFEST_DIR}/${MANIFEST_FILE})`)}`);
-  console.log('');
+  lines.push(`${chalk.red('×')} Installation manifest ${chalk.dim(`(${MANIFEST_DIR}/${MANIFEST_FILE})`)}`);
+
+  log.warn(`The following will be removed:\n${lines.join('\n')}`);
 }
 
 /**
@@ -115,11 +112,11 @@ module.exports = {
         // Check if SKF exists without manifest
         const skfExists = await fs.pathExists(path.join(projectDir, '_bmad/skf'));
         if (skfExists) {
-          console.log(chalk.yellow('\n  No manifest found. Reinstall first to generate one,'));
-          console.log(chalk.yellow('  then run uninstall again for clean removal.'));
-          console.log(chalk.dim('  Run: npx skill-forge install\n'));
+          log.warn(
+            'No manifest found. Reinstall first to generate one,\nthen run uninstall again for clean removal.\nRun: npx skill-forge install',
+          );
         } else {
-          console.log(chalk.yellow('\n  SKF is not installed in this directory.\n'));
+          log.warn('SKF is not installed in this directory.');
         }
         process.exit(0);
         return;
@@ -127,7 +124,7 @@ module.exports = {
 
       const { existing } = await countExistingFiles(projectDir, manifest);
       if (existing === 0) {
-        console.log(chalk.yellow('\n  No SKF files found to remove.\n'));
+        log.warn('No SKF files found to remove.');
         // Clean up stale manifest
         await fs.remove(path.join(projectDir, MANIFEST_DIR, MANIFEST_FILE));
         process.exit(0);
@@ -136,27 +133,23 @@ module.exports = {
 
       await displayRemovalPlan(projectDir, manifest);
 
-      const { confirm } = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'confirm',
-          message: 'Proceed with uninstall?',
-          default: false,
-        },
-      ]);
+      const shouldProceed = await confirm({
+        message: 'Proceed with uninstall?',
+        initialValue: false,
+      });
 
-      if (!confirm) {
-        console.log(chalk.yellow('\n  Uninstall cancelled.\n'));
+      if (isCancel(shouldProceed) || !shouldProceed) {
+        log.warn('Uninstall cancelled.');
         process.exit(0);
         return;
       }
 
-      console.log('');
+      const s = spinner();
 
       // Remove IDE commands first (scattered across project)
       const ideFiles = manifest.files.ide_commands || [];
       if (ideFiles.length > 0) {
-        const ideSpinner = ora('Removing IDE commands...').start();
+        s.start('Removing IDE commands...');
         const ideRemoved = await removeFiles(projectDir, ideFiles);
         // Clean empty IDE directories
         const cleanedDirs = new Set();
@@ -168,24 +161,24 @@ module.exports = {
             await removeEmptyDir(path.join(projectDir, path.dirname(dir)));
           }
         }
-        ideSpinner.succeed(`Removed ${ideRemoved} IDE command files`);
+        s.stop(`Removed ${ideRemoved} IDE command files`);
       }
 
       // Remove learning material directory
       const learnFiles = manifest.files.learning || [];
       if (learnFiles.length > 0) {
-        const learnSpinner = ora('Removing learning material...').start();
+        s.start('Removing learning material...');
         const learnDir = path.join(projectDir, '_skf-learn');
         if (await fs.pathExists(learnDir)) {
           await fs.remove(learnDir);
         }
-        learnSpinner.succeed('Learning material removed');
+        s.stop('Learning material removed');
       }
 
       // Remove output folder scaffolding (.gitkeep only)
       const outputFiles = manifest.files.output || [];
       if (outputFiles.length > 0) {
-        const outSpinner = ora('Removing output scaffolding...').start();
+        s.start('Removing output scaffolding...');
         await removeFiles(projectDir, outputFiles);
         // Remove empty output folders
         for (const folder of [manifest.skills_output_folder, manifest.forge_data_folder]) {
@@ -193,25 +186,25 @@ module.exports = {
             await removeEmptyDir(path.join(projectDir, folder));
           }
         }
-        outSpinner.succeed('Output scaffolding removed');
+        s.stop('Output scaffolding removed');
       }
 
       // Remove sidecar
-      const sidecarSpinner = ora('Removing agent sidecar...').start();
+      s.start('Removing agent sidecar...');
       const sidecarDir = path.join(projectDir, '_bmad', '_memory', 'forger-sidecar');
       if (await fs.pathExists(sidecarDir)) {
         await fs.remove(sidecarDir);
       }
       await removeEmptyDir(path.join(projectDir, '_bmad', '_memory'));
-      sidecarSpinner.succeed('Agent sidecar removed');
+      s.stop('Agent sidecar removed');
 
       // Remove SKF module directory
-      const skfSpinner = ora('Removing SKF module...').start();
+      s.start('Removing SKF module...');
       const skfDir = path.join(projectDir, manifest.skf_folder);
       if (await fs.pathExists(skfDir)) {
         await fs.remove(skfDir);
       }
-      skfSpinner.succeed('SKF module removed');
+      s.stop('SKF module removed');
 
       // Remove manifest
       const manifestPath = path.join(projectDir, MANIFEST_DIR, MANIFEST_FILE);
@@ -222,9 +215,7 @@ module.exports = {
       await removeEmptyDir(path.join(projectDir, MANIFEST_DIR));
       await removeEmptyDir(path.join(projectDir, '_bmad'));
 
-      console.log('');
-      console.log(chalk.green.bold('  SKF uninstalled successfully.'));
-      console.log('');
+      outro('SKF uninstalled successfully.');
 
       process.exit(0);
     } catch (error) {
