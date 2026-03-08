@@ -88,12 +88,12 @@ async function runTests() {
   console.log(`${colors.yellow}Test Suite 2: SKF Agent Structure${colors.reset}\n`);
 
   try {
-    const skfAgentPath = path.join(projectRoot, 'src/agents/skf.agent.yaml');
+    const skfAgentPath = path.join(projectRoot, 'src/agents/forger.agent.yaml');
 
     if (await pathExists(skfAgentPath)) {
       const skfAgent = yaml.load(await fs.readFile(skfAgentPath, 'utf8'));
 
-      assert(skfAgent.agent !== undefined, 'skf.agent.yaml has agent root key');
+      assert(skfAgent.agent !== undefined, 'forger.agent.yaml has agent root key');
       assert(skfAgent.agent.metadata !== undefined, 'SKF agent has metadata section');
       assert(skfAgent.agent.metadata.module === 'skf', 'SKF agent metadata has module: skf');
       assert(skfAgent.agent.metadata.id.includes('_bmad/skf/'), 'SKF agent id references _bmad/skf/ path');
@@ -111,7 +111,7 @@ async function runTests() {
       assert(!yamlContent.includes('module: tea'), 'SKF agent has no module: tea references');
       assert(!yamlContent.includes('module: bmm'), 'SKF agent has no module: bmm references');
     } else {
-      assert(false, 'SKF agent YAML exists', 'src/agents/skf.agent.yaml not found');
+      assert(false, 'SKF agent YAML exists', 'src/agents/forger.agent.yaml not found');
     }
   } catch (error) {
     assert(false, 'SKF agent structure validates', error.message);

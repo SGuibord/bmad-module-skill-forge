@@ -11,7 +11,7 @@ SKF includes 1 specialized agent:
 
 ## Ferris — Skill Architect & Integrity Guardian
 
-**ID:** `_bmad/skf/agents/ferris.md`
+**ID:** `_bmad/skf/agents/forger.md`
 **Icon:** ⚒️
 
 **Role:**

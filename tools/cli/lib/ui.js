@@ -170,7 +170,7 @@ class UI {
     console.log('');
     console.log(chalk.white('  2. Locate the chat window and type:'));
     console.log('');
-    console.log(chalk.cyan(`     "Read and activate ${skfFolder}/agents/skf.md"`));
+    console.log(chalk.cyan(`     "Read and activate ${skfFolder}/agents/forger.md"`));
     console.log('');
     console.log(chalk.white('  3. Ferris (your Skill Architect) will guide you through'));
     console.log(chalk.white('     setting up and forging your first agent skill'));

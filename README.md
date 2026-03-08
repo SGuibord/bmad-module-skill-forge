@@ -30,7 +30,7 @@ Each workflow directory contains these files, and each has a specific job:
 
 | File | What it does | When it loads |
 | --- | --- | --- |
-| `skf.agent.yaml` | Expert persona — identity, principles, critical actions, menu of triggers | First — always in context |
+| `forger.agent.yaml` | Expert persona — identity, principles, critical actions, menu of triggers | First — always in context |
 | `workflow.md` | Human-readable entry point — goals, mode menu (Create/Edit/Validate), routes to first step | Second — presents mode choice |
 | `steps-c/*.md` | **Create** steps — primary execution, 4-9 sequential files | One at a time (just-in-time) |
 | `data/*.md` | Workflow-specific reference data — schemas, heuristics, rules, patterns | Read by steps on demand |
@@ -50,8 +50,8 @@ flowchart LR
 
 ### How It Works at Runtime
 
-1. **Trigger** — User types `@Ferris CS` (or fuzzy match like `create-skill`). The agent menu in `skf.agent.yaml` maps the trigger to the workflow path.
-2. **Agent loads** — `skf.agent.yaml` injects the persona (identity, principles, critical actions) into the context window. Sidecar files (`forge-tier.yaml`, `preferences.yaml`) are loaded for persistent state.
+1. **Trigger** — User types `@Ferris CS` (or fuzzy match like `create-skill`). The agent menu in `forger.agent.yaml` maps the trigger to the workflow path.
+2. **Agent loads** — `forger.agent.yaml` injects the persona (identity, principles, critical actions) into the context window. Sidecar files (`forge-tier.yaml`, `preferences.yaml`) are loaded for persistent state.
 3. **Workflow loads** — `workflow.md` presents the mode choice and routes to the first step file.
 4. **Step-by-step execution** — Only the current step file is in context (just-in-time loading). Each step explicitly names the next one. The LLM reads, executes, saves output, then loads the next step. No future steps are ever preloaded.
 5. **Knowledge injection** — Steps consult `skf-knowledge-index.csv` and selectively load fragments from `knowledge/` by tags and relevance. Cross-cutting principles (zero hallucination, confidence tiers, provenance) are loaded only when a step directs — not preloaded.
@@ -174,7 +174,7 @@ src/
 │   ├── workflows.md
 │   └── examples.md
 ├── agents/
-│   └── skf.agent.yaml
+│   └── forger.agent.yaml
 ├── ferris/
 │   ├── forge-tier.yaml
 │   ├── preferences.yaml

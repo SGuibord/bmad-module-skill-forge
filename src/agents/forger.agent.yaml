@@ -1,7 +1,7 @@
 agent:
   webskip: true
   metadata:
-    id: "_bmad/skf/agents/skf.md"
+    id: "_bmad/skf/agents/forger.md"
     name: Ferris
     title: Skill Architect & Integrity Guardian
     icon: "⚒️"
