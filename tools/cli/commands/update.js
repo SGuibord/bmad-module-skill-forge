@@ -7,7 +7,9 @@
 const chalk = require('chalk');
 const path = require('node:path');
 const fs = require('fs-extra');
+const yaml = require('js-yaml');
 const { Installer } = require('../lib/installer');
+const { UI } = require('../lib/ui');
 
 const SKF_FOLDER = '_bmad/skf';
 
@@ -39,9 +41,17 @@ module.exports = {
       });
 
       if (result && result.success) {
-        console.log('');
-        console.log(chalk.green.bold('  Update complete!'));
-        console.log('');
+        // Read config to get IDEs for post-update notes
+        let ides = [];
+        try {
+          const configContent = await fs.readFile(path.join(skfDir, 'config.yaml'), 'utf8');
+          const config = yaml.load(configContent);
+          ides = config?.ides || [];
+        } catch {
+          /* use empty */
+        }
+        const ui = new UI();
+        ui.displaySuccess(SKF_FOLDER, ides, 'update');
       }
 
       process.exit(0);

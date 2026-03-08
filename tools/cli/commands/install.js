@@ -21,7 +21,7 @@ module.exports = {
       const result = await installer.install(config);
 
       if (result && result.success) {
-        ui.displaySuccess(config.skfFolder, config.ides);
+        ui.displaySuccess(config.skfFolder, config.ides, config._action);
         process.exit(0);
       }
     } catch (error) {

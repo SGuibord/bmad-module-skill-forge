@@ -170,7 +170,7 @@ class UI {
     return null;
   }
 
-  displaySuccess(skfFolder, ides = []) {
+  displaySuccess(skfFolder, ides = [], action = 'fresh') {
     const ideNames = {
       'claude-code': 'Claude Code',
       cline: 'Cline',
@@ -192,19 +192,39 @@ class UI {
     }
 
     console.log('');
-    console.log(chalk.green.bold('  Installation complete!'));
-    console.log('');
-    console.log(chalk.white.bold('  Get Started'));
-    console.log('');
-    console.log(chalk.white(`  1. Open this folder in ${ideDisplay}`));
-    console.log('');
-    console.log(chalk.white('  2. Locate the chat window and type:'));
-    console.log('');
-    console.log(chalk.cyan(`     "Read and activate ${skfFolder}/agents/forger.md"`));
-    console.log('');
-    console.log(chalk.white('  3. Ferris (your Skill Architect) will guide you through'));
-    console.log(chalk.white('     setting up and forging your first agent skill'));
-    console.log('');
+
+    if (action === 'update') {
+      console.log(chalk.green.bold('  Update complete!'));
+      console.log('');
+      console.log(chalk.white.bold('  What Changed'));
+      console.log('');
+      console.log(chalk.white('  SKF files and agents have been refreshed.'));
+      console.log(chalk.white('  Your config.yaml and sidecar state are preserved.'));
+      console.log('');
+      console.log(chalk.white.bold('  Next Steps'));
+      console.log('');
+      console.log(chalk.white(`  1. Reload the agent in ${ideDisplay}:`));
+      console.log('');
+      console.log(chalk.cyan(`     "Read and activate ${skfFolder}/agents/forger.md"`));
+      console.log('');
+      console.log(chalk.white('  2. Run @Ferris SF to re-detect tools if needed'));
+      console.log('');
+    } else {
+      console.log(chalk.green.bold('  Installation complete!'));
+      console.log('');
+      console.log(chalk.white.bold('  Get Started'));
+      console.log('');
+      console.log(chalk.white(`  1. Open this folder in ${ideDisplay}`));
+      console.log('');
+      console.log(chalk.white('  2. Locate the chat window and type:'));
+      console.log('');
+      console.log(chalk.cyan(`     "Read and activate ${skfFolder}/agents/forger.md"`));
+      console.log('');
+      console.log(chalk.white('  3. Ferris (your Skill Architect) will guide you through'));
+      console.log(chalk.white('     setting up and forging your first agent skill'));
+      console.log('');
+    }
+
     console.log(chalk.dim('  ───────────────────────────────────────────────────────'));
     console.log('');
     console.log(chalk.dim('  Agent: Ferris (Skill Architect & Integrity Guardian)'));
