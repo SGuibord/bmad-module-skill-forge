@@ -200,7 +200,7 @@ Compile a skill from a brief — the core compilation engine. Takes a skill-brie
 
 **External Integrations (SKF MCP Tools — all pre-detected by setup-forge):**
 - **gh_bridge:** Required all tiers — source reading, file trees, issues, releases, changelog
-- **skill-check:** Required all tiers — agentskills.io spec validation, ecosystem check (5s timeout, 24h cache)
+- **skill-check:** Required all tiers — `npx skill-check check --fix --format json` for validation + auto-fix + quality scoring (0-100), `--no-security-scan` for fast validation, security scan for prompt injection detection, `split-body` for oversized body remediation
 - **ast_bridge:** Required Forge/Deep tiers — AST scan_definitions, run_rule, detect_co_imports
 - **qmd_bridge:** Required Deep tier only — search, vector_search, deep_search for temporal context
 
@@ -258,10 +258,11 @@ create-skill/
 - Auto-proceed to step-02
 
 **step-02-ecosystem-check** (Conditional Gate)
-- Call skill-check validate on brief.name — 5-second timeout, 24-hour cache
+- Query agentskills.io registry API for brief.name — 5-second timeout, 24-hour cache
 - If match found: present to user with [P] Proceed / [I] Install existing / [A] Abort
 - If no match OR timeout: auto-proceed silently
-- If skill-check unavailable: skip silently (tool unavailability is not an error)
+- If registry API unavailable: skip silently (API unavailability is not an error)
+- Note: ecosystem lookup requires registry API, not `skill-check` CLI (which validates local skills only)
 
 **step-03-extract** (Standard Middle — Gate 2)
 - Load extraction-patterns.md data file
@@ -283,9 +284,9 @@ create-skill/
 - Auto-proceed
 
 **step-06-validate** (Simple Middle)
-- skill-check validate (schema + frontmatter)
+- `npx skill-check check --fix --format json` (schema + frontmatter + auto-fix + quality score)
 - Pass: auto-proceed. Fail: attempt auto-fix, re-validate, halt if still failing.
-- skill-check unavailable: skip, add warning to evidence report
+- skill-check unavailable: skip automated validation, add warning to evidence report
 
 **step-07-generate-artifacts** (Simple Middle)
 - Create directories: skills/{name}/, skills/{name}/references/, forge-data/{name}/
@@ -305,7 +306,7 @@ create-skill/
 step-01  READS: forge-tier.yaml, skill-brief.yaml
          SETS:  tier, brief_data, source_location
               ↓
-step-02  READS: skill-check ecosystem
+step-02  READS: agentskills.io registry API (ecosystem check — not skill-check CLI)
          SETS:  ecosystem_status
               ↓
 step-03  READS: source code via gh_bridge/ast_bridge
@@ -449,7 +450,7 @@ Low-priority: Pattern 4 could parallelize batch --batch per-brief, not primary u
 - Next Step: step-07-generate-artifacts.md
 
 **Key Design Decisions:**
-- skill-check validation: schema + frontmatter + metadata cross-check
+- skill-check validation: `check --fix --format json` (schema + frontmatter + quality score + auto-fix + security scan)
 - Auto-fix pattern: validate → fix → re-validate (once per failure)
 - Tool unavailability: skip with warning, not halt
 - Validation failures are warnings — proceed to generation

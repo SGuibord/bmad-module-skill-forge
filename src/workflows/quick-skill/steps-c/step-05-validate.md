@@ -53,9 +53,24 @@ To validate the compiled SKILL.md, context-snippet.md, and metadata.json against
 
 **CRITICAL:** Follow this sequence exactly. Do not skip, reorder, or improvise unless user explicitly requests a change.
 
-### 1. Validate SKILL.md Frontmatter (agentskills.io Compliance)
+### 1. Validate SKILL.md via skill-check (if available)
 
-Check that SKILL.md has valid YAML frontmatter — this is REQUIRED for ecosystem compatibility:
+**If `npx skill-check` is available**, run automated validation with auto-fix:
+
+```bash
+npx skill-check check <skill-dir> --fix --format json --no-security-scan
+```
+
+This validates frontmatter, description, body limits, links, and formatting — and auto-fixes deterministic issues (field ordering, slug format, required fields, trailing newlines).
+
+**Parse JSON output** to extract:
+- `qualityScore` — overall score (0-100)
+- `diagnostics[]` — remaining issues after auto-fix
+- `fixed[]` — issues automatically corrected
+
+Record quality score and any remaining diagnostics as validation issues.
+
+**If skill-check is NOT available**, perform manual frontmatter check:
 
 - [ ] **Frontmatter present** — file starts with `---` delimiter and has closing `---`
 - [ ] **`name` field** — present, non-empty, lowercase alphanumeric + hyphens only, 1-64 chars
@@ -63,7 +78,7 @@ Check that SKILL.md has valid YAML frontmatter — this is REQUIRED for ecosyste
 - [ ] **`description` field** — present, non-empty, 1-1024 characters
 - [ ] **No unknown fields** — only `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools` are permitted
 
-**For each violation, log an issue.** Missing frontmatter or missing required fields are high-severity issues — skills without valid frontmatter will fail `npx skills add` and `skill-check validate`.
+**For each violation, log an issue.** Missing frontmatter or missing required fields are high-severity issues — skills without valid frontmatter will fail `npx skills add` and `npx skill-check check`.
 
 ### 2. Validate SKILL.md Body Structure
 
@@ -103,18 +118,36 @@ Check metadata.json has required fields:
 
 **For each missing or invalid field, log an issue.**
 
-### 5. Report Validation Results
+### 5. Security Scan (if skill-check available)
+
+Run security scan on the compiled skill:
+
+```bash
+npx skill-check check <skill-dir> --format json
+```
+
+(Security scan is enabled by default when `--no-security-scan` is omitted.)
+
+Record any security findings as advisory warnings. Security issues do not block output.
+
+**If skill-check unavailable:** Skip with note in validation results.
+
+### 6. Report Validation Results
 
 "**Validation complete:**
 
-**SKILL.md:** {pass/issues found}
+**SKILL.md:** {pass/issues found} (quality score: {score}/100 if skill-check was available)
 {list any issues}
+{list any auto-fixed issues}
 
 **context-snippet.md:** {pass/issues found}
 {list any issues}
 
 **metadata.json:** {pass/issues found}
 {list any issues}
+
+**Security:** {pass/warn/skipped}
+{list any security findings}
 
 **Overall:** {pass / N issues found}
 
@@ -123,9 +156,9 @@ These issues are advisory for community-tier skills. You can proceed to write ou
 
 **Proceeding to write output...**"
 
-Set `validation_result` with pass/fail status and issues list.
+Set `validation_result` with pass/fail status, quality score, and issues list.
 
-### 6. Auto-Proceed to Write
+### 7. Auto-Proceed to Write
 
 #### Menu Handling Logic:
 
@@ -146,10 +179,14 @@ ONLY WHEN validation checks are complete and results reported will you load and 
 
 ### ✅ SUCCESS:
 
+- `npx skill-check check --fix --format json` executed if available (or manual fallback)
+- Quality score (0-100) captured when skill-check available
+- Auto-fix applied via `--fix` for deterministic issues
+- Security scan executed (or skipped with note)
 - All three outputs validated against requirements
 - Issues reported clearly with specific details
 - Community-tier validation applied (not official-tier strictness)
-- validation_result set with pass/fail and issues list
+- validation_result set with pass/fail, quality score, and issues list
 - Auto-proceeding to write step
 
 ### ❌ SYSTEM FAILURE:
@@ -158,5 +195,6 @@ ONLY WHEN validation checks are complete and results reported will you load and 
 - Blocking output on validation issues (advisory only)
 - Skipping validation checks
 - Not reporting found issues
+- Not recording quality score when skill-check is available
 
 **Master Rule:** Skipping steps, optimizing sequences, or not following exact instructions is FORBIDDEN and constitutes SYSTEM FAILURE.

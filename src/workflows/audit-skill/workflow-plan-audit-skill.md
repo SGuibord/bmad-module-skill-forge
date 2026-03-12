@@ -189,7 +189,7 @@ Drift report with severity levels (added/removed/changed exports, breaking chang
 - **ast_bridge** (ast-grep): Required at Forge/Deep tier — Steps 02-03 structural extraction and comparison
 - **gh_bridge** (gh CLI): Required at all tiers — Steps 01-02 source file reading
 - **qmd_bridge** (QMD): Required at Deep tier only — Step 04 semantic knowledge context
-- **skill-check**: Included — Step 01 skill format validation and ecosystem cross-reference
+- **skill-check**: Included — Step 01 skill format validation: `npx skill-check check --fix --format json` for validation + auto-fix + quality scoring, security scan for prompt injection detection
 
 **Installation Requirements:**
 - None — all tools pre-detected by setup-forge workflow

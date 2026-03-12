@@ -68,9 +68,32 @@ Check that all expected files exist from written_files[]:
 
 Record any missing files as **ERROR** findings.
 
-### 2. Validate SKILL.md Frontmatter (agentskills.io Compliance)
+### 2. Validate SKILL.md via skill-check (if available)
 
-Verify SKILL.md has valid YAML frontmatter — REQUIRED for ecosystem compatibility:
+**If `npx skill-check` is available**, run automated validation with auto-fix:
+
+```bash
+npx skill-check check <skill-dir> --fix --format json --no-security-scan
+```
+
+This validates frontmatter, description, body limits, links, and formatting — and auto-fixes deterministic issues.
+
+**Parse JSON output** to extract:
+- `qualityScore` — overall score (0-100)
+- `diagnostics[]` — remaining issues after auto-fix
+- `fixed[]` — issues automatically corrected
+
+Record quality score and remaining diagnostics as findings.
+
+**If `body.max_lines` is reported**, run split-body to extract oversized sections:
+
+```bash
+npx skill-check split-body <skill-dir> --write
+```
+
+Then re-validate: `npx skill-check check <skill-dir> --format json --no-security-scan`
+
+**If skill-check is NOT available**, perform manual frontmatter check:
 
 - [ ] Frontmatter present — file starts with `---` delimiter and has closing `---`
 - [ ] `name` field — present, non-empty, lowercase alphanumeric + hyphens only, 1-64 chars
@@ -78,7 +101,7 @@ Verify SKILL.md has valid YAML frontmatter — REQUIRED for ecosystem compatibil
 - [ ] `description` field — present, non-empty, 1-1024 characters
 - [ ] No unknown fields — only `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools` are permitted
 
-Record frontmatter violations as **WARNING** findings. Skills without valid frontmatter will fail `npx skills add` and `skill-check validate`.
+Record frontmatter violations as **WARNING** findings. Skills without valid frontmatter will fail `npx skills add` and `npx skill-check check`.
 
 ### 3. Validate SKILL.md Body Structure
 
@@ -144,7 +167,21 @@ Verify context-snippet.md follows ADR-L two-line format:
 
 Record format violations as **WARNING** findings.
 
-### 8. Display Validation Results
+### 8. Security Scan (if skill-check available)
+
+Run security scan on the compiled stack skill:
+
+```bash
+npx skill-check check <skill-dir> --format json
+```
+
+(Security scan is enabled by default when `--no-security-scan` is omitted.)
+
+Record any security findings as advisory **WARNING** findings. Security issues do not block the report.
+
+**If skill-check unavailable:** Skip with note in validation results.
+
+### 9. Display Validation Results
 
 **If all checks pass:**
 
@@ -176,7 +213,7 @@ Record format violations as **WARNING** findings.
 
 **Proceeding to summary report...**"
 
-### 9. Auto-Proceed to Next Step
+### 10. Auto-Proceed to Next Step
 
 Load, read the full file and then execute `{nextStepFile}`.
 
@@ -187,6 +224,11 @@ Load, read the full file and then execute `{nextStepFile}`.
 ### ✅ SUCCESS:
 
 - All expected files checked for existence
+- `npx skill-check check --fix --format json` executed if available (or manual fallback)
+- Quality score (0-100) captured when skill-check available
+- Auto-fix applied via `--fix` for deterministic issues
+- Split-body applied if `body.max_lines` failed
+- Security scan executed (or skipped with note)
 - SKILL.md validated against template structure
 - metadata.json fields verified
 - Reference files checked for completeness
@@ -196,10 +238,11 @@ Load, read the full file and then execute `{nextStepFile}`.
 
 ### ❌ SYSTEM FAILURE:
 
-- Modifying any output files during validation
+- Modifying any output files during validation (except via skill-check --fix)
 - Halting the workflow on validation warnings
 - Not checking all expected files
 - Reporting vague findings without file paths
 - Skipping the confidence tier check
+- Not recording quality score when skill-check is available
 
-**Master Rule:** Validate everything, modify nothing. Advisory findings — always proceed to report.
+**Master Rule:** Validate everything, fix what's deterministic via skill-check, scan for security issues. Advisory findings — always proceed to report.

@@ -213,7 +213,7 @@ Document-producing workflow that outputs:
 - **ast_bridge:** required for Forge/Deep tier AST extraction (pre-detected by setup-forge)
 - **gh_bridge:** required for all tiers to read source files
 - **qmd_bridge:** required for Deep tier semantic enrichment only
-- **skill-check:** required for validation against agentskills.io spec (Step 05)
+- **skill-check:** required for validation against agentskills.io spec (Step 05) — `npx skill-check check --fix --format json` for validation + auto-fix + quality scoring, `diff` for before/after comparison, security scan for prompt injection detection, `split-body` for oversized body remediation
 
 **Installation Requirements:**
 - None — all tools pre-detected by setup-forge workflow
@@ -264,8 +264,8 @@ Step 04 (merge)
   OUT: merged SKILL.md content with [MANUAL] sections preserved
 
 Step 05 (validate)
-  IN:  merged content, agentskills.io spec (via skill-check)
-  OUT: validation results (pass/fail with details)
+  IN:  merged content, agentskills.io spec (via `npx skill-check check --fix --format json`)
+  OUT: validation results (pass/fail with quality score, diff comparison, security findings)
 
 Step 06 (write)
   IN:  validated merged content, updated provenance data

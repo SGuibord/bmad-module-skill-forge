@@ -224,7 +224,7 @@ Multi-file document-producing workflow:
 - `gh_bridge` (all tiers) — GitHub API for repository access and source reading
 - `ast_bridge` (Forge/Deep tiers) — ast-grep for structural import/export analysis and co-import detection
 - `qmd_bridge` (Deep tier only) — QMD for temporal integration evolution patterns
-- `skill-check` — agentskills.io spec for validation (Step 08)
+- `skill-check` — agentskills.io spec validation (Step 08): `npx skill-check check --fix --format json` for validation + auto-fix + quality scoring, `split-body` for oversized body remediation, security scan for prompt injection detection
 
 **Installation Requirements:**
 - None new — all tools pre-detected by setup-forge prerequisite workflow
