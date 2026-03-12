@@ -53,13 +53,13 @@ To validate the compiled SKILL.md content against the agentskills.io specificati
 
 ### 1. Check Tool Availability
 
-Detect whether `npx skill-check` is available in the environment.
+Run: `npx skill-check -h`
 
-**If skill-check is available:** Continue to automated validation steps.
+- If succeeds (returns usage information): Continue to automated validation (section 2)
+- If fails (command not found or error): Perform manual fallback (section 3)
+  - Add note to evidence-report content: "Spec validation performed manually — skill-check tool unavailable"
 
-**If skill-check is NOT available:**
-- Perform manual frontmatter compliance check (see step 3 fallback below)
-- Add note to evidence-report content: "Spec validation performed manually — skill-check tool unavailable"
+**Important:** Use the verification command. Do not assume availability — empirical check required.
 
 ### 2. Validate & Auto-Fix (skill-check check --fix)
 

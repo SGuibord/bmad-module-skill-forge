@@ -54,7 +54,16 @@ Validate the merged skill content against the agentskills.io specification, veri
 
 **CRITICAL:** Follow this sequence exactly. Do not skip, reorder, or improvise unless user explicitly requests a change.
 
-### 1. Launch Parallel Validation Checks
+### 1. Check Tool Availability
+
+Run: `npx skill-check -h`
+
+- If succeeds (returns usage information): skill-check is available for Checks A, E, F below
+- If fails (command not found or error): Use manual fallback paths in those checks
+
+**Important:** Use the verification command. Do not assume availability — empirical check required.
+
+### 2. Launch Parallel Validation Checks
 
 Launch subprocesses in parallel for each validation category, aggregating results when complete:
 
@@ -122,7 +131,7 @@ Record any security findings as advisory warnings. Security issues do not block 
 
 **If skill-check unavailable:** Skip with note: "Security scan skipped — skill-check tool unavailable"
 
-### 2. Aggregate Validation Results
+### 3. Aggregate Validation Results
 
 Compile results from all checks:
 
@@ -161,7 +170,7 @@ Validation Results:
   quality_score: [0-100]  # from skill-check, if available
 ```
 
-### 3. For Stack Skills — Validate Reference Files
+### 4. For Stack Skills — Validate Reference Files
 
 **ONLY if skill_type == "stack":**
 
@@ -171,7 +180,7 @@ Repeat checks A-D for each reference file:
 
 **If skill_type != "stack":** Skip with notice.
 
-### 4. Display Validation Summary
+### 5. Display Validation Summary
 
 "**Validation Results:**
 
@@ -197,7 +206,7 @@ List each finding with severity and description:
 
 "**Note:** Validation is advisory. These findings are reported for your awareness but do not block the update. You may choose to address them after the update completes."
 
-### 5. Present MENU OPTIONS
+### 6. Present MENU OPTIONS
 
 Display: "**Proceeding to write updated files...**"
 

@@ -68,7 +68,16 @@ Check that all expected files exist from written_files[]:
 
 Record any missing files as **ERROR** findings.
 
-### 2. Validate SKILL.md via skill-check (if available)
+### 2. Check Tool Availability
+
+Run: `npx skill-check -h`
+
+- If succeeds (returns usage information): Use skill-check for automated validation in sections 3, 8
+- If fails (command not found or error): Use manual fallback paths in those sections
+
+**Important:** Use the verification command. Do not assume availability — empirical check required.
+
+### 3. Validate SKILL.md via skill-check (if available)
 
 **If `npx skill-check` is available**, run automated validation with auto-fix:
 
@@ -103,7 +112,7 @@ Then re-validate: `npx skill-check check <skill-dir> --format json --no-security
 
 Record frontmatter violations as **WARNING** findings. Skills without valid frontmatter will fail `npx skills add` and `npx skill-check check`.
 
-### 3. Validate SKILL.md Body Structure
+### 4. Validate SKILL.md Body Structure
 
 Load `{stackSkillTemplate}` and verify SKILL.md contains expected sections:
 
@@ -115,15 +124,15 @@ Load `{stackSkillTemplate}` and verify SKILL.md contains expected sections:
 
 Record missing sections as **WARNING** findings.
 
-### 4. Validate metadata.json Fields
+### 5. Validate metadata.json Fields
 
 Parse metadata.json and verify required fields:
 
 - [ ] `skill_type` equals "stack"
-- [ ] `skill_name` matches `{project_name}-stack`
+- [ ] `name` matches `{project_name}-stack`
 - [ ] `version` is present
-- [ ] `created` is present
-- [ ] `forge_tier` matches the tier from step 01
+- [ ] `generation_date` is present
+- [ ] `confidence_tier` matches the tier from step 01
 - [ ] `library_count` matches actual number of reference files
 - [ ] `integration_count` matches actual integration pair files
 - [ ] `libraries` array is present and non-empty
@@ -131,7 +140,7 @@ Parse metadata.json and verify required fields:
 
 Record mismatches as **WARNING** findings.
 
-### 5. Validate Reference File Completeness
+### 6. Validate Reference File Completeness
 
 For each confirmed library, verify `references/{library}.md` exists and contains:
 - [ ] Library name header
@@ -147,7 +156,7 @@ For each integration pair (if any), verify `references/integrations/{libraryA}-{
 
 Record missing or incomplete files as **WARNING** findings.
 
-### 6. Validate Confidence Tier Labels
+### 7. Validate Confidence Tier Labels
 
 Scan across all output files for confidence tier coverage:
 
@@ -158,7 +167,7 @@ Scan across all output files for confidence tier coverage:
 
 Record missing tier labels as **WARNING** findings.
 
-### 7. Validate context-snippet.md
+### 8. Validate context-snippet.md
 
 Verify context-snippet.md follows ADR-L two-line format:
 - [ ] Each library has an entry with import count and top exports
@@ -167,7 +176,7 @@ Verify context-snippet.md follows ADR-L two-line format:
 
 Record format violations as **WARNING** findings.
 
-### 8. Security Scan (if skill-check available)
+### 9. Security Scan (if skill-check available)
 
 Run security scan on the compiled stack skill:
 
@@ -181,7 +190,7 @@ Record any security findings as advisory **WARNING** findings. Security issues d
 
 **If skill-check unavailable:** Skip with note in validation results.
 
-### 9. Display Validation Results
+### 10. Display Validation Results
 
 **If all checks pass:**
 
@@ -213,7 +222,7 @@ Record any security findings as advisory **WARNING** findings. Security issues d
 
 **Proceeding to summary report...**"
 
-### 10. Auto-Proceed to Next Step
+### 11. Auto-Proceed to Next Step
 
 Load, read the full file and then execute `{nextStepFile}`.
 

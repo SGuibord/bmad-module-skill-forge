@@ -122,14 +122,18 @@ Run **setup-forge** to enable deeper analysis with AST-backed verification."
 
 Default to Quick tier and continue.
 
+### 4b. Apply Tier Override (if set)
+
+Read `{sidecar_path}/preferences.yaml`. If `tier_override` is set and is a valid tier value (Quick, Forge, or Deep), update `detected_tier` to the override value for use in subsequent steps and output documents.
+
 ### 5. Load Skill Metadata
 
 Read `metadata.json` to extract:
-- `skill_name` — display name
-- `skill_type` — individual or stack (needed for mode detection)
+- `name` — display name
+- `skill_type` — single or stack (needed for mode detection)
 - `source_path` — path to source code (if present)
-- `created_date` — when skill was created
-- `tier` — tier used during creation
+- `generation_date` — when skill was generated
+- `confidence_tier` — tier used during creation
 
 If source path override was provided as optional input, use that instead.
 
@@ -188,7 +192,7 @@ ONLY WHEN all required files are validated, forge tier is loaded, output documen
 ### ✅ SUCCESS:
 
 - Skill path validated (SKILL.md exists)
-- Forge tier state loaded (or gracefully defaulted to Quick)
+- Forge tier state loaded (or gracefully defaulted to Quick), override applied if set in preferences.yaml
 - Skill metadata extracted
 - Output document created from template with initial frontmatter
 - Initialization status reported clearly

@@ -84,6 +84,8 @@ Load `{sidecar_path}/forge-tier.yaml` to detect available tools.
 - Extract tier level: Quick / Forge / Deep
 - Extract available tools: gh_bridge, ast_bridge, qmd_bridge
 
+**Apply tier override:** Read `{sidecar_path}/preferences.yaml`. If `tier_override` is set and is a valid tier value (Quick, Forge, or Deep), use it instead of the detected tier.
+
 ### 3. Load Skill Artifacts
 
 Load the following from the skill directory:
@@ -93,7 +95,7 @@ Load the following from the skill directory:
 - `metadata.json` — Skill metadata (version, created date, export count)
 
 **Extract from metadata.json:**
-- `skill_name`, `version`, `created` date, `forge_tier` used during creation
+- `name`, `version`, `generation_date`, `confidence_tier` used during creation
 - `source_root` — Original source code path
 
 ### 4. Load Provenance Map
@@ -137,7 +139,7 @@ Create `{outputFile}` from `{templateFile}`:
 | Field | Value |
 |-------|-------|
 | **Skill** | {skill_name} v{version} |
-| **Created** | {created_date} |
+| **Created** | {generation_date} |
 | **Source** | {source_path} |
 | **Forge Tier** | {current_tier} (created at {original_tier}) |
 | **Provenance Age** | {days} days since last extraction |
@@ -176,7 +178,7 @@ ONLY WHEN C is selected and the drift report has been created with baseline data
 ### ✅ SUCCESS:
 
 - Skill artifacts loaded (SKILL.md, metadata.json)
-- Forge tier detected from sidecar
+- Forge tier detected from sidecar (and override applied if set in preferences.yaml)
 - Provenance map loaded (or degraded mode confirmed)
 - Source path resolved and validated
 - Drift report created from template with populated frontmatter

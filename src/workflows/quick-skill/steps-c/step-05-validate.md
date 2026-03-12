@@ -53,7 +53,16 @@ To validate the compiled SKILL.md, context-snippet.md, and metadata.json against
 
 **CRITICAL:** Follow this sequence exactly. Do not skip, reorder, or improvise unless user explicitly requests a change.
 
-### 1. Validate SKILL.md via skill-check (if available)
+### 1. Check Tool Availability
+
+Run: `npx skill-check -h`
+
+- If succeeds (returns usage information): Continue to automated validation (section 2)
+- If fails (command not found or error): Skip to manual fallback in section 2
+
+**Important:** Use the verification command. Do not assume availability — empirical check required.
+
+### 2. Validate SKILL.md via skill-check (if available)
 
 **If `npx skill-check` is available**, run automated validation with auto-fix:
 
@@ -80,7 +89,7 @@ Record quality score and any remaining diagnostics as validation issues.
 
 **For each violation, log an issue.** Missing frontmatter or missing required fields are high-severity issues — skills without valid frontmatter will fail `npx skills add` and `npx skill-check check`.
 
-### 2. Validate SKILL.md Body Structure
+### 3. Validate SKILL.md Body Structure
 
 Check that SKILL.md has these required sections populated:
 
@@ -91,7 +100,7 @@ Check that SKILL.md has these required sections populated:
 
 **For each missing or empty required section, log an issue.**
 
-### 3. Validate Context Snippet Format
+### 4. Validate Context Snippet Format
 
 Check context-snippet.md format compliance:
 
@@ -102,7 +111,7 @@ Check context-snippet.md format compliance:
 
 **If format is wrong, log an issue.**
 
-### 4. Validate Metadata JSON
+### 5. Validate Metadata JSON
 
 Check metadata.json has required fields:
 
@@ -118,7 +127,7 @@ Check metadata.json has required fields:
 
 **For each missing or invalid field, log an issue.**
 
-### 5. Security Scan (if skill-check available)
+### 6. Security Scan (if skill-check available)
 
 Run security scan on the compiled skill:
 
@@ -132,7 +141,7 @@ Record any security findings as advisory warnings. Security issues do not block 
 
 **If skill-check unavailable:** Skip with note in validation results.
 
-### 6. Report Validation Results
+### 7. Report Validation Results
 
 "**Validation complete:**
 
@@ -158,7 +167,7 @@ These issues are advisory for community-tier skills. You can proceed to write ou
 
 Set `validation_result` with pass/fail status, quality score, and issues list.
 
-### 7. Auto-Proceed to Write
+### 8. Auto-Proceed to Write
 
 #### Menu Handling Logic:
 
