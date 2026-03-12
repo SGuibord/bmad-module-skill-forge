@@ -53,16 +53,18 @@ To search the agentskills.io ecosystem for an existing official skill matching t
 
 ### 1. Check Ecosystem for Existing Skill
 
-**If skills_ref tool is available:**
+**Note:** Ecosystem lookup requires the agentskills.io registry API, which is not yet available. The `skill-check` CLI validates local skills but does not query a remote registry.
+
+**If agentskills.io registry API is available:**
 
 Query the ecosystem using the skill name from the brief:
-- `skills_ref.check_ecosystem(brief.name)`
+- Call the registry API with brief.name — check if an official skill already exists
 - Enforce 5-second timeout — if the query does not return within 5 seconds, treat as no match
 - Cache results for 24 hours (if re-running same skill)
 
-**If skills_ref tool is NOT available:**
+**If registry API is NOT available (current default):**
 
-Skip silently. Tool unavailability is not an error. Proceed as if no match was found.
+Skip silently. API unavailability is not an error. Proceed as if no match was found.
 
 ### 2. Evaluate Results
 
@@ -124,7 +126,7 @@ If no match is found, this step auto-proceeds with no user interaction.
 
 ### ✅ SUCCESS:
 
-- Ecosystem check attempted (or gracefully skipped if tool unavailable)
+- Ecosystem check attempted via registry API (or gracefully skipped if API unavailable)
 - 5-second timeout enforced on ecosystem queries
 - Match presented factually with clear options if found
 - No-match case auto-proceeds silently
@@ -134,10 +136,11 @@ If no match is found, this step auto-proceeds with no user interaction.
 ### ❌ SYSTEM FAILURE:
 
 - Halting the workflow because ecosystem check failed or timed out
-- Treating tool unavailability as an error
+- Treating API unavailability as an error
+- Confusing `npx skill-check check` (local validation) with ecosystem lookup
 - Displaying "no match found" messages (absence should be silent)
 - Beginning extraction or compilation work in this step
 - Proceeding without user decision when a match IS found
 - Not enforcing the 5-second timeout
 
-**Master Rule:** This step is advisory. Tool failures and timeouts are silent skips, not errors. Only a confirmed match requires user interaction.
+**Master Rule:** This step is advisory. API unavailability and timeouts are silent skips, not errors. Only a confirmed match requires user interaction.

@@ -149,7 +149,7 @@ The installer detects the existing `_bmad/` directory and installs SKF alongside
 
 | Tier | Tools | Capability |
 | --- | --- | --- |
-| **Quick** | gh + skills_ref | Source reading + spec validation |
+| **Quick** | gh + skill-check | Source reading + spec validation |
 | **Forge** | + ast-grep | Structural truth, T1 confidence |
 | **Deep** | + QMD | Knowledge search, temporal provenance |
 
@@ -209,6 +209,19 @@ src/
         ├── test-skill/
         └── export-skill/
 ```
+
+## Acknowledgements
+
+SKF builds on these excellent open-source tools:
+
+| Tool                                                         | Role in SKF                                                        |
+|--------------------------------------------------------------|--------------------------------------------------------------------|
+| [agentskills.io](https://github.com/agentskills/agentskills) | Skill specification and ecosystem standard                         |
+| [GitHub CLI](https://cli.github.com/)                        | Source code access and repository intelligence (all tiers)         |
+| [ast-grep](https://github.com/ast-grep/ast-grep)             | AST-based structural code extraction (Forge/Deep tiers)            |
+| [QMD](https://github.com/tobi/qmd)                           | Local hybrid search engine for knowledge indexing (Deep tier)      |
+| [skill-check](https://github.com/thedaviddias/skill-check)   | Skill validation, auto-fix, quality scoring, and security scanning |
+| [BMad Method](https://github.com/bmad-code-org/BMAD-METHOD)  | Agent-workflow framework that SKF extends as a module              |
 
 ## Contributing
 

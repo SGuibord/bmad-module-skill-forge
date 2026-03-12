@@ -1,6 +1,6 @@
 ---
 name: 'step-06-validate'
-description: 'Validate compiled skill content against agentskills.io spec via skills_ref'
+description: 'Validate compiled skill content against agentskills.io spec via skill-check'
 nextStepFile: './step-07-generate-artifacts.md'
 ---
 
@@ -8,7 +8,7 @@ nextStepFile: './step-07-generate-artifacts.md'
 
 ## STEP GOAL:
 
-To validate the compiled SKILL.md content against the agentskills.io specification using skills_ref, auto-fix any validation failures, and confirm spec compliance before artifact generation.
+To validate the compiled SKILL.md content against the agentskills.io specification using skill-check, auto-fix any validation failures, and confirm spec compliance before artifact generation.
 
 ## MANDATORY EXECUTION RULES (READ FIRST):
 
@@ -31,7 +31,7 @@ To validate the compiled SKILL.md content against the agentskills.io specificati
 - 🚫 FORBIDDEN to add new content — only fix spec compliance issues
 - 🚫 FORBIDDEN to write files — content stays in context until step-07
 - 💬 If auto-fix fails, report issues clearly but proceed (warn, don't halt)
-- ⚙️ If skills_ref unavailable: skip validation, add warning to evidence report
+- ⚙️ If skill-check unavailable: skip validation, add warning to evidence report
 
 ## EXECUTION PROTOCOLS:
 
@@ -53,36 +53,52 @@ To validate the compiled SKILL.md content against the agentskills.io specificati
 
 ### 1. Check Tool Availability
 
-**If skills_ref tool is available:**
-Continue to validation steps.
+Detect whether `npx skill-check` is available in the environment.
 
-**If skills_ref tool is NOT available:**
+**If skill-check is available:** Continue to automated validation steps.
+
+**If skill-check is NOT available:**
 - Perform manual frontmatter compliance check (see step 3 fallback below)
-- Add note to evidence-report content: "Spec validation performed manually — skills_ref tool unavailable"
+- Add note to evidence-report content: "Spec validation performed manually — skill-check tool unavailable"
 
-### 2. Validate Schema
+### 2. Validate & Auto-Fix (skill-check check --fix)
 
-Use `skills_ref.validate_schema()` against the compiled SKILL.md content.
+Run the external skill-check tool against the compiled skill directory:
 
-**Check:**
-- Required sections present (Overview, Quick Start, API Reference, Type Definitions)
-- Section order follows agentskills.io standard
-- Frontmatter contains required fields (name, description) with no disallowed fields
-- Provenance citations present in API Reference entries
+```bash
+npx skill-check check <skill-dir> --fix --format json --no-security-scan
+```
 
-**If validation passes:** Record "Schema: PASS" in evidence-report content.
+This single command performs:
+- Frontmatter validation (required fields, naming, ordering, unknown fields)
+- Description quality checks (length, "Use when" phrasing)
+- Body limit enforcement (line count, token count)
+- Local link resolution
+- File formatting (trailing newlines)
+- **Auto-fix** of all deterministic issues (frontmatter ordering, slug format, required fields, description phrasing, trailing newlines)
+- **Quality score** (0-100) across five weighted categories
 
-**If validation fails:**
-1. Identify specific failures
-2. Attempt auto-fix (structural adjustments only — never invent content)
-3. Re-validate once
-4. If still failing: record "Schema: FAIL — {specific issues}" in evidence-report, add warnings, but proceed
+**Parse the JSON output** to extract:
+- `qualityScore` — overall score (0-100)
+- `diagnostics[]` — remaining issues after auto-fix
+- `fixed[]` — issues that were automatically corrected
 
-### 3. Validate Frontmatter
+**If quality score ≥ 70:** Record "Schema: PASS (score: {score}/100)" in evidence-report content.
 
-**If skills_ref available:** Use `skills_ref.validate_frontmatter()` against the SKILL.md frontmatter.
+**If quality score < 70:**
+1. Log remaining diagnostics as warnings
+2. Record "Schema: WARN — score {score}/100, {count} remaining issues" in evidence-report
+3. Proceed (do not halt)
 
-**If skills_ref NOT available (fallback):** Perform manual frontmatter compliance check.
+**If skill-check returns errors that --fix could not resolve:**
+- Record specific rule IDs and suggestions in evidence-report
+- Proceed with warnings
+
+### 3. Validate Frontmatter (Fallback)
+
+**If skill-check was available:** Skip — already validated in step 2.
+
+**If skill-check NOT available (fallback):** Perform manual frontmatter compliance check.
 
 **Check (agentskills.io specification):**
 
@@ -100,7 +116,41 @@ Use `skills_ref.validate_schema()` against the compiled SKILL.md content.
 2. Re-validate once
 3. Record result in evidence-report
 
-### 4. Validate metadata.json
+### 4. Split Oversized Body (if needed)
+
+**If step 2 reported `body.max_lines` failure:**
+
+Run split-body to extract oversized sections into reference files:
+
+```bash
+npx skill-check split-body <skill-dir> --write
+```
+
+Then re-validate to confirm the fix:
+
+```bash
+npx skill-check check <skill-dir> --format json --no-security-scan
+```
+
+**If skill-check unavailable or no body size issue:** Skip this step.
+
+### 5. Security Scan
+
+**If skill-check is available**, run security scan on the compiled skill:
+
+```bash
+npx skill-check check <skill-dir> --format json
+```
+
+(Security scan is enabled by default when `--no-security-scan` is omitted.)
+
+**Parse security findings** from the JSON output:
+- Record any security warnings (prompt injection risks, unsafe patterns) in evidence-report
+- Security findings are advisory — they do not block artifact generation
+
+**If skill-check unavailable:** Skip with note: "Security scan skipped — skill-check tool unavailable"
+
+### 6. Validate metadata.json
 
 Cross-check metadata.json content against extraction inventory:
 - `stats.exports_documented` matches actual documented exports
@@ -111,21 +161,36 @@ Cross-check metadata.json content against extraction inventory:
 
 Auto-fix any discrepancies (these are computed values).
 
-### 5. Update Evidence Report
+### 7. Update Evidence Report
 
 Add validation results to the evidence-report content in context:
 
 ```markdown
 ## Validation Results
-- Schema: {pass/fail}
+- Schema: {pass/fail} (quality score: {score}/100)
 - Frontmatter: {pass/fail}
+- Body: {pass/fail} {split-body applied if applicable}
+- Security: {pass/warn/skipped}
 - Metadata: {pass/fail}
 
-## Warnings
+## Quality Score Breakdown
+- Frontmatter (30%): {score}
+- Description (30%): {score}
+- Body (20%): {score}
+- Links (10%): {score}
+- File (10%): {score}
+
+## Auto-Fixed Issues
+- {list of issues automatically corrected by --fix}
+
+## Remaining Warnings
 - {any warnings from validation}
+
+## Security Findings
+- {any security scan results}
 ```
 
-### 6. Menu Handling Logic
+### 8. Menu Handling Logic
 
 **Auto-proceed step — no user interaction.**
 
@@ -148,20 +213,22 @@ ONLY WHEN validation is complete (or skipped) and evidence-report content is upd
 
 ### ✅ SUCCESS:
 
-- Schema validation attempted (or skipped with warning if tool unavailable)
-- Frontmatter validation attempted
+- `npx skill-check check --fix --format json` executed (or skipped with warning if unavailable)
+- Quality score (0-100) captured and recorded in evidence report
+- Auto-fix applied via `--fix` for deterministic issues
+- Security scan executed as separate pass (or skipped with warning)
+- Split-body applied if `body.max_lines` failed
 - Metadata cross-check performed
-- Auto-fix applied for deterministic failures
-- Evidence report updated with validation results
-- Warnings recorded for any failures
+- Evidence report updated with structured validation results
 - Auto-proceeded to step-07
 
 ### ❌ SYSTEM FAILURE:
 
 - Halting the workflow on validation failure (should warn and proceed)
-- Halting on skills_ref unavailability (should skip with warning)
+- Halting on skill-check unavailability (should skip with warning)
 - Adding new content during validation (only structural fixes allowed)
-- Not recording validation results in evidence report
+- Not recording quality score in evidence report
+- Skipping security scan without recording the skip
 - Attempting more than one auto-fix cycle per failure
 
-**Master Rule:** Validation informs, it does not block. Record results, fix what's deterministic, warn about the rest, and proceed.
+**Master Rule:** Validation informs, it does not block. Record results, fix what's deterministic, scan for security issues, warn about the rest, and proceed.

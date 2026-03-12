@@ -58,8 +58,20 @@ Validate the merged skill content against the agentskills.io specification, veri
 
 Launch subprocesses in parallel for each validation category, aggregating results when complete:
 
-**Check A — Spec Compliance:**
-- Validate merged SKILL.md structure against agentskills.io specification (via skills_ref if available)
+**Check A — Spec Compliance (via skill-check):**
+
+**If `npx skill-check` is available**, run automated validation with auto-fix:
+
+```bash
+npx skill-check check <skill-dir> --fix --format json --no-security-scan
+```
+
+Parse JSON output for quality score (0-100), auto-fixed issues, and remaining diagnostics.
+
+**If `body.max_lines` is reported**, run: `npx skill-check split-body <skill-dir> --write`
+
+**If skill-check unavailable**, perform manual check:
+- Validate merged SKILL.md structure against agentskills.io specification
 - Verify required sections present: exports, usage patterns, conventions
 - Verify export entries have: name, type, signature, file:line reference
 - Flag missing or incomplete sections
@@ -83,6 +95,32 @@ Launch subprocesses in parallel for each validation category, aggregating result
 - Verify file:line references point to actual source locations
 - Verify no stale references to old file paths or line numbers
 - Flag orphaned provenance entries (export removed but provenance remains)
+
+**Check E — Diff Comparison (via skill-check):**
+
+**If `npx skill-check` is available** and previous skill version exists, compare before/after:
+
+```bash
+npx skill-check diff <original-skill-dir> <updated-skill-dir>
+```
+
+This shows diagnostic changes between the original and updated skill — new issues introduced, issues fixed, and unchanged findings. Record diff results as informational context for the validation summary.
+
+**If skill-check unavailable or no previous version:** Skip with note.
+
+**Check F — Security Scan:**
+
+**If `npx skill-check` is available**, run security scan on the merged skill:
+
+```bash
+npx skill-check check <skill-dir> --format json
+```
+
+(Security scan is enabled by default when `--no-security-scan` is omitted.)
+
+Record any security findings as advisory warnings. Security issues do not block the update.
+
+**If skill-check unavailable:** Skip with note: "Security scan skipped — skill-check tool unavailable"
 
 ### 2. Aggregate Validation Results
 
@@ -109,6 +147,18 @@ Validation Results:
     status: PASS|WARN|FAIL
     entries_checked: [count]
     findings: [{severity, description, export_name}]
+
+  diff_comparison:
+    status: PASS|SKIP
+    new_issues: [count]
+    fixed_issues: [count]
+    unchanged: [count]
+
+  security_scan:
+    status: PASS|WARN|SKIP
+    findings: [{severity, description, location}]
+
+  quality_score: [0-100]  # from skill-check, if available
 ```
 
 ### 3. For Stack Skills — Validate Reference Files
@@ -127,10 +177,12 @@ Repeat checks A-D for each reference file:
 
 | Check | Status | Findings |
 |-------|--------|----------|
-| Spec Compliance | {PASS/WARN/FAIL} | {count} findings |
+| Spec Compliance | {PASS/WARN/FAIL} | {count} findings (quality score: {score}/100) |
 | [MANUAL] Integrity | {PASS/WARN/FAIL} | {count} findings |
 | Confidence Tiers | {PASS/WARN/FAIL} | {count} findings |
 | Provenance | {PASS/WARN/FAIL} | {count} findings |
+| Diff Comparison | {PASS/SKIP} | {new} new, {fixed} fixed |
+| Security Scan | {PASS/WARN/SKIP} | {count} findings |
 
 **Overall: {ALL_PASS / WARNINGS_FOUND / FAILURES_FOUND}**"
 
@@ -169,7 +221,12 @@ ONLY WHEN all validation checks have completed and findings are displayed will y
 
 ### ✅ SUCCESS:
 
-- All four validation checks executed (spec, [MANUAL], confidence, provenance)
+- All six validation checks executed (spec, [MANUAL], confidence, provenance, diff, security)
+- `npx skill-check check --fix --format json` executed if available (or manual fallback)
+- Quality score (0-100) captured when skill-check available
+- Auto-fix applied via `--fix` for deterministic issues
+- `npx skill-check diff` executed to compare before/after versions
+- Security scan executed (or skipped with note)
 - Stack skill reference files validated if applicable
 - Findings reported with severity and specific locations
 - [MANUAL] integrity verified with byte-level comparison
@@ -178,10 +235,11 @@ ONLY WHEN all validation checks have completed and findings are displayed will y
 
 ### ❌ SYSTEM FAILURE:
 
-- Skipping any of the four validation checks
+- Skipping any of the six validation checks
 - Blocking the workflow on validation warnings
 - Not verifying [MANUAL] section integrity
 - Hallucinating validation findings not backed by actual comparison
-- Modifying merged content during validation
+- Modifying merged content during validation (except via skill-check --fix)
+- Not recording quality score when skill-check is available
 
 **Master Rule:** Skipping steps, optimizing sequences, or not following exact instructions is FORBIDDEN and constitutes SYSTEM FAILURE.

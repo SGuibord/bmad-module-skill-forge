@@ -68,7 +68,7 @@ STOP — do not proceed.
 
 Extract:
 - `forge_tier` — Quick, Forge, or Deep
-- `available_tools` — list of detected tools (gh_bridge, ast_bridge, qmd_bridge, skills_ref)
+- `available_tools` — list of detected tools (gh_bridge, ast_bridge, qmd_bridge, skill-check)
 - `project_root` — project root path
 
 Check for `tier_override` in preferences.yaml if it exists.
