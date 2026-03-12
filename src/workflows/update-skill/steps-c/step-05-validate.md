@@ -59,7 +59,7 @@ Validate the merged skill content against the agentskills.io specification, veri
 Launch subprocesses in parallel for each validation category, aggregating results when complete:
 
 **Check A — Spec Compliance:**
-- Validate merged SKILL.md structure against agentskills.io specification (via skills_ref if available)
+- Validate merged SKILL.md structure against agentskills.io specification (via skill-check if available)
 - Verify required sections present: exports, usage patterns, conventions
 - Verify export entries have: name, type, signature, file:line reference
 - Flag missing or incomplete sections

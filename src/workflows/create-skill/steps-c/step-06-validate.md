@@ -1,6 +1,6 @@
 ---
 name: 'step-06-validate'
-description: 'Validate compiled skill content against agentskills.io spec via skills_ref'
+description: 'Validate compiled skill content against agentskills.io spec via skill-check'
 nextStepFile: './step-07-generate-artifacts.md'
 ---
 
@@ -8,7 +8,7 @@ nextStepFile: './step-07-generate-artifacts.md'
 
 ## STEP GOAL:
 
-To validate the compiled SKILL.md content against the agentskills.io specification using skills_ref, auto-fix any validation failures, and confirm spec compliance before artifact generation.
+To validate the compiled SKILL.md content against the agentskills.io specification using skill-check, auto-fix any validation failures, and confirm spec compliance before artifact generation.
 
 ## MANDATORY EXECUTION RULES (READ FIRST):
 
@@ -31,7 +31,7 @@ To validate the compiled SKILL.md content against the agentskills.io specificati
 - 🚫 FORBIDDEN to add new content — only fix spec compliance issues
 - 🚫 FORBIDDEN to write files — content stays in context until step-07
 - 💬 If auto-fix fails, report issues clearly but proceed (warn, don't halt)
-- ⚙️ If skills_ref unavailable: skip validation, add warning to evidence report
+- ⚙️ If skill-check unavailable: skip validation, add warning to evidence report
 
 ## EXECUTION PROTOCOLS:
 
@@ -53,16 +53,16 @@ To validate the compiled SKILL.md content against the agentskills.io specificati
 
 ### 1. Check Tool Availability
 
-**If skills_ref tool is available:**
+**If skill-check tool is available:**
 Continue to validation steps.
 
-**If skills_ref tool is NOT available:**
+**If skill-check tool is NOT available:**
 - Perform manual frontmatter compliance check (see step 3 fallback below)
-- Add note to evidence-report content: "Spec validation performed manually — skills_ref tool unavailable"
+- Add note to evidence-report content: "Spec validation performed manually — skill-check tool unavailable"
 
 ### 2. Validate Schema
 
-Use `skills_ref.validate_schema()` against the compiled SKILL.md content.
+Use `skill-check validate` against the compiled SKILL.md content.
 
 **Check:**
 - Required sections present (Overview, Quick Start, API Reference, Type Definitions)
@@ -80,9 +80,9 @@ Use `skills_ref.validate_schema()` against the compiled SKILL.md content.
 
 ### 3. Validate Frontmatter
 
-**If skills_ref available:** Use `skills_ref.validate_frontmatter()` against the SKILL.md frontmatter.
+**If skill-check available:** Use `skill-check validate` against the SKILL.md directory.
 
-**If skills_ref NOT available (fallback):** Perform manual frontmatter compliance check.
+**If skill-check NOT available (fallback):** Perform manual frontmatter compliance check.
 
 **Check (agentskills.io specification):**
 
@@ -159,7 +159,7 @@ ONLY WHEN validation is complete (or skipped) and evidence-report content is upd
 ### ❌ SYSTEM FAILURE:
 
 - Halting the workflow on validation failure (should warn and proceed)
-- Halting on skills_ref unavailability (should skip with warning)
+- Halting on skill-check unavailability (should skip with warning)
 - Adding new content during validation (only structural fixes allowed)
 - Not recording validation results in evidence report
 - Attempting more than one auto-fix cycle per failure

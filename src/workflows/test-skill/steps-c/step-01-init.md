@@ -103,7 +103,7 @@ Before proceeding to content analysis, verify that SKILL.md has valid agentskill
 
 {list specific issues}
 
-This skill will fail `npx skills add` and `skills-ref validate`. Consider fixing frontmatter before proceeding."
+This skill will fail `npx skills add` and `skill-check validate`. Consider fixing frontmatter before proceeding."
 
 Log each issue as a pre-check finding. Continue with testing — frontmatter issues will be reported in the gap report alongside coverage/coherence findings.
 

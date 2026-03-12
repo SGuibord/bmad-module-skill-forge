@@ -213,7 +213,7 @@ Document-producing workflow that outputs:
 - **ast_bridge:** required for Forge/Deep tier AST extraction (pre-detected by setup-forge)
 - **gh_bridge:** required for all tiers to read source files
 - **qmd_bridge:** required for Deep tier semantic enrichment only
-- **skills_ref:** required for validation against agentskills.io spec (Step 05)
+- **skill-check:** required for validation against agentskills.io spec (Step 05)
 
 **Installation Requirements:**
 - None — all tools pre-detected by setup-forge workflow
@@ -264,7 +264,7 @@ Step 04 (merge)
   OUT: merged SKILL.md content with [MANUAL] sections preserved
 
 Step 05 (validate)
-  IN:  merged content, agentskills.io spec (via skills_ref)
+  IN:  merged content, agentskills.io spec (via skill-check)
   OUT: validation results (pass/fail with details)
 
 Step 06 (write)
@@ -416,7 +416,7 @@ Fallback: All operations executable in main thread if subprocesses unavailable.
 ### Step 05: validate (~190 lines)
 - Type: Validation Sequence, Auto-proceed (advisory, non-blocking)
 - Pattern 4 parallel validation across 4 checks:
-  - Check A: Spec compliance (agentskills.io via skills_ref)
+  - Check A: Spec compliance (agentskills.io via skill-check)
   - Check B: [MANUAL] section integrity (byte-level comparison)
   - Check C: Confidence tier consistency (tier vs forge capabilities)
   - Check D: Provenance completeness (export-to-source mapping)

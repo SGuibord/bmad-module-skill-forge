@@ -490,7 +490,7 @@ The audit-skill workflow is a well-designed, cohesive 6-step pipeline that achie
 | ast_bridge | Forge/Deep tier | ✅ Steps 02-03 reference AST extraction | ✅ |
 | gh_bridge | All tiers | ✅ Steps 01-02 reference file reading | ✅ |
 | qmd_bridge | Deep tier only | ✅ Step 04 references QMD queries | ✅ |
-| skills_ref | Included | ✅ Step 01 references skill format validation | ✅ |
+| skill-check | Included | ✅ Step 01 references skill format validation | ✅ |
 
 ### Implementation Gaps
 

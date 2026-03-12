@@ -237,7 +237,7 @@ YES — This workflow modifies code-derived artifacts with provenance tracking. 
 
 | Criterion | Status |
 |-----------|--------|
-| Loads validation data/standards (skills_ref) | ✅ |
+| Loads validation data/standards (skill-check) | ✅ |
 | Systematic check sequence (4 parallel checks) | ✅ |
 | Auto-proceeds through checks | ✅ |
 | Clear pass/fail criteria (PASS/WARN/FAIL per check) | ✅ |
@@ -246,7 +246,7 @@ YES — This workflow modifies code-derived artifacts with provenance tracking. 
 
 ### 4 Validation Checks Assessed
 
-1. **Spec Compliance** — validates against agentskills.io via skills_ref ✅
+1. **Spec Compliance** — validates against agentskills.io via skill-check ✅
 2. **[MANUAL] Section Integrity** — byte-level comparison against step-01 inventory ✅
 3. **Confidence Tier Consistency** — verifies tier labels match forge capabilities ✅
 4. **Provenance Completeness** — verifies export-to-source mapping integrity ✅
@@ -495,7 +495,7 @@ None. The workflow is well-designed and should function correctly in its current
 | ast_bridge | External | Referenced in step-03 | ✅ |
 | gh_bridge | External | Implied in source file access | ✅ |
 | qmd_bridge | External | Referenced in step-03 (Deep tier) | ✅ |
-| skills_ref | External | Referenced in step-05 | ✅ |
+| skill-check | External | Referenced in step-05 | ✅ |
 | manual-section-rules.md | Data file | Created | ✅ |
 | merge-conflict-rules.md | Data file | Created | ✅ |
 

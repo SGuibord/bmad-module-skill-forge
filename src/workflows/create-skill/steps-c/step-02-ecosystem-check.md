@@ -53,14 +53,14 @@ To search the agentskills.io ecosystem for an existing official skill matching t
 
 ### 1. Check Ecosystem for Existing Skill
 
-**If skills_ref tool is available:**
+**If skill-check tool is available:**
 
 Query the ecosystem using the skill name from the brief:
-- `skills_ref.check_ecosystem(brief.name)`
+- `skill-check validate <skill-dir>` — check if the skill already exists in the ecosystem
 - Enforce 5-second timeout — if the query does not return within 5 seconds, treat as no match
 - Cache results for 24 hours (if re-running same skill)
 
-**If skills_ref tool is NOT available:**
+**If skill-check tool is NOT available:**
 
 Skip silently. Tool unavailability is not an error. Proceed as if no match was found.
 

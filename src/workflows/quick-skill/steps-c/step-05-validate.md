@@ -63,7 +63,7 @@ Check that SKILL.md has valid YAML frontmatter — this is REQUIRED for ecosyste
 - [ ] **`description` field** — present, non-empty, 1-1024 characters
 - [ ] **No unknown fields** — only `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools` are permitted
 
-**For each violation, log an issue.** Missing frontmatter or missing required fields are high-severity issues — skills without valid frontmatter will fail `npx skills add` and `skills-ref validate`.
+**For each violation, log an issue.** Missing frontmatter or missing required fields are high-severity issues — skills without valid frontmatter will fail `npx skills add` and `skill-check validate`.
 
 ### 2. Validate SKILL.md Body Structure
 
