@@ -147,13 +147,13 @@ Analyze Source scans the project, identifies skillable units, maps exports, and 
 
 ### I want the highest accuracy possible
 
-Quick mode reads source files. Forge mode adds AST parsing for structural truth. Deep mode goes further — QMD smart-indexes your project's source code, documentation, and configuration files into per-directory collections (excluding module internals and build artifacts), then uses BM25 keyword search, vector semantic search, and LLM-powered re-ranking to surface context no other tool can find.
+Quick mode reads source files. Forge mode adds AST parsing for structural truth. Deep mode goes further — as skills are compiled, SKF indexes curated extraction artifacts and skill briefs into QMD collections, then uses BM25 keyword search, vector semantic search, and LLM-powered re-ranking to surface context no other tool can find.
 
 ```
 @Ferris SF    # Setup detects your tools and sets tier automatically
 ```
 
-If `ast-grep` and `qmd` are available, Ferris activates Deep mode. Every skill gets AST-verified signatures (T1) enriched with deep knowledge search (T2) — deprecation warnings, breaking change history, common pitfalls surfaced by hybrid search across your indexed documentation.
+If `ast-grep` and `qmd` are available, Ferris activates Deep mode. Every skill gets AST-verified signatures (T1) enriched with deep knowledge search (T2) — deprecation warnings, breaking change history, common pitfalls surfaced by searching across your indexed skill artifacts.
 
 ### I maintain an OSS library and want official skills
 

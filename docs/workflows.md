@@ -15,11 +15,11 @@ SKF includes 10 workflows organized by purpose:
 
 **Command:** `@Ferris SF`
 
-**Purpose:** Initialize forge environment, detect tools, set capability tier, auto-index project.
+**Purpose:** Initialize forge environment, detect tools, set capability tier, verify QMD collection health.
 
 **When to Use:** First time using SKF in a project. Run once per project.
 
-**Key Steps:** Detect tools → Determine tier → Create forge-config.yaml → Auto-index (Deep)
+**Key Steps:** Detect tools → Determine tier → Create forge-config.yaml → QMD hygiene (Deep)
 
 **Agent:** Ferris (Architect mode)
 
