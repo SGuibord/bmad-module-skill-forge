@@ -153,7 +153,30 @@ npx skill-check check <staging-skill-dir> --format json
 
 **If skill-check unavailable:** Skip with note: "Security scan skipped — skill-check tool unavailable"
 
-### 6. Validate metadata.json
+### 6. Content Quality Review (tessl)
+
+**If tessl is available**, run a content quality review on the compiled skill:
+
+```bash
+npx -y tessl skill review <staging-skill-dir>
+```
+
+**Parse the output** to extract:
+- `description_score` — percentage
+- `content_score` — percentage
+- `average_score` — percentage
+- `validation_result` — PASSED/FAILED
+- `judge_suggestions[]` — list of improvement suggestions
+
+**If tessl content score < 70%:** Record a warning in the evidence report:
+
+"Content quality warning: tessl scored content at {score}%. This often indicates SKILL.md lacks inline actionable content after split-body. Consider inlining Quick Start and common workflows directly in SKILL.md."
+
+**If tessl unavailable:** Skip with note: "Content quality review skipped — tessl tool unavailable"
+
+**Note:** tessl installs automatically via `npx`. A missing tool is not an error — graceful skip.
+
+### 7. Validate metadata.json
 
 Cross-check metadata.json content against extraction inventory:
 - `stats.exports_documented` matches actual documented exports
@@ -164,7 +187,7 @@ Cross-check metadata.json content against extraction inventory:
 
 Auto-fix any discrepancies (these are computed values).
 
-### 7. Update Evidence Report
+### 8. Update Evidence Report
 
 Add validation results to the evidence-report content in context:
 
@@ -174,6 +197,7 @@ Add validation results to the evidence-report content in context:
 - Frontmatter: {pass/fail}
 - Body: {pass/fail} {split-body applied if applicable}
 - Security: {pass/warn/skipped}
+- Content Quality (tessl): {pass/warn/skipped} (score: {score}%)
 - Metadata: {pass/fail}
 
 ## Quality Score Breakdown
@@ -191,9 +215,13 @@ Add validation results to the evidence-report content in context:
 
 ## Security Findings
 - {any security scan results}
+
+## Content Quality (tessl)
+- {tessl average score, description score, content score, or "skipped"}
+- {judge suggestions if available}
 ```
 
-### 8. Menu Handling Logic
+### 9. Menu Handling Logic
 
 **Auto-proceed step — no user interaction.**
 
@@ -221,8 +249,10 @@ ONLY WHEN validation is complete (or skipped) and evidence-report content is upd
 - Auto-fix applied via `--fix` for deterministic issues
 - Security scan executed as separate pass (or skipped with warning)
 - Split-body applied if `body.max_lines` failed
+- `npx -y tessl skill review` executed (or skipped with warning if unavailable)
+- Content quality warning raised if tessl content score < 70%
 - Metadata cross-check performed
-- Evidence report updated with structured validation results
+- Evidence report updated with structured validation results (including tessl scores)
 - Auto-proceeded to step-07
 
 ### ❌ SYSTEM FAILURE:
