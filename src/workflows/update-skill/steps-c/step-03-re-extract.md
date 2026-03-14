@@ -57,6 +57,24 @@ Perform tier-aware extraction on only the changed files identified in step 02, p
 
 ### 1. Determine Extraction Strategy by Tier
 
+**Remote Source Resolution Check (Forge/Deep only):**
+
+If `source_root` (from metadata.json) is a remote URL (GitHub URL or owner/repo format) AND tier is Forge or Deep:
+
+⚠️ **Warn the user explicitly:**
+
+"Remote source detected at {tier} tier. AST extraction requires local files — degrading to source reading (T1-low) for this run. For T1 (AST-verified) confidence, clone the repository locally and re-run [CS] Create Skill with the local path, then re-run this update."
+
+Override the extraction strategy to Quick tier for this run. Note the tier degradation reason in context for the evidence report.
+
+If `source_root` is a local path: proceed with the tier-appropriate strategy as normal.
+
+**If AST tool is unavailable at Forge/Deep tier (local source):**
+
+⚠️ **Warn the user explicitly:** "AST tools are unavailable — extraction will use source reading (T1-low). Run [SF] Setup Forge to detect and configure AST tools for T1 confidence."
+
+Degrade to Quick tier extraction. Note the degradation reason in context for the evidence report.
+
 **Quick tier (text pattern matching):**
 - Extract function/class/type names via regex patterns
 - Extract export statements via text matching

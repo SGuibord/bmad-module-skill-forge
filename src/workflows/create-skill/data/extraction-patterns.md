@@ -61,3 +61,39 @@ Same extraction as Forge tier. Deep tier adds enrichment in step-04, not extract
 ### Confidence
 - Extraction: same as Forge (T1)
 - Enrichment annotations added in step-04: T2
+
+---
+
+## Tier Degradation Rules
+
+### Remote Source at Forge/Deep Tier
+
+When `source_repo` is a remote URL (GitHub URL or owner/repo format) and the tier is Forge or Deep:
+
+- **ast-grep requires local files** — it cannot operate on remote URLs
+- The extraction step MUST warn the user explicitly before degrading
+- Warning must include actionable guidance: clone locally and update `source_repo`
+- Extraction proceeds using Quick tier strategy (source reading via gh_bridge)
+- All results labeled T1-low with `[SRC:...]` citations
+- The degradation reason is recorded in the evidence report
+
+Silent degradation is **forbidden**. The user must always know when AST extraction was skipped and why.
+
+### AST Tool Unavailable at Forge/Deep Tier
+
+When the tier is Forge or Deep but ast-grep is not functional:
+
+- The extraction step MUST warn the user explicitly before degrading
+- Warning must include actionable guidance: run [SF] Setup Forge to detect tools
+- Extraction proceeds using Quick tier strategy
+- All results labeled T1-low
+- The degradation reason is recorded in the evidence report
+
+### Per-File AST Failure
+
+When ast-grep fails on an individual file (parse error, unsupported syntax):
+
+- Fall back to source reading for **that file only**
+- Other files continue with AST extraction
+- The affected file's results are labeled T1-low; unaffected files retain T1
+- Log a warning noting which file degraded and why

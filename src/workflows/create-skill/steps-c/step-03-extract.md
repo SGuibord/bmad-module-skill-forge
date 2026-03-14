@@ -68,6 +68,18 @@ Build the filtered file list from the source tree resolved in step-01.
 
 ### 3. Execute Tier-Dependent Extraction
 
+**Remote Source Resolution Check (Forge/Deep only):**
+
+If `source_repo` is a remote URL (GitHub URL or owner/repo format) AND tier is Forge or Deep:
+
+⚠️ **Warn the user explicitly:**
+
+"Remote source detected at {tier} tier. AST extraction requires local files — degrading to source reading (T1-low) for this run. For T1 (AST-verified) confidence, clone the repository locally and update `source_repo` in your brief to the local path."
+
+Proceed with Quick tier extraction strategy below. Note the tier degradation reason in context for the evidence report.
+
+If `source_repo` is a local path: proceed with the tier-appropriate strategy as normal.
+
 **Quick Tier (No AST tools):**
 
 1. Use `gh_bridge.list_tree(owner, repo, branch)` to map source structure (if remote)
@@ -88,7 +100,9 @@ Build the filtered file list from the source tree resolved in step-01.
 
 **If AST tool is unavailable at Forge/Deep tier:**
 
-Degrade to Quick tier extraction silently. Note the degradation in context for the evidence report.
+⚠️ **Warn the user explicitly:** "AST tools are unavailable — extraction will use source reading (T1-low). Run [SF] Setup Forge to detect and configure AST tools for T1 confidence."
+
+Degrade to Quick tier extraction. Note the degradation reason in context for the evidence report.
 
 **For each file — handle failures gracefully:**
 
