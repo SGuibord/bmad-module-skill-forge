@@ -198,7 +198,7 @@ src/
 │   └── README.md
 ├── knowledge/
 │   ├── skf-knowledge-index.csv
-│   └── *.md (8 fragments)
+│   └── *.md (9 fragments)
 └── workflows/
     └── skillforge/
         ├── setup-forge/
