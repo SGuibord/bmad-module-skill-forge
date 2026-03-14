@@ -68,17 +68,39 @@ Build the filtered file list from the source tree resolved in step-01.
 
 ### 3. Execute Tier-Dependent Extraction
 
-**Remote Source Resolution Check (Forge/Deep only):**
+**Remote Source Resolution (Forge/Deep only):**
+
+If `source_repo` is a local path: proceed with the tier-appropriate strategy as normal.
 
 If `source_repo` is a remote URL (GitHub URL or owner/repo format) AND tier is Forge or Deep:
 
-⚠️ **Warn the user explicitly:**
+1. **Check `git` availability:** Verify `git` is functional (`git --version`). If `git` is not available, skip to the fallback warning below.
 
-"Remote source detected at {tier} tier. AST extraction requires local files — degrading to source reading (T1-low) for this run. For T1 (AST-verified) confidence, clone the repository locally and update `source_repo` in your brief to the local path."
+2. **Ephemeral shallow clone:** Clone the repository to a system temp path for AST access:
 
-Proceed with Quick tier extraction strategy below. Note the tier degradation reason in context for the evidence report.
+   ```
+   temp_path = {system_temp}/skf-ephemeral-{skill-name}-{timestamp}/
+   git clone --depth 1 --branch {branch} --single-branch --filter=blob:none {source_repo} {temp_path}
+   ```
 
-If `source_repo` is a local path: proceed with the tier-appropriate strategy as normal.
+   If `include_patterns` are specified in the brief, use sparse-checkout to limit the clone scope:
+
+   ```
+   git clone --depth 1 --branch {branch} --single-branch --filter=blob:none --sparse {source_repo} {temp_path}
+   git -C {temp_path} sparse-checkout set {include_patterns}
+   ```
+
+3. **If clone succeeds:** Update the working source path to `{temp_path}` for all subsequent AST operations in this step. Proceed with the **Forge/Deep Tier** extraction strategy below. Mark `ephemeral_clone_active = true` for cleanup.
+
+4. **If clone fails (network error, auth failure, timeout):**
+
+   ⚠️ **Warn the user explicitly:**
+
+   "Ephemeral clone of `{source_repo}` failed: {error}. Degrading to source reading (T1-low) for this run. For T1 (AST-verified) confidence, clone the repository locally and update `source_repo` in your brief to the local path."
+
+   Proceed with Quick tier extraction strategy below. Note the degradation reason in context for the evidence report.
+
+**Ephemeral clone cleanup:** After extraction is complete for all files in scope (whether successful or partially failed), before presenting the Gate 2 summary (Section 5), if `ephemeral_clone_active`, delete the `{temp_path}` directory. Log: "Ephemeral source clone cleaned up." This ensures cleanup runs even if some extractions failed, as long as the step itself is still executing.
 
 **Quick Tier (No AST tools):**
 

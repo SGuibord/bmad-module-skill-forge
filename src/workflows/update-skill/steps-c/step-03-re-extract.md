@@ -57,17 +57,35 @@ Perform tier-aware extraction on only the changed files identified in step 02, p
 
 ### 1. Determine Extraction Strategy by Tier
 
-**Remote Source Resolution Check (Forge/Deep only):**
+**Remote Source Resolution (Forge/Deep only):**
+
+If `source_root` is a local path: proceed with the tier-appropriate strategy as normal.
 
 If `source_root` (from metadata.json) is a remote URL (GitHub URL or owner/repo format) AND tier is Forge or Deep:
 
-⚠️ **Warn the user explicitly:**
+1. **Check `git` availability:** Verify `git` is functional (`git --version`). If `git` is not available, skip to the fallback warning below.
 
-"Remote source detected at {tier} tier. AST extraction requires local files — degrading to source reading (T1-low) for this run. For T1 (AST-verified) confidence, clone the repository locally and re-run [CS] Create Skill with the local path, then re-run this update."
+2. **Ephemeral sparse clone:** Clone only the changed files from the change manifest to a system temp path. Note: at this point in the flow, `{source_root}` is known to be a remote URL (the local-path case was already handled above).
 
-Override the extraction strategy to Quick tier for this run. Note the tier degradation reason in context for the evidence report.
+   ```
+   temp_path = {system_temp}/skf-ephemeral-{skill-name}-{timestamp}/
+   git clone --depth 1 --single-branch --filter=blob:none --sparse {source_root} {temp_path}
+   git -C {temp_path} sparse-checkout set {changed_files_from_manifest}
+   ```
 
-If `source_root` is a local path: proceed with the tier-appropriate strategy as normal.
+   No `--branch` flag is used — the clone targets the remote's default branch, which must match the branch used during the original [CS] Create Skill run. This scopes the clone to only the files identified in step-02's change manifest, avoiding a full repository download.
+
+3. **If clone succeeds:** Update the working source path to `{temp_path}` for all subsequent AST operations in this step. Proceed with the **Forge tier** extraction strategy below. Mark `ephemeral_clone_active = true` for cleanup.
+
+4. **If clone fails (network error, auth failure, timeout):**
+
+   ⚠️ **Warn the user explicitly:**
+
+   "Ephemeral clone of `{source_root}` failed: {error}. Degrading to source reading (T1-low) for this run. For T1 (AST-verified) confidence, clone the repository locally and re-run [CS] Create Skill with the local path, then re-run this update."
+
+   Override the extraction strategy to Quick tier for this run. Note the degradation reason in context for the evidence report.
+
+**Ephemeral clone cleanup:** After extraction is complete for all files in scope (whether successful or partially failed), before presenting the extraction summary (Section 5), if `ephemeral_clone_active`, delete the `{temp_path}` directory. Log: "Ephemeral source clone cleaned up." This ensures cleanup runs even if some extractions failed, as long as the step itself is still executing.
 
 **If AST tool is unavailable at Forge/Deep tier (local source):**
 

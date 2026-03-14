@@ -106,9 +106,10 @@ When a tool becomes unavailable mid-session (e.g., ast-grep uninstalled between 
 
 When source is remote (GitHub URL) and tier is Forge or Deep:
 1. AST extraction requires local files — ast-grep cannot operate on remote URLs
-2. The extraction step warns the user explicitly before degrading to source reading (T1-low)
-3. The warning includes actionable guidance: clone locally and update `source_repo` to a local path
-4. Silent degradation is forbidden — the user must always know when AST extraction was skipped and why
+2. The extraction step attempts an **ephemeral shallow clone** to a system temp path (if `git` is available)
+3. If the clone succeeds: AST extraction proceeds on the local clone, then the temp directory is cleaned up
+4. If the clone fails (or `git` is unavailable): the step warns the user explicitly and degrades to source reading (T1-low) with actionable guidance
+5. Silent degradation is forbidden — the user must always know when AST extraction was skipped and why
 
 ## Anti-Patterns
 

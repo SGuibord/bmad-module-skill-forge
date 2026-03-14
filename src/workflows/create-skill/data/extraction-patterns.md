@@ -71,8 +71,21 @@ Same extraction as Forge tier. Deep tier adds enrichment in step-04, not extract
 When `source_repo` is a remote URL (GitHub URL or owner/repo format) and the tier is Forge or Deep:
 
 - **ast-grep requires local files** — it cannot operate on remote URLs
+
+**Ephemeral clone strategy (preferred):**
+
+1. Check `git` availability (`git --version`). `git` is effectively guaranteed at Deep tier (via `gh` dependency) but NOT guaranteed at Forge tier.
+2. If `git` is available: perform an ephemeral shallow clone to a system temp path (`{system_temp}/skf-ephemeral-{skill-name}-{timestamp}/`).
+3. For create-skill: use `--depth 1 --single-branch --filter=blob:none`; apply sparse-checkout if `include_patterns` are specified.
+4. For update-skill: use sparse-checkout scoped to the changed files from the change manifest only. No `--branch` flag — uses the remote default branch (must match the branch used during original create-skill run).
+5. If clone succeeds: use the local clone path for AST extraction. All results are T1 with `[AST:...]` citations.
+6. Cleanup: delete the temp directory after extraction inventory is built and all data is in context. The clone never persists beyond the extraction step.
+
+**Fallback (clone fails or `git` unavailable):**
+
 - The extraction step MUST warn the user explicitly before degrading
-- Warning must include actionable guidance: clone locally and update `source_repo`
+- **create-skill:** Warning must include actionable guidance — clone locally and update `source_repo` in the brief to the local path
+- **update-skill:** Warning must include actionable guidance — clone locally, re-run [CS] Create Skill with the local path to regenerate provenance data, then re-run the update
 - Extraction proceeds using Quick tier strategy (source reading via gh_bridge)
 - All results labeled T1-low with `[SRC:...]` citations
 - The degradation reason is recorded in the evidence report
