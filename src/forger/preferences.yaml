@@ -5,6 +5,9 @@
 # Override detected tier (set to Quick, Forge, or Deep to force a tier)
 tier_override: ~
 
+# Passive context injection (set to false to skip snippet generation and CLAUDE.md updates during export)
+passive_context: true
+
 # Language defaults
 output_language: ~
 skill_format_version: ~
