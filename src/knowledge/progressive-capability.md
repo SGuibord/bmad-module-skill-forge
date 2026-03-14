@@ -104,12 +104,20 @@ When a tool becomes unavailable mid-session (e.g., ast-grep uninstalled between 
 3. New extractions use the current tier's capabilities
 4. The tier change is logged in the sidecar for audit trail
 
+When source is remote (GitHub URL) and tier is Forge or Deep:
+1. AST extraction requires local files — ast-grep cannot operate on remote URLs
+2. The extraction step attempts an **ephemeral shallow clone** to a system temp path (if `git` is available)
+3. If the clone succeeds: AST extraction proceeds on the local clone, then the temp directory is cleaned up
+4. If the clone fails (or `git` is unavailable): the step warns the user explicitly and degrades to source reading (T1-low) with actionable guidance
+5. Silent degradation is forbidden — the user must always know when AST extraction was skipped and why
+
 ## Anti-Patterns
 
 - Describing Quick tier as "basic" or "limited" — it is fast and legitimate
 - Requiring ast-grep for workflows that work fine without it (setup-forge, brief-skill)
 - Mixing tier capabilities in a single extraction (e.g., T1 citations when only source reading was used)
 - Failing a workflow because the tier is "too low" — adapt behavior instead
+- Silent degradation when source is remote at Forge/Deep tier — always warn with actionable guidance
 
 ## Related Fragments
 

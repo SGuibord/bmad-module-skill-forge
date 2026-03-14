@@ -52,6 +52,20 @@ For each confirmed dependency, extract key exports, usage patterns, and API surf
 
 ### 1. Prepare Extraction Plan
 
+**AST Tool Availability Check (Forge/Deep only):**
+
+This workflow operates on local project files and installed library packages. Remote source resolution does not apply — libraries are analyzed as they exist within the project's dependency tree.
+
+**If AST tool is unavailable at Forge/Deep tier:**
+
+⚠️ **Warn the user explicitly:** "AST tools are unavailable — extraction will use source reading (T1-low). Run [SF] Setup Forge to detect and configure AST tools for T1 confidence."
+
+Degrade to Quick tier extraction. Note the degradation reason in context for the evidence report.
+
+**Per-file AST failure handling:**
+
+If ast-grep fails on an individual file (parse error, unsupported syntax), fall back to source reading for that file only. Label the affected file's results T1-low; unaffected files retain T1. Log a warning noting which file degraded and why.
+
 For each library in `confirmed_dependencies`, determine extraction strategy based on forge tier:
 
 **Quick Tier:**
