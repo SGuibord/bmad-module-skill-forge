@@ -64,7 +64,7 @@ Query the ecosystem using the skill name from the brief:
 
 **If registry API is NOT available (current default):**
 
-Skip silently. API unavailability is not an error. Proceed as if no match was found.
+Skip completely and silently. Do not output any message about API unavailability or the ecosystem check being skipped. Emit zero text to the console. Proceed exactly as if no match was found.
 
 ### 2. Evaluate Results
 

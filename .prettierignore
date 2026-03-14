@@ -16,3 +16,6 @@ build/
 
 # Temp reference files
 temp/
+
+# Dotfile directories (tool-specific runtime data)
+.*

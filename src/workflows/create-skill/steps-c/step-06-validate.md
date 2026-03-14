@@ -29,9 +29,10 @@ To validate the compiled SKILL.md content against the agentskills.io specificati
 
 - 🎯 Focus ONLY on validating compiled content against spec
 - 🚫 FORBIDDEN to add new content — only fix spec compliance issues
-- 🚫 FORBIDDEN to write files — content stays in context until step-07
+- 💾 Validation and auto-fix modify files in the staging directory (`_bmad-output/{name}/`)
 - 💬 If auto-fix fails, report issues clearly but proceed (warn, don't halt)
 - ⚙️ If skill-check unavailable: skip validation, add warning to evidence report
+- ⚠️ Ignore non-zero exit codes from `skill-check` if the JSON output shows 0 errors — parse JSON output, not exit codes
 
 ## EXECUTION PROTOCOLS:
 
@@ -63,10 +64,10 @@ Run: `npx skill-check -h`
 
 ### 2. Validate & Auto-Fix (skill-check check --fix)
 
-Run the external skill-check tool against the compiled skill directory:
+Run the external skill-check tool against the compiled skill staging directory:
 
 ```bash
-npx skill-check check <skill-dir> --fix --format json --no-security-scan
+npx skill-check check <staging-skill-dir> --fix --format json --no-security-scan
 ```
 
 This single command performs:
@@ -82,6 +83,8 @@ This single command performs:
 - `qualityScore` — overall score (0-100)
 - `diagnostics[]` — remaining issues after auto-fix
 - `fixed[]` — issues that were automatically corrected
+
+**Note:** `skill-check` may return a non-zero exit code even when `errorCount` is 0 (e.g., security advisories or package warnings). Always rely on the parsed JSON `errorCount` and `warningCount`, not the shell exit code.
 
 **If quality score ≥ 70:** Record "Schema: PASS (score: {score}/100)" in evidence-report content.
 
@@ -123,13 +126,13 @@ This single command performs:
 Run split-body to extract oversized sections into reference files:
 
 ```bash
-npx skill-check split-body <skill-dir> --write
+npx skill-check split-body <staging-skill-dir> --write
 ```
 
 Then re-validate to confirm the fix:
 
 ```bash
-npx skill-check check <skill-dir> --format json --no-security-scan
+npx skill-check check <staging-skill-dir> --format json --no-security-scan
 ```
 
 **If skill-check unavailable or no body size issue:** Skip this step.
@@ -139,7 +142,7 @@ npx skill-check check <skill-dir> --format json --no-security-scan
 **If skill-check is available**, run security scan on the compiled skill:
 
 ```bash
-npx skill-check check <skill-dir> --format json
+npx skill-check check <staging-skill-dir> --format json
 ```
 
 (Security scan is enabled by default when `--no-security-scan` is omitted.)

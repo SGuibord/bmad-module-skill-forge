@@ -30,22 +30,23 @@ To assemble the complete skill content from the extraction inventory and enrichm
 
 - 🎯 Focus ONLY on assembling content from extraction inventory + enrichment
 - 🚫 FORBIDDEN to include any content without a provenance citation
-- 🚫 FORBIDDEN to write files — content stays in context until step-07
+- 💾 Sub-agents and compilation processes may write to a staging directory (e.g., `_bmad-output/{name}/`)
+- 🚫 FORBIDDEN to write final files to `skills/` or `forge-data/` — that's step-07
 - 🚫 FORBIDDEN to fabricate examples not found in source tests or docs
 - ⚒️ Seed `<!-- [MANUAL] -->` markers for future update-skill compatibility
 
 ## EXECUTION PROTOCOLS:
 
 - 🎯 Follow MANDATORY SEQUENCE exactly
-- 💾 Build all content in context — do not write files
+- 💾 Build all content in context or write to a staging directory (`_bmad-output/{name}/`)
 - 📖 Follow agentskills.io section structure from data file
-- 🚫 Do not write any output files — that's step-07
+- 🚫 Do not promote any output files to final `skills/` or `forge-data/` directories — that's step-07
 
 ## CONTEXT BOUNDARIES:
 
 - Available: extraction_inventory, enrichment_annotations (if Deep), brief_data, tier
 - Focus: Assembling structured content from verified data
-- Limits: Do NOT write files, validate spec compliance, or report
+- Limits: Do NOT write to final `skills/` or `forge-data/` directories, validate spec compliance, or report
 - Dependencies: Extraction inventory from step-03 (enrichment from step-04 if Deep)
 
 ## MANDATORY SEQUENCE
@@ -169,12 +170,12 @@ Compilation audit trail:
 
 **Auto-proceed step — no user interaction.**
 
-After all content is assembled in context, immediately load, read entire file, then execute `{nextStepFile}`.
+After all content is assembled in context (or written to the staging directory), immediately load, read entire file, then execute `{nextStepFile}`.
 
 #### EXECUTION RULES:
 
 - This is an auto-proceed assembly step with no user choices
-- All content stays in context — no files are written yet
+- All content stays in context or in the staging directory — no final files are written yet
 - Proceed directly to validation after assembly is complete
 
 ## CRITICAL STEP COMPLETION NOTE
@@ -199,7 +200,7 @@ ONLY WHEN all 7 content artifacts (SKILL.md, context-snippet.md, metadata.json, 
 
 - Including functions or examples without provenance citations
 - Fabricating usage examples not found in source
-- Writing files to disk (that's step-07)
+- Writing files to final `skills/` or `forge-data/` directories (that's step-07)
 - Missing required SKILL.md sections
 - Not seeding [MANUAL] markers
 - Not building all 7 content artifacts
