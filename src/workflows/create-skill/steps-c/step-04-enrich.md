@@ -61,9 +61,26 @@ Auto-proceed silently. Display no message. Immediately load, read entire file, t
 
 Continue to step 2.
 
-### 2. QMD Enrichment Searches (Deep Tier Only)
+### 2. Collection Inventory Pre-check (Deep Tier Only)
 
-For each major exported function in the extraction inventory, search QMD collections for temporal context:
+Before searching, check which QMD collections are available:
+
+1. Read the sidecar `forge-tier.yaml` to get registered `qmd_collections` entries
+2. Identify which collections contain temporal context — collections with `type` other than `"brief"` (e.g., issues, PRs, changelogs, architecture notes)
+3. **If no temporal collections exist** (only `"brief"` type or no collections at all): report this and auto-proceed. Display:
+
+"**Enrichment: no temporal collections available.**
+Only brief-type QMD collections found — no issues, PRs, or changelogs indexed. Enrichment skipped (expected for first-run skill creation). T2 enrichment becomes available when temporal context is indexed into QMD collections.
+
+Proceeding to compilation..."
+
+Then immediately load, read entire file, then execute `{nextStepFile}`.
+
+4. **If temporal collections exist:** Continue to step 3.
+
+### 3. QMD Enrichment Searches (Deep Tier Only)
+
+For each major exported function — limited to the **top-level public API surface** (typically 10-20 functions that will appear in the context-snippet), not all extracted exports — search the temporal QMD collections for context:
 
 **Search targets per function:**
 
@@ -84,7 +101,7 @@ For each major exported function in the extraction inventory, search QMD collect
 - If individual search fails: skip that function's enrichment, continue with others
 - If QMD returns no results for a function: no annotation added (absence is normal)
 
-### 3. Annotate Extraction Inventory
+### 4. Annotate Extraction Inventory
 
 Add enrichment annotations to the extraction inventory without modifying extraction data:
 
@@ -100,7 +117,7 @@ Add enrichment annotations to the extraction inventory without modifying extract
 - T2-past annotations: {count}
 - T2-future annotations: {count}
 
-### 4. Report Enrichment (Deep Tier Only)
+### 5. Report Enrichment (Deep Tier Only)
 
 Display brief enrichment summary:
 
@@ -111,7 +128,7 @@ Display brief enrichment summary:
 
 Proceeding to compilation..."
 
-### 5. Menu Handling Logic
+### 6. Menu Handling Logic
 
 **Auto-proceed step — no user interaction.**
 
@@ -135,7 +152,9 @@ ONLY WHEN enrichment is complete (Deep tier) or the step is skipped (Quick/Forge
 ### ✅ SUCCESS:
 
 - Quick/Forge tiers: skipped silently with no output, auto-proceeded
-- Deep tier: QMD searches performed per extracted function
+- Deep tier: collection inventory checked before searching
+- Deep tier: no temporal collections → reported and auto-proceeded (not silently skipped)
+- Deep tier: temporal collections exist → QMD searches performed per public API function (10-20, not all exports)
 - T2 annotations added with proper provenance citations
 - Extraction data unmodified — enrichment is additive only
 - QMD failures handled gracefully (skip and continue)
@@ -146,6 +165,8 @@ ONLY WHEN enrichment is complete (Deep tier) or the step is skipped (Quick/Forge
 - Halting on QMD unavailability or search failures
 - Modifying T1 extraction results with QMD data
 - Displaying skip messages for Quick/Forge tiers (should be silent)
+- Pre-emptively skipping all searches without checking the collection inventory
+- Searching all 800+ exports instead of scoping to public API surface (10-20)
 - Beginning compilation or SKILL.md assembly in this step
 - Not labeling QMD annotations as T2 confidence
 

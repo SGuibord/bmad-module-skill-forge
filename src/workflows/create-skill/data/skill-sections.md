@@ -22,19 +22,38 @@ description: >
 - Only 6 fields permitted: `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`
 - `version` and `author` belong in metadata.json, NOT in frontmatter
 
-### Section Order
+### Two-Tier Section Structure
 
-1. **Overview** — What this skill provides, source repo, version, tier used
-2. **Quick Start** — Most common 3-5 functions with minimal examples
-3. **API Reference** — Grouped by module/file, each function with:
-   - Signature with types
-   - Parameters table
-   - Return type
-   - Usage example (from source tests/docs if available)
-   - Provenance citation: `[AST:{file}:L{line}]` or `[SRC:{file}:L{line}]`
-4. **Type Definitions** — Exported types, interfaces, enums
-5. **Integration Patterns** — Co-import patterns detected by ast_bridge (Forge/Deep only)
-6. **Manual Sections** — Seeded with `<!-- [MANUAL] -->` markers for update-skill
+SKILL.md uses a two-tier structure to ensure actionable content survives `split-body` extraction.
+
+#### Tier 1 — Always Inline (survives split-body, target <300 lines)
+
+| # | Section | Budget | Purpose |
+|---|---------|--------|---------|
+| 1 | **Overview** | ~10 lines | What the library does, source repo, version, tier, export count |
+| 2 | **Quick Start** | ~30 lines | 3-5 core functions with one runnable end-to-end example |
+| 3 | **Common Workflows** | ~30 lines | 4-5 typical function call sequences for common tasks |
+| 4 | **Key API Summary** | ~20 lines | Table of top 10-15 functions (name, purpose, key params) |
+| 5 | **Key Types** | ~20 lines | Most important enum/type values inline |
+| 6 | **Architecture at a Glance** | ~10 lines | Bullet list of subsystem categories |
+| 7 | **CLI** | ~10 lines | Basic CLI commands (skip if no CLI) |
+| 8 | **Manual Sections** | ~5 lines | `<!-- [MANUAL] -->` markers for update-skill |
+
+#### Tier 2 — Reference-Eligible (extracted by split-body into references/)
+
+| # | Section | Purpose |
+|---|---------|---------|
+| 9 | **Full API Reference** | Complete signatures, parameter tables, return types, examples, citations |
+| 10 | **Full Type Definitions** | All types, interfaces, enums with full field details |
+| 11 | **Full Integration Patterns** | Co-import patterns, adapter details, pipeline internals (Forge/Deep only) |
+
+#### Assembly Rules
+
+- Tier 1 sections are assembled first — they form the standalone body
+- Tier 2 sections are assembled after — they are progressive disclosure detail
+- Tier 1 sections are kept short enough that `split-body` targets the larger Tier 2 sections (`## Full` headings) into `references/`
+- After split-body, SKILL.md retains all Tier 1 content — actionable without loading references
+- An agent loading only SKILL.md (no references) must get enough to act
 
 ### Provenance Citation Format
 

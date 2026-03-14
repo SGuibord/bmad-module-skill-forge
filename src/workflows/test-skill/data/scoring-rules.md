@@ -8,18 +8,24 @@
 
 | Category | Weight | Description |
 |----------|--------|-------------|
-| Export Coverage | 40% | Percentage of source exports documented in SKILL.md |
-| Signature Accuracy | 25% | Documented signatures match actual source signatures |
-| Type Coverage | 15% | Types and interfaces referenced are complete |
-| Coherence (contextual) | 20% | Cross-references valid, integration patterns complete |
+| Export Coverage | 36% | Percentage of source exports documented in SKILL.md |
+| Signature Accuracy | 22% | Documented signatures match actual source signatures |
+| Type Coverage | 14% | Types and interfaces referenced are complete |
+| Coherence (contextual) | 18% | Cross-references valid, integration patterns complete |
 | Coherence (naive) | 0% | Not applicable — weight redistributed to other categories |
+| External Validation | 10% | Average of skill-check quality score + tessl average score (redistributed if unavailable) |
 
 ## Naive Mode Weight Redistribution
 
 When running in naive mode (no coherence category):
-- Export Coverage: 50%
-- Signature Accuracy: 30%
+- Export Coverage: 45%
+- Signature Accuracy: 25%
 - Type Coverage: 20%
+- External Validation: 10%
+
+## External Validation Unavailable
+
+When neither skill-check nor tessl is available, redistribute the 10% external validation weight proportionally to the other active categories. When only one tool is available, use that tool's score as the external validation score.
 
 ## Tier-Dependent Scoring
 

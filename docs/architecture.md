@@ -32,7 +32,7 @@ SKF uses an additive tier model. Each tier is the previous tier plus one tool. Y
 
 | Tier | Tools | What You Get |
 |------|-------|-------------|
-| **Quick** | `gh_bridge` + `skill-check` | Source reading + spec validation. Best-effort skills in under a minute. |
+| **Quick** | `gh_bridge` + `skill-check` + `tessl` | Source reading + spec validation + content quality review. Best-effort skills in under a minute. |
 | **Forge** | + `ast_bridge` | Structural truth. AST-verified signatures. Co-import detection. T1 confidence. |
 | **Deep** | + `qmd_bridge` | Knowledge search. Temporal provenance. Drift detection. Full intelligence. |
 
@@ -239,6 +239,7 @@ Two lines per skill (~30 tokens each). Developer controls placement. Ferris cont
 |------|-------|---------|
 | **`gh_bridge`** | GitHub CLI (`gh`) | Source code access, issue mining, release tracking, PR intelligence |
 | **`skill-check`** | [thedaviddias/skill-check](https://github.com/thedaviddias/skill-check) | Validation + auto-fix (`check --fix`), quality scoring (0-100), security scan, split-body, diff comparison |
+| **`tessl`** | [tessl](https://tessl.io) | Content quality review, actionability scoring, progressive disclosure evaluation, AI judge with suggestions |
 | **`ast_bridge`** | ast-grep CLI | Structural extraction, custom AST queries, co-import detection |
 | **`qmd_bridge`** | QMD (local search) | BM25 keyword search, vector semantic search, collection indexing |
 

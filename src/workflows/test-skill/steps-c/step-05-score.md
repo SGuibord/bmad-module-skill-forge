@@ -11,7 +11,7 @@ scoringRulesFile: '../data/scoring-rules.md'
 
 ## STEP GOAL:
 
-Calculate the overall completeness score by aggregating coverage and coherence category scores with the appropriate weight distribution (naive or contextual), apply the pass/fail threshold, and determine the test result.
+Calculate the overall completeness score by aggregating coverage, coherence, and external validation category scores with the appropriate weight distribution (naive or contextual), apply the pass/fail threshold, and determine the test result.
 
 ## MANDATORY EXECUTION RULES (READ FIRST):
 
@@ -46,10 +46,10 @@ Calculate the overall completeness score by aggregating coverage and coherence c
 
 ## CONTEXT BOUNDARIES:
 
-- Available: Coverage Analysis (step 03) and Coherence Analysis (step 04) in {outputFile}
+- Available: Coverage Analysis (step 03), Coherence Analysis (step 04), and External Validation (step 04b) in {outputFile}
 - Focus: Score calculation and pass/fail determination only
 - Limits: Do NOT generate gap remediation — that's step 06
-- Dependencies: steps 03 and 04 must have appended their analysis sections
+- Dependencies: steps 03, 04, and 04b must have appended their analysis sections
 
 ## MANDATORY SEQUENCE
 
@@ -76,6 +76,10 @@ Read `{outputFile}` and extract the category scores calculated in previous steps
 - Combined Coherence: {percentage}% (contextual mode only)
 - Or: not scored (naive mode — weight redistributed)
 
+**From External Validation (step 04b):**
+- External Validation Score: {percentage}% (combined skill-check + tessl average)
+- Or: N/A (if neither tool was available — weight redistributed to other categories)
+
 ### 3. Apply Weight Distribution
 
 **Read testMode from {outputFile} frontmatter.**
@@ -84,25 +88,37 @@ Read `{outputFile}` and extract the category scores calculated in previous steps
 
 | Category | Score | Weight | Weighted |
 |----------|-------|--------|----------|
-| Export Coverage | {N}% | 50% | {N * 0.50}% |
-| Signature Accuracy | {N}% | 30% | {N * 0.30}% |
+| Export Coverage | {N}% | 45% | {N * 0.45}% |
+| Signature Accuracy | {N}% | 25% | {N * 0.25}% |
 | Type Coverage | {N}% | 20% | {N * 0.20}% |
+| External Validation | {N}% | 10% | {N * 0.10}% |
 | **Total** | | **100%** | **{sum}%** |
 
 **IF contextual mode — use full weights:**
 
 | Category | Score | Weight | Weighted |
 |----------|-------|--------|----------|
-| Export Coverage | {N}% | 40% | {N * 0.40}% |
-| Signature Accuracy | {N}% | 25% | {N * 0.25}% |
-| Type Coverage | {N}% | 15% | {N * 0.15}% |
-| Coherence | {N}% | 20% | {N * 0.20}% |
+| Export Coverage | {N}% | 36% | {N * 0.36}% |
+| Signature Accuracy | {N}% | 22% | {N * 0.22}% |
+| Type Coverage | {N}% | 14% | {N * 0.14}% |
+| Coherence | {N}% | 18% | {N * 0.18}% |
+| External Validation | {N}% | 10% | {N * 0.10}% |
 | **Total** | | **100%** | **{sum}%** |
+
+**External Validation unavailable:**
+If External Validation is N/A (neither skill-check nor tessl available), redistribute its 10% weight proportionally to the other categories.
+
+**External Validation unavailable:**
+If External Validation is N/A (neither skill-check nor tessl available), redistribute its 10% weight proportionally to the other active categories:
+- Naive: Export Coverage 50%, Signature Accuracy 28%, Type Coverage 22%
+- Contextual: Export Coverage 40%, Signature Accuracy 24%, Type Coverage 16%, Coherence 20%
 
 **Quick tier adjustment:**
 If Signature Accuracy and Type Coverage are N/A (Quick tier, no AST):
-- Naive: Export Coverage gets 100% weight
-- Contextual: Export Coverage 60%, Coherence 40%
+- Naive + external available: Export Coverage 90%, External Validation 10%
+- Naive + external N/A: Export Coverage 100%
+- Contextual + external available: Export Coverage 54%, Coherence 36%, External Validation 10%
+- Contextual + external N/A: Export Coverage 60%, Coherence 40%
 
 ### 4. Determine Pass/Fail
 
@@ -139,6 +155,7 @@ Append the **Completeness Score** section to `{outputFile}`:
 | Signature Accuracy | {N}% | {W}% | {WS}% |
 | Type Coverage | {N}% | {W}% | {WS}% |
 | Coherence | {N}% | {W}% | {WS}% |
+| External Validation | {N}% | {W}% | {WS}% |
 | **Total** | | **100%** | **{total}%** |
 
 ### Result
@@ -149,6 +166,7 @@ Append the **Completeness Score** section to `{outputFile}`:
 
 **Weight Distribution:** {naive (redistributed) | contextual (full)}
 **Tier Adjustment:** {none | Quick tier — signature and type coverage not scored}
+**External Validators:** {both available | skill-check only | tessl only | none — weight redistributed}
 ```
 
 ### 7. Update Output Frontmatter
@@ -172,6 +190,7 @@ Update `{outputFile}` frontmatter:
 | Signature Accuracy | {N}% | {WS}% |
 | Type Coverage | {N}% | {WS}% |
 | Coherence | {N}% | {WS}% |
+| External Validation | {N}% | {WS}% |
 
 **Threshold:** {threshold}%
 **Recommendation:** {export-skill if pass | update-skill if fail}

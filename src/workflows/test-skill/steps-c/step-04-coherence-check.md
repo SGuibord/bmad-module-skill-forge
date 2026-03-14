@@ -2,7 +2,7 @@
 name: 'step-04-coherence-check'
 description: 'Validate internal consistency — references, types, and integration patterns'
 
-nextStepFile: './step-05-score.md'
+nextStepFile: './step-04b-external-validators.md'
 outputFile: '{output_folder}/test-report-{skill_name}.md'
 outputFormatsFile: '../data/output-section-formats.md'
 ---
