@@ -151,7 +151,7 @@ The installer detects the existing `_bmad/` directory and installs SKF alongside
 
 | Tier | Tools | Capability |
 | --- | --- | --- |
-| **Quick** | gh + skill-check | Source reading + spec validation |
+| **Quick** | gh + skill-check + tessl | Source reading + spec validation + content quality review |
 | **Forge** | + ast-grep | Structural truth, T1 confidence |
 | **Deep** | + QMD | Knowledge search, temporal provenance |
 
@@ -224,6 +224,7 @@ SKF builds on these excellent open-source tools:
 | [ast-grep](https://github.com/ast-grep/ast-grep)             | AST-based structural code extraction (Forge/Deep tiers)            |
 | [QMD](https://github.com/tobi/qmd)                           | Local hybrid search engine for knowledge indexing (Deep tier)      |
 | [skill-check](https://github.com/thedaviddias/skill-check)   | Skill validation, auto-fix, quality scoring, and security scanning |
+| [tessl](https://tessl.io)                                     | Content quality review, actionability scoring, and AI judge evaluation |
 | [BMad Method](https://github.com/bmad-code-org/BMAD-METHOD)  | Agent-workflow framework that SKF extends as a module              |
 
 ## Contributing
