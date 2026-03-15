@@ -286,6 +286,8 @@ class UI {
     let noteTitle;
     let noteBody;
 
+    const activateCmd = brand.gold('/bmad-agent-skf-forger');
+
     if (action === 'update') {
       noteTitle = brand.amber.bold('Update complete!');
       noteBody = [
@@ -294,8 +296,7 @@ class UI {
         'Your config.yaml and sidecar state are preserved.',
         '',
         `${chalk.white.bold('Next Steps')}`,
-        `1. Reload the agent in ${ideDisplay}:`,
-        `   ${brand.gold(`"Read and activate ${skfFolder}/agents/forger.md"`)}`,
+        `1. Reload the agent in ${ideDisplay}:  ${activateCmd}`,
         '2. Run @Ferris SF to re-detect tools if needed',
       ].join('\n');
     } else {
@@ -303,8 +304,7 @@ class UI {
       noteBody = [
         `${chalk.white.bold('Get Started')}`,
         `1. Open this folder in ${ideDisplay}`,
-        '2. Locate the chat window and type:',
-        `   ${brand.gold(`"Read and activate ${skfFolder}/agents/forger.md"`)}`,
+        `2. Activate Ferris:  ${activateCmd}`,
         '3. Ferris (your Skill Architect) will guide you through',
         '   setting up and forging your first agent skill',
       ].join('\n');
@@ -313,7 +313,7 @@ class UI {
     note(noteBody, noteTitle);
 
     outro(
-      `${brand.spark('⚒')}  Agent: ${chalk.white('Ferris')} ${chalk.dim('(Skill Architect & Integrity Guardian)')}\n${brand.dark('⚡')} Docs: ${brand.amber('https://github.com/armelhbobdad/bmad-module-skill-forge')}`,
+      `${brand.spark('⚒')}  Agent: ${chalk.white('Ferris')} ${chalk.dim('(Skill Architect & Integrity Guardian)')}\n${brand.dark('⚡')} Docs: ${brand.amber('https://armelhbobdad.github.io/bmad-module-skill-forge')}`,
     );
   }
 }
