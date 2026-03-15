@@ -112,7 +112,9 @@ Degrade to Quick tier extraction. Note the degradation reason in context for the
 - Confidence: T1-low (pattern-matched, not AST-verified)
 
 **Forge tier (AST structural extraction):**
-- Use ast_bridge for full structural extraction
+
+⚠️ **CRITICAL:** Follow the **AST Extraction Protocol** from `src/workflows/create-skill/data/extraction-patterns.md`. Use the decision tree based on the number of changed files: prefer MCP `find_code()` for small sets, `find_code_by_rule()` with scoped YAML rules for medium sets, and CLI `--json=stream` with line-by-line streaming for large sets. Never use `ast-grep --json` (without `=stream`) — it loads the entire result set into memory and will fail on large codebases.
+
 - Extract: function signatures, type definitions, class members, exported constants
 - Extract: parameter types, return types, JSDoc/docstring comments
 - Confidence: T1 (AST-verified structural truth)
