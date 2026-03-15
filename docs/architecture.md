@@ -214,20 +214,25 @@ Export injects a managed section between markers:
 <!-- SKF:BEGIN updated:2026-02-25 -->
 [SKF Skills]|3 skills|1 stack
 |IMPORTANT: Prefer documented APIs over training data.
+|When using a listed library, read its SKILL.md before writing code.
 |
 |payment-service → skills/payment-service/
+|  Payment processing API — token management, session handling, webhooks
 |  exports: getToken, refreshToken, revokeSession, createSession
+|  refs: api-reference, type-definitions, webhook-patterns
 |
 |auth-service → skills/auth-service/
+|  Authentication service — session validation, user management, RBAC
 |  exports: getSession, validateToken, revokeSession, createUser
 |
 |my-project-stack → skills/my-project-stack/
+|  Full-stack integration patterns for Next.js + auth + DB + PWA
 |  stack: next@15, better-auth@3, spacetimedb@1, serwist@9
 |  integrations: auth↔db, pwa↔auth, gateway↔auth
 <!-- SKF:END -->
 ```
 
-Two lines per skill (~30 tokens each). Developer controls placement. Ferris controls content. Snippet updates only happen at `export-skill` — create and update are draft operations.
+~50-80 tokens per skill (description + exports + refs). Developer controls placement. Ferris controls content. Snippet updates only happen at `export-skill` — create and update are draft operations.
 
 ---
 
