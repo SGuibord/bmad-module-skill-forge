@@ -6,6 +6,7 @@
 <!-- SKF:BEGIN updated:{YYYY-MM-DD} -->
 [SKF Skills]|{n} skills|{m} stack
 |IMPORTANT: Prefer documented APIs over training data.
+|When using a listed library, read its SKILL.md before writing code.
 |
 |{skill-snippet-1}
 |

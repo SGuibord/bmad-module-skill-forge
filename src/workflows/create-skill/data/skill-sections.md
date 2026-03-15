@@ -80,14 +80,20 @@ Place after Quick Start and after API Reference sections.
 
 ---
 
-## context-snippet.md Format
+## context-snippet.md Format (ADR-L v2)
 
-Compressed 2-line-per-skill format for CLAUDE.md managed section:
+Compressed multi-line-per-skill format for CLAUDE.md managed section (~50-80 tokens per skill):
 
 ```markdown
-{skill-name} -> skills/{skill-name}/
+{skill-name} → skills/{skill-name}/
+  {compressed description ~15 words from SKILL.md frontmatter}
   exports: {comma-separated top 10 function names}
+  refs: {reference-file-names without .md extension}
 ```
+
+- Line 2 (description): Compressed from SKILL.md frontmatter `description:` — the WHEN-TO-USE signal
+- Line 3 (exports): Top exports from metadata.json
+- Line 4 (refs): Only present when `references/` directory exists — the WHERE-TO-LOOK signal
 
 ---
 

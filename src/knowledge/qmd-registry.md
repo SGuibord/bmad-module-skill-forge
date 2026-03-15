@@ -48,11 +48,14 @@ qmd_collections:
 | --- | --- | --- | --- |
 | `extraction` | create-skill step-07 | Compiled SKILL.md, references, context-snippet — structured, confidence-rated exports | audit-skill (drift detection), update-skill (T2 enrichment) |
 | `brief` | brief-skill step-05 | skill-brief.yaml — intent, scope, target repository metadata | Portfolio-level search (cross-skill deduplication) |
+| `docs` | create-skill step-03c | Fetched external documentation — API references, guides, usage examples (T3 confidence) | step-04 enrichment (cross-reference doc context with source-extracted functions) |
 
 ### Lifecycle
 
 ```
 brief-skill writes brief → indexes {name}-brief → registers in forge-tier.yaml
+    ↓
+create-skill fetches docs → indexes {name}-docs → registers in forge-tier.yaml (Deep only)
     ↓
 create-skill compiles skill → indexes {name}-extraction → registers in forge-tier.yaml
     ↓

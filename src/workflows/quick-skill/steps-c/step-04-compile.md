@@ -102,7 +102,8 @@ description: >
 Create context-snippet.md in ADR-L two-line format (~30 tokens):
 
 ```
-{skill_name} -> skills/{skill_name}/
+{skill_name} → skills/{skill_name}/
+  {compressed description ~15 words from SKILL.md frontmatter}
   exports: {top-5 exports as comma-separated list}
 ```
 

@@ -70,25 +70,28 @@ Load {snippetFormatData} and read the format template for the skill type.
 
 **For single skills (`skill_type: "single"`):**
 
-Select top 5 exports from metadata.json `exports` array (by order as listed — assumed most important first).
+1. Read SKILL.md frontmatter `description:` field. Compress to ~15 words focusing on WHAT and WHEN-TO-USE.
+2. Select top exports from metadata.json `exports` array (up to 10 for Deep tier, 5 otherwise).
+3. Check if `references/` directory exists — if so, list reference file names without `.md` extension.
 
 Generate:
 ```
 {skill-name} → skills/{skill-name}/
+  {compressed-description ~15 words}
   exports: {export-1}, {export-2}, {export-3}, {export-4}, {export-5}
+  refs: {ref-1}, {ref-2}, {ref-3}
 ```
 
-**If fewer than 5 exports:** List all available.
-**If no exports:** Omit the exports line entirely:
-```
-{skill-name} → skills/{skill-name}/
-```
+**If fewer exports than limit:** List all available.
+**If no exports:** Omit the exports line.
+**If no references/ directory:** Omit the refs line.
 
 **For stack skills (`skill_type: "stack"`):**
 
 Generate:
 ```
 {project}-stack → skills/{project}-stack/
+  {compressed-description ~15 words}
   stack: {dep-1}@{v1}, {dep-2}@{v2}, {dep-3}@{v3}
   integrations: {pattern-1}, {pattern-2}, {pattern-3}
 ```
@@ -97,9 +100,9 @@ Generate:
 
 Estimate token count of generated snippet (approximate: words * 1.3).
 
-- Target: ~30 tokens per skill
-- Warning threshold: >50 tokens
-- If exceeding warning threshold, trim exports list or integration patterns to fit
+- Target: ~50-80 tokens per skill
+- Warning threshold: >100 tokens
+- If exceeding warning threshold, trim description, exports list, or refs to fit
 
 ### 5. Write or Preview Snippet
 

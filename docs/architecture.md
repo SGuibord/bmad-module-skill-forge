@@ -199,7 +199,7 @@ The primary source is your project repo. Component references trace to library r
 
 ## Dual-Output Strategy
 
-Based on [Vercel research](https://github.com/vercel-labs/skills): passive context (AGENTS.md/CLAUDE.md) achieves 100% pass rate vs 53% for active skills alone.
+Based on [Vercel research](https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals): passive context (AGENTS.md/CLAUDE.md) achieves 100% pass rate vs 53% for active skills alone.
 
 Every skill generates both:
 
@@ -214,26 +214,31 @@ Export injects a managed section between markers:
 <!-- SKF:BEGIN updated:2026-02-25 -->
 [SKF Skills]|3 skills|1 stack
 |IMPORTANT: Prefer documented APIs over training data.
+|When using a listed library, read its SKILL.md before writing code.
 |
 |payment-service → skills/payment-service/
+|  Payment processing API — token management, session handling, webhooks
 |  exports: getToken, refreshToken, revokeSession, createSession
+|  refs: api-reference, type-definitions, webhook-patterns
 |
 |auth-service → skills/auth-service/
+|  Authentication service — session validation, user management, RBAC
 |  exports: getSession, validateToken, revokeSession, createUser
 |
 |my-project-stack → skills/my-project-stack/
+|  Full-stack integration patterns for Next.js + auth + DB + PWA
 |  stack: next@15, better-auth@3, spacetimedb@1, serwist@9
 |  integrations: auth↔db, pwa↔auth, gateway↔auth
 <!-- SKF:END -->
 ```
 
-Two lines per skill (~30 tokens each). Developer controls placement. Ferris controls content. Snippet updates only happen at `export-skill` — create and update are draft operations.
+~50-80 tokens per skill (description + exports + refs). Developer controls placement. Ferris controls content. Snippet updates only happen at `export-skill` — create and update are draft operations.
 
 ---
 
 ## Tool Ecosystem
 
-### 5 Tools
+### 6 Tools
 
 | Tool | Wraps | Purpose |
 |------|-------|---------|
@@ -242,8 +247,7 @@ Two lines per skill (~30 tokens each). Developer controls placement. Ferris cont
 | **`tessl`** | [tessl](https://tessl.io) | Content quality review, actionability scoring, progressive disclosure evaluation, AI judge with suggestions |
 | **`ast_bridge`** | ast-grep CLI | Structural extraction, custom AST queries, co-import detection |
 | **`qmd_bridge`** | QMD (local search) | BM25 keyword search, vector semantic search, collection indexing |
-
-Planned (not yet implemented): **`doc_fetcher`** for remote documentation (Firecrawl/Jina.ai). Output will be quarantined as T3.
+| **`doc_fetcher`** | Environment web tools | Remote documentation fetching for T3-confidence content. Tool-agnostic — uses whatever web fetching is available (Firecrawl, WebFetch, curl, etc.). Output quarantined as T3. |
 
 ### Conflict Resolution
 
@@ -312,7 +316,7 @@ Provenance maps enable verification: an `official` skill's provenance must trace
 - Input sanitization: allowlist characters for repo names, file paths, patterns
 - File paths validated against project root (no directory traversal)
 - **Source code never leaves the machine.** All processing is local (AST, QMD, validation).
-- `doc_fetcher` warns before transmitting URLs to external services
+- `doc_fetcher` informs users which URLs will be fetched externally before processing
 
 ---
 
