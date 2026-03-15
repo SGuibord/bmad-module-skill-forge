@@ -182,7 +182,7 @@ All remaining frontmatter variables verified as used:
 
 **Status: ✅ N/A**
 
-No subprocesses needed — lightweight linear pipeline with small files (~30 tokens per snippet). All operations are sequential with data dependencies between steps.
+No subprocesses needed — lightweight linear pipeline with small files (~50-80 tokens per snippet). All operations are sequential with data dependencies between steps.
 
 ### Issues Found: 0
 

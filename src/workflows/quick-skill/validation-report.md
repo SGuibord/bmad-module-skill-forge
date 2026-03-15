@@ -190,13 +190,13 @@ None.
 ### Document Production
 
 - **Produces documents:** Yes — multi-file output (SKILL.md, context-snippet.md, metadata.json)
-- **Template type:** Structured (SKILL.md sections) + Strict (snippet two-line format, metadata JSON schema)
+- **Template type:** Structured (SKILL.md sections) + Strict (snippet ADR-L v2 format, metadata JSON schema)
 - **Template location:** data/skill-template.md — serves as reference guide for section structure and format specifications
 
 ### Template Assessment
 
 - ✅ data/skill-template.md exists and defines required/optional sections for SKILL.md
-- ✅ Defines ADR-L two-line format for context-snippet.md
+- ✅ Defines ADR-L v2 format for context-snippet.md
 - ✅ Defines JSON schema for metadata.json with required fields
 - ✅ Template type matches design (structured + strict)
 - Note: No templates/ folder — template is in data/ because it's a reference guide, not a progressively-filled document template
@@ -243,7 +243,7 @@ No dedicated steps-v/ folder (create-only lifecycle, by design).
 
 **Inline validation:** step-05-validate.md provides advisory community-tier validation:
 - ✅ Checks SKILL.md required sections
-- ✅ Checks context-snippet.md format (two-line ADR-L)
+- ✅ Checks context-snippet.md format (ADR-L v2)
 - ✅ Checks metadata.json required fields
 - ✅ Reports issues without blocking (advisory)
 - ✅ Auto-proceeds to write step regardless of findings
@@ -449,7 +449,7 @@ None.
 | Input: language hint (optional) | Optional | step-01 accepts, overrides detection | ✅ |
 | Input: scope hint (optional) | Optional | step-01 accepts, step-03 uses for focused reading | ✅ |
 | Output: SKILL.md | Structured sections | step-04 assembles from template, step-06 writes | ✅ |
-| Output: context-snippet.md | ADR-L two-line | step-04 generates, step-05 validates format | ✅ |
+| Output: context-snippet.md | ADR-L v2 | step-04 generates, step-05 validates format | ✅ |
 | Output: metadata.json | Strict JSON schema | step-04 generates, step-05 validates fields | ✅ |
 | Instruction style: prescriptive | Prescriptive pipeline | All steps use mandatory sequences, forbidden rules | ✅ |
 

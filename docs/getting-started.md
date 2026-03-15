@@ -60,6 +60,7 @@ The installer detects the existing `_bmad/` directory and installs SKF alongside
 | [Node.js](https://nodejs.org/) >= 22                                   | Installation, npx commands | <https://nodejs.org>          |
 | `gh` (GitHub CLI)                                                      | All modes          | <https://cli.github.com>      |
 | `ast-grep`  (CLI tool for code structural search, lint, and rewriting) | Forge + Deep modes | <https://ast-grep.github.io>  |
+| `ast-grep` MCP server (recommended alongside CLI)                      | Forge + Deep modes | <https://github.com/ast-grep/ast-grep-mcp> |
 | `qmd` (local hybrid search engine for project files)                   | Deep mode          | <https://github.com/tobi/qmd> |
 
 Don't worry if you don't have all tools — SKF detects what's available and sets your tier automatically.

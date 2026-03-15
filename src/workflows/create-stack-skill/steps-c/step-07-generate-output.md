@@ -100,7 +100,7 @@ Load structure from `{stackSkillTemplate}` integrations section:
 
 Write `{skills_output_folder}/{project_name}-stack/context-snippet.md`:
 
-Use ADR-L two-line format targeting ~30 tokens per library entry:
+Use ADR-L v2 format targeting ~50-80 tokens per library entry:
 ```
 **{library}** ({import_count} imports): {top_3_exports}
   → integrates with: {comma-separated integration partners}

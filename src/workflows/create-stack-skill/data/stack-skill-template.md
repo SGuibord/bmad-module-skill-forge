@@ -51,7 +51,7 @@ description: >
 
 ## context-snippet.md Format (ADR-L)
 
-Two-line format per library, targeting ~30 tokens per entry:
+ADR-L v2 format per library, targeting ~50-80 tokens per entry:
 
 ```markdown
 **{library}** ({import_count} imports): {top_3_exports}

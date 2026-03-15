@@ -139,7 +139,7 @@ Record missing tier labels as **WARNING** findings.
 
 ### 8. Validate context-snippet.md
 
-Verify context-snippet.md follows ADR-L two-line format:
+Verify context-snippet.md follows ADR-L v2 format:
 - [ ] Each library has an entry with import count and top exports
 - [ ] Integration partners listed on second line
 - [ ] No library from confirmed list is missing

@@ -10,7 +10,7 @@ skillTemplateData: '../data/skill-template.md'
 
 ## STEP GOAL:
 
-To assemble the best-effort SKILL.md document, context-snippet.md in ADR-L two-line format, and metadata.json with `source_authority: community` from the extraction inventory. Present compiled output for review before validation.
+To assemble the best-effort SKILL.md document, context-snippet.md in ADR-L v2 format, and metadata.json with `source_authority: community` from the extraction inventory. Present compiled output for review before validation.
 
 ## MANDATORY EXECUTION RULES (READ FIRST):
 
@@ -58,7 +58,7 @@ To assemble the best-effort SKILL.md document, context-snippet.md in ADR-L two-l
 
 Load {skillTemplateData} to understand:
 - SKILL.md required and optional sections
-- context-snippet.md two-line format (ADR-L)
+- context-snippet.md ADR-L v2 format
 - metadata.json field requirements
 
 ### 2. Assemble SKILL.md
@@ -99,7 +99,7 @@ description: >
 
 ### 3. Generate Context Snippet
 
-Create context-snippet.md in ADR-L two-line format (~30 tokens):
+Create context-snippet.md in ADR-L v2 format (~50-80 tokens):
 
 ```
 {skill_name} → skills/{skill_name}/
@@ -148,7 +148,7 @@ Create metadata.json:
 
 **context-snippet.md:**
 
-{Display the two-line snippet}
+{Display the snippet}
 
 ---
 
@@ -189,7 +189,7 @@ ONLY WHEN the user reviews the compiled output and selects 'C' will you load and
 ### ✅ SUCCESS:
 
 - SKILL.md assembled with all available sections populated
-- context-snippet.md generated in correct two-line ADR-L format
+- context-snippet.md generated in correct ADR-L v2 format
 - metadata.json generated with source_authority: community
 - Compiled output presented for user review
 - User confirms readiness before proceeding to validation
