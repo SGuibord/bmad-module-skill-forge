@@ -160,6 +160,8 @@ The installer detects the existing `_bmad/` directory and installs SKF alongside
 
 The `setup-forge` workflow detects available tools and writes the tier to `forge-tier.yaml`. All subsequent workflows adapt their behavior to the detected tier.
 
+> **Recommended:** If your IDE supports MCP servers, install the [ast-grep MCP server](https://github.com/ast-grep/ast-grep-mcp) alongside the CLI. SKF's extraction protocol prefers the MCP tool for compact, memory-efficient AST queries and falls back to CLI streaming for large codebases.
+
 ## Knowledge Base
 
 SKF relies on a curated skill compilation knowledge base:
@@ -218,6 +220,7 @@ SKF builds on these excellent open-source tools:
 | [agentskills.io](https://github.com/agentskills/agentskills) | Skill specification and ecosystem standard                         |
 | [GitHub CLI](https://cli.github.com/)                        | Source code access and repository intelligence (all tiers)         |
 | [ast-grep](https://github.com/ast-grep/ast-grep)             | AST-based structural code extraction (Forge/Deep tiers)            |
+| [ast-grep MCP](https://github.com/ast-grep/ast-grep-mcp)     | MCP server for memory-efficient AST queries (recommended)          |
 | [QMD](https://github.com/tobi/qmd)                           | Local hybrid search engine for knowledge indexing (Deep tier)      |
 | [skill-check](https://github.com/thedaviddias/skill-check)   | Skill validation, auto-fix, quality scoring, and security scanning |
 | [tessl](https://tessl.io)                                     | Content quality review, actionability scoring, and AI judge evaluation |
