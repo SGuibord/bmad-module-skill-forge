@@ -3,6 +3,7 @@ name: 'step-03-re-extract'
 description: 'Tier-aware AST extraction on changed files only, producing fresh exports with confidence tiers'
 
 nextStepFile: './step-04-merge.md'
+extractionPatternsData: '../../create-skill/data/extraction-patterns.md'
 ---
 
 # Step 3: Re-Extract Changed Exports
@@ -113,7 +114,7 @@ Degrade to Quick tier extraction. Note the degradation reason in context for the
 
 **Forge tier (AST structural extraction):**
 
-⚠️ **CRITICAL:** Follow the **AST Extraction Protocol** from `src/workflows/create-skill/data/extraction-patterns.md`. Use the decision tree based on the number of changed files: prefer MCP `find_code()` for small sets, `find_code_by_rule()` with scoped YAML rules for medium sets, and CLI `--json=stream` with line-by-line streaming for large sets. Never use `ast-grep --json` (without `=stream`) — it loads the entire result set into memory and will fail on large codebases.
+⚠️ **CRITICAL:** Load and follow the **AST Extraction Protocol** from `{extractionPatternsData}`. Use the decision tree based on the number of changed files: prefer MCP `find_code()` for small sets, `find_code_by_rule()` with scoped YAML rules for medium sets, and CLI `--json=stream` with line-by-line streaming for large sets. Never use `ast-grep --json` (without `=stream`) — it loads the entire result set into memory and will fail on large codebases.
 
 - Extract: function signatures, type definitions, class members, exported constants
 - Extract: parameter types, return types, JSDoc/docstring comments
