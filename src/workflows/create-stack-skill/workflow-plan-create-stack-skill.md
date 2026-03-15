@@ -179,7 +179,7 @@ Multi-file document-producing workflow:
 - Type: action (multi-file generation)
 - Deliverable files in `{skills_output_folder}/{project}-stack/`:
   - SKILL.md — Integration patterns + conventions (main skill)
-  - context-snippet.md — Compressed stack index (~30 tokens per lib, ADR-L)
+  - context-snippet.md — Compressed stack index (~50-80 tokens per lib, ADR-L v2)
   - metadata.json — skill_type: "stack", library list, integration pair count
   - references/{library}.md — Per-library API surface and key patterns
   - references/integrations/{pair}.md — Cross-library integration patterns
@@ -335,7 +335,7 @@ create-stack-skill/
 **Step 07 (generate-output):**
 - Write all deliverable files to `{skills_output_folder}/{project}-stack/`:
   - SKILL.md (from compilation)
-  - context-snippet.md (~30 tokens per library, ADR-L two-line format)
+  - context-snippet.md (~50-80 tokens per library, ADR-L v2 format)
   - metadata.json (skill_type: "stack", library list, integration pair count, version)
   - references/{library}.md for each confirmed library
   - references/integrations/{pair}.md for each detected integration pair

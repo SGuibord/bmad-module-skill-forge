@@ -104,10 +104,10 @@ Check that SKILL.md has these required sections populated:
 
 Check context-snippet.md format compliance:
 
-- [ ] **Two-line format** — first line has skill name and exports, second line has path pointer
+- [ ] **ADR-L v2 format** — name+path, description, exports, optional refs
 - [ ] **First line** matches pattern: `{name}: {exports list}`
 - [ ] **Second line** matches pattern: `  → {path}/SKILL.md`
-- [ ] **Approximate token count** is ~30 tokens or less
+- [ ] **Approximate token count** is ~50-80 tokens
 
 **If format is wrong, log an issue.**
 

@@ -1,6 +1,6 @@
 ---
 name: 'step-03-generate-snippet'
-description: 'Generate context-snippet.md in compressed two-line format per ADR-L'
+description: 'Generate context-snippet.md in ADR-L v2 format'
 
 nextStepFile: './step-04-update-context.md'
 snippetFormatData: '../data/snippet-format.md'
@@ -10,7 +10,7 @@ snippetFormatData: '../data/snippet-format.md'
 
 ## STEP GOAL:
 
-To generate or update context-snippet.md for the skill in the compressed two-line format defined by ADR-L, targeting ~30 tokens per skill with T1-now content only.
+To generate or update context-snippet.md for the skill in the ADR-L v2 format, targeting ~50-80 tokens per skill with T1-now content only.
 
 ## MANDATORY EXECUTION RULES (READ FIRST):
 
@@ -45,7 +45,7 @@ To generate or update context-snippet.md for the skill in the compressed two-lin
 
 - Available: Skill metadata (name, exports, skill_type, components, integrations) from step-01
 - Focus: Snippet generation in exact ADR-L format
-- Limits: T1-now content only, ~30 tokens target
+- Limits: T1-now content only, ~50-80 tokens target
 - Dependencies: Step-01 metadata, step-02 package validation
 
 ## MANDATORY SEQUENCE
@@ -160,7 +160,7 @@ ONLY WHEN snippet generation is complete (or skipped due to passive_context opt-
 
 ### ❌ SYSTEM FAILURE:
 
-- Deviating from ADR-L two-line format
+- Deviating from ADR-L v2 format
 - Including T2 annotations or temporal context
 - Not checking passive_context setting
 - Not estimating token count

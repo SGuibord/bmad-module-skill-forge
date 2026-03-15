@@ -63,7 +63,7 @@ Package a skill for distribution + platform-aware context injection. Final deliv
 
 - **ADR-J:** Managed section with `<!-- SKF:BEGIN/END -->` markers. Auto-inject between markers. Developer controls placement. Ferris controls content.
 - **ADR-K:** Snippet updates only at export. Create/update are draft operations. Export publishes to skills/ and CLAUDE.md. Prevents half-baked snippets.
-- **ADR-L:** One snippet format always — two-line per skill (pointer + name anchoring, ~30 tokens each). No adaptive format switching. Consistent for agent parsing.
+- **ADR-L:** One snippet format always — ADR-L v2 multi-line per skill (~50-80 tokens each). No adaptive format switching. Consistent for agent parsing.
 
 ### Dual-Output Delivery Strategy (from module brief)
 
@@ -174,7 +174,7 @@ Three CLAUDE.md cases:
 **Output Specifications:**
 - Type: Action-based (file writes + console output)
 - Files written:
-  1. `{skills_output_folder}/{name}/context-snippet.md` — compressed two-line format per ADR-L (~30 tokens/skill)
+  1. `{skills_output_folder}/{name}/context-snippet.md` — ADR-L v2 format (~50-80 tokens/skill)
   2. CLAUDE.md or AGENTS.md — managed `<!-- SKF:BEGIN/END -->` section per ADR-J (3 cases: create/append/regenerate)
   3. agentskills.io package structure — ready for `npx skills publish`
 - Console output: Token count report + export summary with distribution instructions
@@ -182,7 +182,7 @@ Three CLAUDE.md cases:
 
 **Success Criteria:**
 - Skill loaded and validated against agentskills.io spec
-- context-snippet.md generated with correct two-line format
+- context-snippet.md generated with correct ADR-L v2 format
 - CLAUDE.md managed section correctly handles all three cases without corrupting existing content
 - Token counts calculated and reported for all generated artifacts
 - Package structure ready for `npx skills publish`
@@ -233,9 +233,9 @@ Three CLAUDE.md cases:
 - Auto-proceed
 
 **Phase 3: Generate Snippet (step-03-generate-snippet)**
-- Generate context-snippet.md in compressed two-line format (ADR-L)
+- Generate context-snippet.md in ADR-L v2 format
 - T1-now content only — top-5 exports, pointer to skill path
-- ~30 tokens per skill target
+- ~50-80 tokens per skill target
 - Auto-proceed
 
 **Phase 4: Update Context (step-04-update-context)**
@@ -264,7 +264,7 @@ Three CLAUDE.md cases:
 |------|------|------|-------------|------|
 | 01 | load-skill | Init (Input Discovery) | P2: C only | Load skill artifacts, validate spec compliance, confirm with user |
 | 02 | package | Middle (Simple) | P3: Auto-proceed | Build agentskills.io package structure |
-| 03 | generate-snippet | Middle (Simple) | P3: Auto-proceed | Generate context-snippet.md in two-line format |
+| 03 | generate-snippet | Middle (Simple) | P3: Auto-proceed | Generate context-snippet.md in ADR-L v2 format |
 | 04 | update-context | Middle (Standard) | P2: C only | Update managed section in CLAUDE.md/AGENTS.md (3-case logic) |
 | 05 | token-report | Middle (Simple) | P3: Auto-proceed | Calculate and report token counts |
 | 06 | summary | Final | No next step | Display export summary with distribution instructions |
@@ -292,7 +292,7 @@ Three CLAUDE.md cases:
 **Step 03 — generate-snippet (Middle Simple, auto-proceed):**
 - Load data/snippet-format.md template (ADR-L)
 - Generate context-snippet.md from metadata: skill name, path, top-5 exports
-- Two-line format, ~30 tokens target, T1-now content only
+- ADR-L v2 format, ~50-80 tokens target, T1-now content only
 - Write to `{skills_output_folder}/{name}/context-snippet.md` (or preview if dry-run)
 - Auto-proceed to step-04
 
@@ -357,7 +357,7 @@ export-skill/
 
 ### Subprocess Optimization
 
-None needed — lightweight linear pipeline, small files (~30 tokens per snippet).
+None needed — lightweight linear pipeline, small files (~50-80 tokens per snippet).
 
 ### Workflow Chaining
 

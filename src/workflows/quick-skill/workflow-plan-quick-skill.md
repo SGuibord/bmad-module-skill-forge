@@ -156,7 +156,7 @@ Document-producing workflow generating three files:
 - Type: multi-file document output
 - Files:
   - `{skills_output_folder}/{name}/SKILL.md` — structured template following agentskills.io spec sections
-  - `{skills_output_folder}/{name}/context-snippet.md` — strict two-line format per ADR-L (~30 tokens)
+  - `{skills_output_folder}/{name}/context-snippet.md` — ADR-L v2 format (~50-80 tokens)
   - `{skills_output_folder}/{name}/metadata.json` — strict JSON with `source_authority: community`
 - Format: structured (SKILL.md), strict (context-snippet.md, metadata.json)
 - Frequency: single run per skill
@@ -165,7 +165,7 @@ Document-producing workflow generating three files:
 - Package/URL successfully resolved to GitHub repo source
 - Public exports documented (best-effort, may be incomplete)
 - Valid SKILL.md with core sections populated
-- context-snippet.md in correct two-line format
+- context-snippet.md in correct ADR-L v2 format
 - metadata.json with `source_authority: community` and required fields
 - No ecosystem duplicate if official skill already exists (user chose to proceed)
 
@@ -277,14 +277,14 @@ quick-skill/
 **Step 04 — compile (Checkpoint):**
 - Load skill-template.md from data/
 - Assemble SKILL.md from extraction_inventory
-- Generate context-snippet.md in two-line format (ADR-L, ~30 tokens)
+- Generate context-snippet.md in ADR-L v2 format (~50-80 tokens)
 - Generate metadata.json with source_authority: community
 - Present compiled SKILL.md for review
 - [C] Continue to validation
 
 **Step 05 — validate (Auto-proceed):**
 - Check SKILL.md has required sections populated
-- Check context-snippet.md format compliance (two-line)
+- Check context-snippet.md format compliance (ADR-L v2)
 - Check metadata.json has required fields
 - Community-tier validation (lighter than official)
 - Report any gaps/issues

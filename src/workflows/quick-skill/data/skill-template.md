@@ -49,7 +49,7 @@ description: >
 
 ## context-snippet.md Format (ADR-L)
 
-Two-line format targeting ~30 tokens per skill:
+ADR-L v2 format targeting ~50-80 tokens per skill:
 
 ```markdown
 {skill_name} → skills/{skill_name}/
