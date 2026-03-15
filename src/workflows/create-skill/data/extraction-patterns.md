@@ -64,6 +64,163 @@ Same extraction as Forge tier. Deep tier adds enrichment in step-04, not extract
 
 ---
 
+## AST Extraction Protocol
+
+When AST tools are available (Forge/Deep tier), follow this deterministic protocol to prevent output overflow on large codebases. The file count from step-01's file tree determines the extraction strategy.
+
+### Decision Tree
+
+Apply the first matching condition:
+
+```
+Files in scope ≤ 100
+  → Use ast-grep MCP tool: find_code(pattern, max_results=100, output_format="text")
+  → Parse compact text output directly into extraction inventory
+
+Files in scope 101–500
+  → Use ast-grep MCP tool: find_code_by_rule(yaml, max_results=150, output_format="text")
+  → Use scoped YAML rules (see recipes below) to filter at the AST level
+  → Parse compact text output into extraction inventory
+
+Files in scope > 500
+  → CLI streaming fallback: ast-grep --json=stream + line-by-line Python processing
+  → Process in directory batches, cap per-batch output
+  → Merge batch results into extraction inventory
+```
+
+### Safety Valve
+
+If any ast-grep operation (MCP or CLI) visibly causes a timeout, returns an error related to output size, or produces unexpectedly large output: immediately switch to the CLI streaming fallback with `--json=stream`. Do not retry the same approach. Note: `max_results` in the MCP tool and `| head -N` in the CLI path provide hard caps, but this safety valve covers cases where the upstream tool itself fails before returning results (e.g., OOM during JSON serialization).
+
+### MCP Tool Usage (Preferred)
+
+**Simple pattern search:**
+
+```
+find_code(
+  project_folder="{source_path}",
+  pattern="async def $NAME($$$PARAMS)",
+  language="python",
+  max_results=100,
+  output_format="text"
+)
+```
+
+**Scoped YAML rule search (for larger repos):**
+
+```
+find_code_by_rule(
+  project_folder="{source_path}",
+  yaml="id: public-api\nlanguage: python\nrule:\n  pattern: 'def $NAME($$$PARAMS)'\n  inside:\n    kind: module\n    stopBy: end\nconstraints:\n  NAME:\n    regex: '^[^_]'",
+  max_results=150,
+  output_format="text"
+)
+```
+
+### CLI Streaming Fallback
+
+When MCP tools are unavailable or the repo exceeds 500 files in scope, use `--json=stream` (NEVER `--json` or `--json=pretty`) with line-by-line Python processing:
+
+```bash
+# Note: use $$$ for variadic params in ast-grep patterns (e.g., 'def $NAME($$$PARAMS)')
+ast-grep -p '{pattern}' -l {language} --json=stream {path} | python3 -c "
+import sys, json
+for line in sys.stdin:
+    try:
+        m = json.loads(line)
+        v = m.get('metaVariables',{})
+        name = v.get('single',{}).get('NAME',{}).get('text','')
+        if name and not name.startswith('_'):
+            f = m.get('file','')
+            ln = m.get('range',{}).get('start',{}).get('line',0)+1
+            sig = m.get('text','').split(chr(10))[0].strip()
+            print(f'[AST:{f}:L{ln}] {sig}')
+    except: pass
+" | head -200
+```
+
+**Critical constraints:**
+
+- ALWAYS use `--json=stream` — never `--json` (loads entire array into memory)
+- ALWAYS process line-by-line (`for line in sys.stdin`) — never `json.load(sys.stdin)`
+- ALWAYS cap output with `| head -N` as a safety valve
+- For repos > 500 files, process in directory batches of 20-50 files each
+
+### YAML Rule Recipes by Language
+
+**Python — public functions:**
+
+```yaml
+id: python-public-functions
+language: python
+rule:
+  pattern: 'def $NAME($$$PARAMS)'
+  inside:
+    kind: module
+    stopBy: end
+constraints:
+  NAME:
+    regex: '^[^_]'
+```
+
+**Python — public classes:**
+
+```yaml
+id: python-public-classes
+language: python
+rule:
+  pattern: 'class $NAME($$$BASES)'
+  inside:
+    kind: module
+    stopBy: end
+constraints:
+  NAME:
+    regex: '^[^_]'
+```
+
+**JavaScript/TypeScript — exported functions:**
+
+```yaml
+id: js-exported-functions
+language: typescript
+rule:
+  pattern: 'export function $NAME($$$PARAMS)'
+```
+
+**JavaScript/TypeScript — exported constants:**
+
+```yaml
+id: js-exported-constants
+language: typescript
+rule:
+  pattern: 'export const $NAME = $VALUE'
+```
+
+**Rust — public functions:**
+
+```yaml
+id: rust-public-functions
+language: rust
+rule:
+  any:
+    - pattern: 'pub fn $NAME($$$PARAMS) -> $RET'
+    - pattern: 'pub fn $NAME($$$PARAMS)'
+```
+
+**Go — exported functions (capitalized):**
+
+```yaml
+id: go-exported-functions
+language: go
+rule:
+  pattern: 'func $NAME($$$PARAMS) $RET'
+constraints:
+  NAME:
+    regex: '^[A-Z]'
+```
+
+---
+
 ## Tier Degradation Rules
 
 ### Remote Source at Forge/Deep Tier

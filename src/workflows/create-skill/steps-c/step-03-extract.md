@@ -110,7 +110,7 @@ If `source_repo` is a remote URL (GitHub URL or owner/repo format) AND tier is F
 
    Proceed with Quick tier extraction strategy below. Note the degradation reason in context for the evidence report.
 
-**Ephemeral clone cleanup:** After extraction is complete for all files in scope (whether successful or partially failed), before presenting the Gate 2 summary (Section 5), if `ephemeral_clone_active`, delete the `{temp_path}` directory. Log: "Ephemeral source clone cleaned up." This ensures cleanup runs even if some extractions failed, as long as the step itself is still executing.
+**Ephemeral clone cleanup:** After extraction is complete for all files in scope (whether successful or partially failed), before presenting the Gate 2 summary (Section 6), if `ephemeral_clone_active`, delete the `{temp_path}` directory. Log: "Ephemeral source clone cleaned up." This ensures cleanup runs even if some extractions failed, as long as the step itself is still executing.
 
 **Quick Tier (No AST tools):**
 
@@ -123,8 +123,13 @@ If `source_repo` is a remote URL (GitHub URL or owner/repo format) AND tier is F
 
 **Forge/Deep Tier (AST available):**
 
+⚠️ **CRITICAL:** Before executing AST extraction, load the **AST Extraction Protocol** section from `{extractionPatternsData}`. Follow the decision tree based on the file count from step-01's file tree. This determines whether to use the MCP tool, scoped YAML rules, or CLI streaming. Never use `ast-grep --json` (without `=stream`) — it loads the entire result set into memory and will fail on large codebases.
+
 1. Detect language from brief or file extensions
-2. Use `ast_bridge.scan_definitions(path, language)` for each file in scope
+2. Follow the AST Extraction Protocol decision tree from `{extractionPatternsData}`:
+   - ≤100 files: use `find_code()` MCP tool with `max_results` and `output_format="text"`
+   - ≤500 files: use `find_code_by_rule()` MCP tool with scoped YAML rules
+   - >500 files: use CLI `--json=stream` with line-by-line streaming Python
 3. For each export: extract function name, full signature, parameter types, return type, line number
 4. Use `ast_bridge.detect_co_imports(path, libraries[])` to find integration points
 5. Build extraction rules YAML data for reproducibility
@@ -141,7 +146,7 @@ Degrade to Quick tier extraction. Note the degradation reason in context for the
 - If a file cannot be read: log warning, skip file, continue with remaining files
 - If AST parsing fails on a file: fall back to source reading for that file, continue
 
-### 4. Build Extraction Inventory
+### 5. Build Extraction Inventory
 
 Compile all extracted data into a structured inventory:
 
@@ -165,7 +170,7 @@ Compile all extracted data into a structured inventory:
 - Libraries commonly imported alongside extracted exports
 - Integration point suggestions
 
-### 5. Present Extraction Summary (Gate 2)
+### 6. Present Extraction Summary (Gate 2)
 
 Display the extraction findings for user confirmation:
 
@@ -184,7 +189,7 @@ Display the extraction findings for user confirmation:
 
 Review the extraction summary above. Select an option to continue."
 
-### 6. Present MENU OPTIONS
+### 7. Present MENU OPTIONS
 
 Display: "**Extraction Summary — Select an Option:** [C] Continue to compilation"
 
