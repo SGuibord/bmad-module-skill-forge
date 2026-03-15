@@ -110,6 +110,28 @@ Parse the successfully fetched markdown for:
 - URLs that failed
 - T3 items extracted
 
+### 5b. Index into QMD (Deep Tier Only)
+
+**If tier is not Deep:** Skip this section silently.
+
+**If tier is Deep and at least one URL was fetched successfully:**
+
+1. Write fetched markdown files to a staging directory: `{system_temp}/skf-docs-{skill-name}/`
+2. Index into QMD: `qmd collection add {staging-dir}/ --name {skill-name}-docs --mask "*.md"`
+3. Register in forge-tier.yaml `qmd_collections` array:
+
+```yaml
+- name: "{skill-name}-docs"
+  type: "docs"
+  source_workflow: "create-skill"
+  skill_name: "{skill-name}"
+  created_at: "{current ISO date}"
+```
+
+4. Clean up staging directory after indexing.
+
+**If QMD indexing fails:** Warn: "QMD indexing of fetched docs failed. T3 items are still in the extraction inventory — enrichment will proceed without QMD-indexed docs." Continue.
+
 ### 6. Report
 
 Display:
