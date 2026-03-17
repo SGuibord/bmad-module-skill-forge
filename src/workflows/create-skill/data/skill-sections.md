@@ -80,20 +80,30 @@ Place after Quick Start and after API Reference sections.
 
 ---
 
-## context-snippet.md Format (ADR-L v2)
+## context-snippet.md Format (Vercel-aligned indexed format)
 
-Compressed multi-line-per-skill format for CLAUDE.md managed section (~50-80 tokens per skill):
+Indexed pipe-delimited format for CLAUDE.md managed section (~80-120 tokens per skill). Aligned with Vercel's research finding that retrieval instructions + indexed file maps + inline gotchas dramatically improve agent performance.
 
 ```markdown
-{skill-name} → skills/{skill-name}/
-  {compressed description ~15 words from SKILL.md frontmatter}
-  exports: {comma-separated top 10 function names}
-  refs: {reference-file-names without .md extension}
+[{skill-name} v{version}]|root: skills/{skill-name}/
+|IMPORTANT: {skill-name} v{version} — read SKILL.md before writing {skill-name} code. Do NOT rely on training data.
+|quick-start:{SKILL.md#quick-start}
+|api: {top exports with () for functions, comma-separated}
+|key-types:{SKILL.md#key-types} — {inline summary of most important type values}
+|gotchas: {2-3 most critical pitfalls or breaking changes, inline}
 ```
 
-- Line 2 (description): Compressed from SKILL.md frontmatter `description:` — the WHEN-TO-USE signal
-- Line 3 (exports): Top exports from metadata.json
-- Line 4 (refs): Only present when `references/` directory exists — the WHERE-TO-LOOK signal
+### Format rules
+
+- **Line 1:** Skill name + version + root path — version signals training data staleness
+- **Line 2 (IMPORTANT):** Retrieval instruction — always present, tells agent to read SKILL.md before acting
+- **Lines 3+:** Pipe-delimited index mapping topics to SKILL.md sections (with `#anchor` pointers)
+- **Inline content:** Each index line includes a brief inline summary (~10 words) so the agent can decide whether to read the full section
+- **gotchas line:** 2-3 most critical pitfalls inline — prevents mistakes without requiring a file read
+- **Token budget:** ~80-120 tokens per skill (justified by Vercel's finding that indexed format maintains performance at 80% compression)
+- **T1-now content only** — no T2 annotations in the snippet
+- **Section anchors** (`#quick-start`, `#key-types`) must match actual SKILL.md heading slugs
+- **Version** comes from source detection (per issue #32), not brief default
 
 ---
 

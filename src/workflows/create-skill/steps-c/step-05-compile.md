@@ -171,12 +171,24 @@ Do NOT repeat Tier 1's name/purpose/key-params table format in Tier 2. Tier 2 is
 
 ### 3. Build context-snippet.md Content
 
-Compressed 2-line format for CLAUDE.md managed section:
+Vercel-aligned indexed format for CLAUDE.md managed section (~80-120 tokens):
 
 ```markdown
-{skill-name} -> skills/{skill-name}/
-  exports: {comma-separated top 10 function names}
+[{skill-name} v{version}]|root: skills/{skill-name}/
+|IMPORTANT: {skill-name} v{version} — read SKILL.md before writing {skill-name} code. Do NOT rely on training data.
+|quick-start:{SKILL.md#quick-start}
+|api: {top exports with () for functions, comma-separated}
+|key-types:{SKILL.md#key-types} — {inline summary of most important type values}
+|gotchas: {2-3 most critical pitfalls or breaking changes, inline}
 ```
+
+**Derivation rules:**
+
+- **version**: From source detection (reconciled in step-03), not brief default
+- **api**: Top 10 exports from extraction inventory, append `()` to function names
+- **key-types**: Inline summary of most important enum/type values from Key Types section
+- **gotchas**: Derived from T2-future annotations (breaking changes), async requirements, version-specific behavior changes. If no gotchas available, omit the gotchas line.
+- **Section anchors** (`#quick-start`, `#key-types`): Must match actual heading slugs in the assembled SKILL.md
 
 ### 4. Build metadata.json Content
 

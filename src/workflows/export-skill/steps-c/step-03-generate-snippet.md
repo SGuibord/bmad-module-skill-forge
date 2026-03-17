@@ -10,7 +10,7 @@ snippetFormatData: '../data/snippet-format.md'
 
 ## STEP GOAL:
 
-To generate or update context-snippet.md for the skill in the ADR-L v2 format, targeting ~50-80 tokens per skill with T1-now content only.
+To generate or update context-snippet.md for the skill in the Vercel-aligned indexed format, targeting ~80-120 tokens per skill with T1-now content only.
 
 ## MANDATORY EXECUTION RULES (READ FIRST):
 
@@ -45,7 +45,7 @@ To generate or update context-snippet.md for the skill in the ADR-L v2 format, t
 
 - Available: Skill metadata (name, exports, skill_type, components, integrations) from step-01
 - Focus: Snippet generation in exact ADR-L format
-- Limits: T1-now content only, ~50-80 tokens target
+- Limits: T1-now content only, ~80-120 tokens target
 - Dependencies: Step-01 metadata, step-02 package validation
 
 ## MANDATORY SEQUENCE
@@ -70,38 +70,42 @@ Load {snippetFormatData} and read the format template for the skill type.
 
 **For single skills (`skill_type: "single"`):**
 
-1. Read SKILL.md frontmatter `description:` field. Compress to ~15 words focusing on WHAT and WHEN-TO-USE.
-2. Select top exports from metadata.json `exports` array (up to 10 for Deep tier, 5 otherwise).
-3. Check if `references/` directory exists — if so, list reference file names without `.md` extension.
+1. Read metadata.json for `version`, `exports` array
+2. Select top exports (up to 10 for Deep tier, 5 otherwise). Append `()` to function names.
+3. Read SKILL.md to extract: heading slugs for `#quick-start` and `#key-types`, inline summary of key types (~10 words)
+4. Derive gotchas from: T2-future annotations in evidence report (breaking changes), async requirements, version-specific behavior. If no gotchas, omit the gotchas line.
 
 Generate:
 ```
-{skill-name} → skills/{skill-name}/
-  {compressed-description ~15 words}
-  exports: {export-1}, {export-2}, {export-3}, {export-4}, {export-5}
-  refs: {ref-1}, {ref-2}, {ref-3}
+[{skill-name} v{version}]|root: skills/{skill-name}/
+|IMPORTANT: {skill-name} v{version} — read SKILL.md before writing {skill-name} code. Do NOT rely on training data.
+|quick-start:{SKILL.md#quick-start}
+|api: {export-1}(), {export-2}(), {export-3}, {export-4}(), {export-5}
+|key-types:{SKILL.md#key-types} — {inline summary ~10 words}
+|gotchas: {pitfall-1}, {pitfall-2}
 ```
 
 **If fewer exports than limit:** List all available.
-**If no exports:** Omit the exports line.
-**If no references/ directory:** Omit the refs line.
+**If no exports:** Omit the api line.
+**If no gotchas derivable:** Omit the gotchas line.
 
 **For stack skills (`skill_type: "stack"`):**
 
 Generate:
 ```
-{project}-stack → skills/{project}-stack/
-  {compressed-description ~15 words}
-  stack: {dep-1}@{v1}, {dep-2}@{v2}, {dep-3}@{v3}
-  integrations: {pattern-1}, {pattern-2}, {pattern-3}
+[{project}-stack v{version}]|root: skills/{project}-stack/
+|IMPORTANT: {project}-stack — read SKILL.md before writing integration code. Do NOT rely on training data.
+|stack: {dep-1}@{v1}, {dep-2}@{v2}, {dep-3}@{v3}
+|integrations: {pattern-1}, {pattern-2}
+|gotchas: {pitfall-1}, {pitfall-2}
 ```
 
 ### 4. Verify Token Count
 
 Estimate token count of generated snippet (approximate: words * 1.3).
 
-- Target: ~50-80 tokens per skill
-- Warning threshold: >100 tokens
+- Target: ~80-120 tokens per skill
+- Warning threshold: >150 tokens
 - If exceeding warning threshold, trim description, exports list, or refs to fit
 
 ### 5. Write or Preview Snippet

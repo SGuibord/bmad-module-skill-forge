@@ -99,16 +99,19 @@ description: >
 
 ### 3. Generate Context Snippet
 
-Create context-snippet.md in ADR-L v2 format (~50-80 tokens):
+Create context-snippet.md in Vercel-aligned indexed format (~80-120 tokens):
 
 ```
-{skill_name} → skills/{skill_name}/
-  {compressed description ~15 words from SKILL.md frontmatter}
-  exports: {top-5 exports as comma-separated list}
+[{skill_name} v{version}]|root: skills/{skill_name}/
+|IMPORTANT: {skill_name} v{version} — read SKILL.md before writing {skill_name} code. Do NOT rely on training data.
+|quick-start:{SKILL.md#quick-start}
+|api: {top-5 exports with () for functions}
+|gotchas: {1-2 most critical pitfalls if known}
 ```
 
 **If fewer than 5 exports:** Use all available exports.
-**If no exports:** Use key features from description instead.
+**If no exports:** Omit the api line.
+**If no gotchas known:** Omit the gotchas line.
 
 ### 4. Generate Metadata JSON
 

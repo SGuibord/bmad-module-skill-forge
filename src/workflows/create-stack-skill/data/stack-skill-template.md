@@ -49,13 +49,16 @@ description: >
 - {convention_2}
 ```
 
-## context-snippet.md Format (ADR-L)
+## context-snippet.md Format (Vercel-Aligned)
 
-ADR-L v2 format per library, targeting ~50-80 tokens per entry:
+Indexed format targeting ~80-120 tokens per stack:
 
 ```markdown
-**{library}** ({import_count} imports): {top_3_exports}
-  → integrates with: {comma-separated integration partners}
+[{project}-stack v{version}]|root: skills/{project}-stack/
+|IMPORTANT: {project}-stack — read SKILL.md before writing integration code. Do NOT rely on training data.
+|stack: {dep-1}@{v1}, {dep-2}@{v2}, {dep-3}@{v3}
+|integrations: {pattern-1}, {pattern-2}
+|gotchas: {1-2 most critical integration pitfalls}
 ```
 
 ## metadata.json Structure

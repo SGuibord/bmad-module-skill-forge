@@ -1,43 +1,51 @@
-# Context Snippet Format (ADR-L v2)
+# Context Snippet Format (Vercel-Aligned Indexed Format)
 
 ## Format Rules
 
-- Consistent multi-line format per skill — no adaptive switching
-- ~50-80 tokens per skill target (description + exports + optional refs)
+- Indexed pipe-delimited format per skill — retrieval instruction + file map + inline gotchas
+- ~80-120 tokens per skill target (up from ~50-80, justified by Vercel research)
 - T1-now content only (AST-current, no annotations)
-- Description line is the WHEN-TO-USE signal — compressed from SKILL.md frontmatter
-- Refs line is the WHERE-TO-LOOK signal — only when references/ exists
+- Line 2 (IMPORTANT) is the RETRIEVAL INSTRUCTION — always present, tells agent to read SKILL.md
+- Section anchors (`#quick-start`, `#key-types`) must match actual SKILL.md heading slugs
+- gotchas line prevents common mistakes without requiring a file read
+- Version comes from source detection, not brief default
 
 ## Single Skill Snippet Template
 
 ```markdown
-{skill-name} → skills/{skill-name}/
-  {compressed-description — ~15 words from SKILL.md frontmatter description}
-  exports: {export-1}, {export-2}, {export-3}, {export-4}, {export-5}
-  refs: {ref-1}, {ref-2}, {ref-3}
+[{skill-name} v{version}]|root: skills/{skill-name}/
+|IMPORTANT: {skill-name} v{version} — read SKILL.md before writing {skill-name} code. Do NOT rely on training data.
+|quick-start:{SKILL.md#quick-start}
+|api: {top exports with () for functions, comma-separated}
+|key-types:{SKILL.md#key-types} — {inline summary of most important type values}
+|gotchas: {2-3 most critical pitfalls or breaking changes, inline}
 ```
 
-- **Line 1:** Name + path pointer (always present)
-- **Line 2:** Compressed description from SKILL.md frontmatter `description:` field (~15 words, trigger-optimized)
-- **Line 3:** Top exports from metadata.json `exports` array (up to 10 for Deep tier, 5 otherwise)
-- **Line 4:** Reference file names without extensions (only when `references/` directory exists and contains files)
+- **Line 1:** Skill name + version + root path — version signals training data staleness
+- **Line 2 (IMPORTANT):** Retrieval instruction — always present
+- **Line 3 (quick-start):** Anchor pointer to Quick Start section
+- **Line 4 (api):** Top exports from metadata.json `exports` array (up to 10, with `()` for functions)
+- **Line 5 (key-types):** Anchor pointer + inline summary of most important type/enum values
+- **Line 6 (gotchas):** 2-3 most critical pitfalls — derived from T2-future annotations, async requirements, breaking changes
 
 ## Stack Skill Snippet Template
 
 ```markdown
-{project}-stack → skills/{project}-stack/
-  {compressed-description}
-  stack: {dep-1}@{v1}, {dep-2}@{v2}, {dep-3}@{v3}
-  integrations: {pattern-1}, {pattern-2}, {pattern-3}
+[{project}-stack v{version}]|root: skills/{project}-stack/
+|IMPORTANT: {project}-stack — read SKILL.md before writing integration code. Do NOT rely on training data.
+|stack: {dep-1}@{v1}, {dep-2}@{v2}, {dep-3}@{v3}
+|integrations: {pattern-1}, {pattern-2}
+|gotchas: {2-3 most critical integration pitfalls, inline}
 ```
 
 ## Rules
 
-- **description**: Compress SKILL.md frontmatter `description:` to ~15 words. Focus on WHAT it does and WHEN to use it.
-- **exports**: Top exports from metadata.json `exports` array (by order as listed)
-- **refs**: File names from `references/` directory, without `.md` extension, sorted. Omit line if no references/ exists.
-- **stack**: Component versions from metadata.json `components` for stack skills
-- **integrations**: Co-import patterns from metadata.json `integrations` for stack skills
+- **api line**: Top exports from metadata.json `exports` array. Append `()` to function names. Comma-separated.
+- **key-types line**: Anchor to `#key-types` section + inline summary (~10 words) of the most important type values
+- **gotchas line**: Derived from: T2-future annotations (breaking changes), async requirements, version-specific behavior. If no gotchas available, omit the line.
+- **stack line**: Component versions from metadata.json `components` for stack skills
+- **integrations line**: Co-import patterns from metadata.json `integrations` for stack skills
 - If fewer exports than the limit, list all available
-- If no exports data available, omit the exports line
+- If no exports data available, omit the api line
+- Section anchors must be verified against actual SKILL.md headings during generation
 - Skill path is relative to project root
