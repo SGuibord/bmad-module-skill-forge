@@ -158,7 +158,10 @@ If a `{skill-name}-temporal` collection already exists, remove and recreate for 
 ```bash
 qmd collection remove {skill-name}-temporal
 qmd collection add _bmad-output/{skill-name}-temporal/ --name {skill-name}-temporal --mask "*.md"
+qmd embed
 ```
+
+**Note:** `qmd embed` generates vector embeddings required for `vector_search` and `deep_search`. Without it, only BM25 keyword `search` works. Run it after every `qmd collection add`.
 
 **Update the registry** in `forge-tier.yaml`:
 

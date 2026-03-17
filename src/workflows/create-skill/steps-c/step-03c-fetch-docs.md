@@ -118,7 +118,8 @@ Parse the successfully fetched markdown for:
 
 1. Write fetched markdown files to a staging directory: `{system_temp}/skf-docs-{skill-name}/`
 2. Index into QMD: `qmd collection add {staging-dir}/ --name {skill-name}-docs --mask "*.md"`
-3. Register in forge-tier.yaml `qmd_collections` array:
+3. Generate embeddings: `qmd embed` (required for `vector_search` and `deep_search`)
+4. Register in forge-tier.yaml `qmd_collections` array:
 
 ```yaml
 - name: "{skill-name}-docs"
@@ -128,7 +129,7 @@ Parse the successfully fetched markdown for:
   created_at: "{current ISO date}"
 ```
 
-4. Clean up staging directory after indexing.
+5. Clean up staging directory after indexing.
 
 **If QMD indexing fails:** Warn: "QMD indexing of fetched docs failed. T3 items are still in the extraction inventory — enrichment will proceed without QMD-indexed docs." Continue.
 
