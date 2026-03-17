@@ -93,7 +93,7 @@ Check if the `SNYK_TOKEN` environment variable is set:
 - If `SNYK_TOKEN` is non-empty: record `{security_scan: true}`
 - If `SNYK_TOKEN` is empty or unset: record `{security_scan: false}`
 
-This is informational only — security scan availability does NOT affect the tier level. It is recorded in forge-tier.yaml so that step-06 (validate) can report actionable guidance when security scanning is unavailable.
+This is informational only — security scan availability does NOT affect the tier level. It is recorded in forge-tier.yaml so that create-skill's validation step can report actionable guidance when security scanning is unavailable.
 
 ### 7. Calculate Tier
 

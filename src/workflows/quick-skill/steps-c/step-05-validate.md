@@ -104,10 +104,10 @@ Check that SKILL.md has these required sections populated:
 
 Check context-snippet.md format compliance:
 
-- [ ] **ADR-L v2 format** — name+path, description, exports, optional refs
-- [ ] **First line** matches pattern: `{name}: {exports list}`
-- [ ] **Second line** matches pattern: `  → {path}/SKILL.md`
-- [ ] **Approximate token count** is ~50-80 tokens
+- [ ] **Vercel-aligned indexed format** — pipe-delimited with version, retrieval instruction, section anchors
+- [ ] **First line** matches pattern: `[{name} v{version}]|root: skills/{name}/`
+- [ ] **Second line** starts with: `|IMPORTANT:`
+- [ ] **Approximate token count** is ~80-120 tokens
 
 **If format is wrong, log an issue.**
 
@@ -116,7 +116,7 @@ Check context-snippet.md format compliance:
 Check metadata.json has required fields:
 
 - [ ] `name` — present, non-empty
-- [ ] `version` — present (should be "0.1.0")
+- [ ] `version` — present (auto-detected or "0.1.0")
 - [ ] `source_authority` — must be "community"
 - [ ] `source_repo` — present, valid GitHub URL
 - [ ] `language` — present, non-empty

@@ -1,6 +1,6 @@
 ---
 name: 'step-03-generate-snippet'
-description: 'Generate context-snippet.md in ADR-L v2 format'
+description: 'Generate context-snippet.md in Vercel-aligned indexed format'
 
 nextStepFile: './step-04-update-context.md'
 snippetFormatData: '../data/snippet-format.md'
@@ -39,12 +39,12 @@ To generate or update context-snippet.md for the skill in the Vercel-aligned ind
 - 🎯 Follow the MANDATORY SEQUENCE exactly
 - 💾 Write context-snippet.md to skill directory (or hold in context if dry-run)
 - 📖 Load {snippetFormatData} for format template
-- 🚫 Strict adherence to ADR-L format — no deviations
+- 🚫 Strict adherence to Vercel-aligned format — no deviations
 
 ## CONTEXT BOUNDARIES:
 
 - Available: Skill metadata (name, exports, skill_type, components, integrations) from step-01
-- Focus: Snippet generation in exact ADR-L format
+- Focus: Snippet generation in exact Vercel-aligned format
 - Limits: T1-now content only, ~80-120 tokens target
 - Dependencies: Step-01 metadata, step-02 package validation
 
@@ -156,7 +156,7 @@ ONLY WHEN snippet generation is complete (or skipped due to passive_context opt-
 ### ✅ SUCCESS:
 
 - Snippet format loaded from {snippetFormatData}
-- Content generated matching exact ADR-L format
+- Content generated matching exact Vercel-aligned format
 - Token count estimated and within target
 - File written (or previewed in dry-run)
 - Passive context opt-out correctly handled (skip when disabled)
@@ -164,7 +164,7 @@ ONLY WHEN snippet generation is complete (or skipped due to passive_context opt-
 
 ### ❌ SYSTEM FAILURE:
 
-- Deviating from ADR-L v2 format
+- Deviating from Vercel-aligned indexed format
 - Including T2 annotations or temporal context
 - Not checking passive_context setting
 - Not estimating token count

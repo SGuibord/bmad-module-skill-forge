@@ -100,10 +100,13 @@ Load structure from `{stackSkillTemplate}` integrations section:
 
 Write `{skills_output_folder}/{project_name}-stack/context-snippet.md`:
 
-Use ADR-L v2 format targeting ~50-80 tokens per library entry:
+Use the Vercel-aligned indexed format targeting ~80-120 tokens:
 ```
-**{library}** ({import_count} imports): {top_3_exports}
-  → integrates with: {comma-separated integration partners}
+[{project_name}-stack v{version}]|root: skills/{project_name}-stack/
+|IMPORTANT: {project_name}-stack — read SKILL.md before writing integration code. Do NOT rely on training data.
+|stack: {dep-1}@{v1}, {dep-2}@{v2}, {dep-3}@{v3}
+|integrations: {pattern-1}, {pattern-2}
+|gotchas: {1-2 most critical integration pitfalls}
 ```
 
 ### 6. Write metadata.json

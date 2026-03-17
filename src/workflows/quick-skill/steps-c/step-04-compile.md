@@ -10,7 +10,7 @@ skillTemplateData: '../data/skill-template.md'
 
 ## STEP GOAL:
 
-To assemble the best-effort SKILL.md document, context-snippet.md in ADR-L v2 format, and metadata.json with `source_authority: community` from the extraction inventory. Present compiled output for review before validation.
+To assemble the best-effort SKILL.md document, context-snippet.md in Vercel-aligned indexed format, and metadata.json with `source_authority: community` from the extraction inventory. Present compiled output for review before validation.
 
 ## MANDATORY EXECUTION RULES (READ FIRST):
 
@@ -58,7 +58,7 @@ To assemble the best-effort SKILL.md document, context-snippet.md in ADR-L v2 fo
 
 Load {skillTemplateData} to understand:
 - SKILL.md required and optional sections
-- context-snippet.md ADR-L v2 format
+- context-snippet.md Vercel-aligned indexed format
 - metadata.json field requirements
 
 ### 2. Assemble SKILL.md
@@ -192,7 +192,7 @@ ONLY WHEN the user reviews the compiled output and selects 'C' will you load and
 ### ✅ SUCCESS:
 
 - SKILL.md assembled with all available sections populated
-- context-snippet.md generated in correct ADR-L v2 format
+- context-snippet.md generated in correct Vercel-aligned indexed format
 - metadata.json generated with source_authority: community
 - Compiled output presented for user review
 - User confirms readiness before proceeding to validation
