@@ -114,11 +114,25 @@ Then re-validate: `npx skill-check check <staging-skill-dir> --format json --no-
 npx skill-check check <staging-skill-dir> --format json
 ```
 
-(Security scan enabled by default when `--no-security-scan` omitted.)
+(Security scan enabled by default when `--no-security-scan` omitted. The scan uses [Snyk Agent Scan](https://github.com/snyk/snyk-agent-scan) to check for prompt injection risks, sensitive data exposure, and unsafe tool permissions.)
 
 Record any security warnings in evidence-report. Security findings are advisory — they do not block artifact generation.
 
-**If unavailable:** Skip with note: "Security scan skipped — skill-check tool unavailable"
+**If security scan fails due to missing SNYK_TOKEN:**
+
+Display actionable guidance:
+
+"Security scan requires a Snyk token. To enable:
+1. Create a free account at [app.snyk.io](https://app.snyk.io)
+2. Get your API token from Account Settings → API Token
+3. Set `SNYK_TOKEN=your-token` in your environment or `.env`
+4. Re-run [SF] Setup Forge to update tool detection, then re-run [CS] Create Skill
+
+Use `--no-security-scan` flag in skill-check to skip, or `--security-scan-runner pipx|uvx|local` to control the execution method."
+
+Record: "Security scan skipped — SNYK_TOKEN not configured"
+
+**If skill-check unavailable:** Skip with note: "Security scan skipped — skill-check tool unavailable"
 
 ### 6. Content Quality Review (tessl)
 

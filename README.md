@@ -162,6 +162,17 @@ The `setup-forge` workflow detects available tools and writes the tier to `forge
 
 > **Recommended:** If your IDE supports MCP servers, install the [ast-grep MCP server](https://github.com/ast-grep/ast-grep-mcp) alongside the CLI. SKF's extraction protocol prefers the MCP tool for compact, memory-efficient AST queries and falls back to CLI streaming for large codebases.
 
+### Security Scanning (Optional)
+
+`skill-check` includes security scanning via [Snyk Agent Scan](https://github.com/snyk/snyk-agent-scan) to check for prompt injection risks, sensitive data exposure, and unsafe tool permissions. To enable:
+
+1. Create a free Snyk account at [app.snyk.io](https://app.snyk.io)
+2. Copy your API token from Account Settings
+3. Add to your environment: `export SNYK_TOKEN=your-token`
+4. Re-run `@Ferris SF` to detect the token
+
+Security scanning runs automatically during validation. Use `--no-security-scan` to skip. Security scan availability does not affect your tier level.
+
 ## Knowledge Base
 
 SKF relies on a curated skill compilation knowledge base:
@@ -223,6 +234,7 @@ SKF builds on these excellent open-source tools:
 | [ast-grep MCP](https://github.com/ast-grep/ast-grep-mcp)     | MCP server for memory-efficient AST queries (recommended)          |
 | [QMD](https://github.com/tobi/qmd)                           | Local hybrid search engine for knowledge indexing (Deep tier)      |
 | [skill-check](https://github.com/thedaviddias/skill-check)   | Skill validation, auto-fix, quality scoring, and security scanning |
+| [Snyk Agent Scan](https://github.com/snyk/snyk-agent-scan)   | Security scanning for prompt injection and data exposure (optional) |
 | [tessl](https://tessl.io)                                     | Content quality review, actionability scoring, and AI judge evaluation |
 | [BMad Method](https://github.com/bmad-code-org/BMAD-METHOD)  | Agent-workflow framework that SKF extends as a module              |
 

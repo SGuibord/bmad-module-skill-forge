@@ -86,7 +86,16 @@ Run: `qmd status`
 - If succeeds and indicates operational: record `{qmd: true}`
 - If fails or indicates not initialized: record `{qmd: false}`
 
-### 6. Calculate Tier
+### 6. Check Optional: Security Scan (SNYK_TOKEN)
+
+Check if the `SNYK_TOKEN` environment variable is set:
+
+- If `SNYK_TOKEN` is non-empty: record `{security_scan: true}`
+- If `SNYK_TOKEN` is empty or unset: record `{security_scan: false}`
+
+This is informational only — security scan availability does NOT affect the tier level. It is recorded in forge-tier.yaml so that step-06 (validate) can report actionable guidance when security scanning is unavailable.
+
+### 7. Calculate Tier
 
 **If `{tier_override}` is set and valid (Quick, Forge, or Deep):**
 - Use `{tier_override}` as `{calculated_tier}`
@@ -99,7 +108,7 @@ Run: `qmd status`
 
 **If `{tier_override}` is set but invalid:** ignore it, use detected tier, flag for warning in report.
 
-### 7. Auto-Proceed
+### 8. Auto-Proceed
 
 "**Proceeding to write configuration...**"
 
@@ -114,7 +123,7 @@ Run: `qmd status`
 
 ## CRITICAL STEP COMPLETION NOTE
 
-ONLY WHEN all 3 tools have been verified and the tier has been calculated will you load and read fully `{nextStepFile}` to execute the configuration write step.
+ONLY WHEN all 3 core tools have been verified, optional security scan checked, and the tier calculated will you load and read fully `{nextStepFile}` to execute the configuration write step.
 
 ---
 
