@@ -63,6 +63,7 @@ tools:
   ast_grep: {true/false from detection}
   gh_cli: {true/false from detection}
   qmd: {true/false from detection}
+  security_scan: {true/false — true when SNYK_TOKEN is set}
 
 # Capability tier (derived from tool availability)
 # Quick = no tools required | Forge = + ast-grep | Deep = + ast-grep + gh + QMD

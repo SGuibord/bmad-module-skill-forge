@@ -139,10 +139,11 @@ Record missing tier labels as **WARNING** findings.
 
 ### 8. Validate context-snippet.md
 
-Verify context-snippet.md follows ADR-L v2 format:
-- [ ] Each library has an entry with import count and top exports
-- [ ] Integration partners listed on second line
-- [ ] No library from confirmed list is missing
+Verify context-snippet.md follows Vercel-aligned indexed format:
+- [ ] First line matches: `[{project}-stack v{version}]|root: skills/{project}-stack/`
+- [ ] Second line starts with `|IMPORTANT:`
+- [ ] Stack and integrations lines present
+- [ ] Approximate token count is ~80-120 tokens
 
 Record format violations as **WARNING** findings.
 

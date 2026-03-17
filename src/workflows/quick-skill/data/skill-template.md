@@ -47,14 +47,16 @@ description: >
 {Any caveats, limitations, or observations about the extraction}
 ```
 
-## context-snippet.md Format (ADR-L)
+## context-snippet.md Format (Vercel-Aligned)
 
-ADR-L v2 format targeting ~50-80 tokens per skill:
+Indexed format targeting ~80-120 tokens per skill:
 
 ```markdown
-{skill_name} → skills/{skill_name}/
-  {compressed description ~15 words from SKILL.md frontmatter}
-  exports: {top-5 exports as comma-separated list}
+[{skill_name} v{version}]|root: skills/{skill_name}/
+|IMPORTANT: {skill_name} v{version} — read SKILL.md before writing {skill_name} code. Do NOT rely on training data.
+|quick-start:{SKILL.md#quick-start}
+|api: {top-5 exports with () for functions}
+|gotchas: {1-2 most critical pitfalls if known}
 ```
 
 ## metadata.json Format

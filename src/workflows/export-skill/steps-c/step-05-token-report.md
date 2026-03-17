@@ -83,7 +83,7 @@ For each artifact, estimate tokens using the heuristic: **words * 1.3** (approxi
 - **On-trigger cost:** ~{skill-tokens} tokens (when SKILL.md is loaded)
 - **Full disclosure cost:** ~{total-tokens} tokens (if references/ also loaded)
 
-**Benchmark:** Target is ~50-80 tokens per skill in managed section. Current: ~{snippet-tokens} tokens."
+**Benchmark:** Target is ~80-120 tokens per skill in managed section. Current: ~{snippet-tokens} tokens."
 
 ### 3. Proceed to Summary
 

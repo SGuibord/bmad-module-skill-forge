@@ -10,7 +10,7 @@ skillTemplateData: '../data/skill-template.md'
 
 ## STEP GOAL:
 
-To assemble the best-effort SKILL.md document, context-snippet.md in ADR-L v2 format, and metadata.json with `source_authority: community` from the extraction inventory. Present compiled output for review before validation.
+To assemble the best-effort SKILL.md document, context-snippet.md in Vercel-aligned indexed format, and metadata.json with `source_authority: community` from the extraction inventory. Present compiled output for review before validation.
 
 ## MANDATORY EXECUTION RULES (READ FIRST):
 
@@ -58,7 +58,7 @@ To assemble the best-effort SKILL.md document, context-snippet.md in ADR-L v2 fo
 
 Load {skillTemplateData} to understand:
 - SKILL.md required and optional sections
-- context-snippet.md ADR-L v2 format
+- context-snippet.md Vercel-aligned indexed format
 - metadata.json field requirements
 
 ### 2. Assemble SKILL.md
@@ -99,16 +99,19 @@ description: >
 
 ### 3. Generate Context Snippet
 
-Create context-snippet.md in ADR-L v2 format (~50-80 tokens):
+Create context-snippet.md in Vercel-aligned indexed format (~80-120 tokens):
 
 ```
-{skill_name} → skills/{skill_name}/
-  {compressed description ~15 words from SKILL.md frontmatter}
-  exports: {top-5 exports as comma-separated list}
+[{skill_name} v{version}]|root: skills/{skill_name}/
+|IMPORTANT: {skill_name} v{version} — read SKILL.md before writing {skill_name} code. Do NOT rely on training data.
+|quick-start:{SKILL.md#quick-start}
+|api: {top-5 exports with () for functions}
+|gotchas: {1-2 most critical pitfalls if known}
 ```
 
 **If fewer than 5 exports:** Use all available exports.
-**If no exports:** Use key features from description instead.
+**If no exports:** Omit the api line.
+**If no gotchas known:** Omit the gotchas line.
 
 ### 4. Generate Metadata JSON
 
@@ -117,7 +120,7 @@ Create metadata.json:
 ```json
 {
   "name": "{repo_name}",
-  "version": "0.1.0",
+  "version": "{extraction_inventory.version or 0.1.0}",
   "skill_type": "single",
   "source_authority": "community",
   "source_repo": "{resolved_url}",
@@ -189,7 +192,7 @@ ONLY WHEN the user reviews the compiled output and selects 'C' will you load and
 ### ✅ SUCCESS:
 
 - SKILL.md assembled with all available sections populated
-- context-snippet.md generated in correct ADR-L v2 format
+- context-snippet.md generated in correct Vercel-aligned indexed format
 - metadata.json generated with source_authority: community
 - Compiled output presented for user review
 - User confirms readiness before proceeding to validation

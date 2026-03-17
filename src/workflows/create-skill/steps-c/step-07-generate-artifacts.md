@@ -135,13 +135,17 @@ Index the generated skill artifacts into a QMD collection so that audit-skill an
 Create a QMD collection from both artifact directories:
 ```bash
 qmd collection add {project-root}/skills/{name} --name {name}-extraction --mask "**/*"
+qmd embed
 ```
 
 If collection already exists (re-run): remove and recreate for atomic replace:
 ```bash
 qmd collection remove {name}-extraction
 qmd collection add {project-root}/skills/{name} --name {name}-extraction --mask "**/*"
+qmd embed
 ```
+
+**Note:** `qmd embed` generates vector embeddings required for `vector_search` and `deep_search`. Without it, only BM25 keyword `search` works.
 
 **Registry update:**
 

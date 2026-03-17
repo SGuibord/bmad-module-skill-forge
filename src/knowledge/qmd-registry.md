@@ -106,9 +106,10 @@ Human readability alone is not sufficient justification — the file is already 
 ```
 qmd collection remove {name}-extraction   (if exists)
 qmd collection add skills/{name} --name {name}-extraction --mask "**/*"
+qmd embed
 ```
 
-Then append/replace the registry entry in forge-tier.yaml. Failures never block the workflow.
+Then append/replace the registry entry in forge-tier.yaml. Failures never block the workflow. The `qmd embed` call generates vector embeddings required for `vector_search` and `deep_search`.
 
 ### Example 2: Consumer Discovery (audit-skill)
 

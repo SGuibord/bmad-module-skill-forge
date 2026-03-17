@@ -72,7 +72,7 @@ Generate the YAML file using the approved field values and the schema template:
 ```yaml
 ---
 name: "{approved skill name}"
-version: "1.0.0"
+version: "{detected source version or 1.0.0}"
 source_type: "{source or docs-only}"
 source_repo: "{approved source repo or doc site URL}"
 language: "{approved language}"
@@ -115,12 +115,14 @@ Index the skill brief into a QMD collection so that portfolio-level searches can
 Create a QMD collection targeting only the brief file:
 ```bash
 qmd collection add {forge_data_folder}/{skill-name} --name {skill-name}-brief --mask "skill-brief.yaml"
+qmd embed
 ```
 
 If collection already exists (re-briefing): remove and recreate for atomic replace:
 ```bash
 qmd collection remove {skill-name}-brief
 qmd collection add {forge_data_folder}/{skill-name} --name {skill-name}-brief --mask "skill-brief.yaml"
+qmd embed
 ```
 
 **Registry update:**

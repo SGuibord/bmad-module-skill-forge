@@ -150,6 +150,16 @@ These sections form the essential standalone body. Target: **under 300 lines tot
 
 Assemble Sections 9-11 (Full API Reference, Full Type Definitions, Full Integration Patterns) as defined in `{skillSectionsData}`. These contain full detail and are split into `references/` when the body exceeds 500 lines. Include T2 annotations from enrichment in the Full API Reference (Deep tier only).
 
+**CRITICAL — Tier 2 differentiation from Tier 1:** Tier 2 Full API Reference must contain content that is NOT present in Tier 1's Key API Summary. Specifically:
+
+- **Full parameter tables** with types, defaults, and required/optional flags (Tier 1 only lists key params)
+- **Return value details** including structure, types, and error conditions
+- **T2 temporal annotations** — migration notes, deprecation details, breaking change context (Deep tier)
+- **Usage examples** from source tests or documentation (Tier 1 has signature-only references)
+- **Edge cases and constraints** — parameter validation rules, size limits, behavioral notes
+
+Do NOT repeat Tier 1's name/purpose/key-params table format in Tier 2. Tier 2 is a deep reference, not a reformatted summary. This distinction prevents conciseness scorers from flagging the two-tier design as redundancy.
+
 #### Assembly Rules
 
 1. Assemble all Tier 1 sections first — these form the essential standalone body
@@ -161,12 +171,24 @@ Assemble Sections 9-11 (Full API Reference, Full Type Definitions, Full Integrat
 
 ### 3. Build context-snippet.md Content
 
-Compressed 2-line format for CLAUDE.md managed section:
+Vercel-aligned indexed format for CLAUDE.md managed section (~80-120 tokens):
 
 ```markdown
-{skill-name} -> skills/{skill-name}/
-  exports: {comma-separated top 10 function names}
+[{skill-name} v{version}]|root: skills/{skill-name}/
+|IMPORTANT: {skill-name} v{version} — read SKILL.md before writing {skill-name} code. Do NOT rely on training data.
+|quick-start:{SKILL.md#quick-start}
+|api: {top exports with () for functions, comma-separated}
+|key-types:{SKILL.md#key-types} — {inline summary of most important type values}
+|gotchas: {2-3 most critical pitfalls or breaking changes, inline}
 ```
+
+**Derivation rules:**
+
+- **version**: From source detection (reconciled in step-03), not brief default
+- **api**: Top 10 exports from extraction inventory, append `()` to function names
+- **key-types**: Inline summary of most important enum/type values from Key Types section
+- **gotchas**: Derived from T2-future annotations (breaking changes), async requirements, version-specific behavior changes. If no gotchas available, omit the gotchas line.
+- **Section anchors** (`#quick-start`, `#key-types`): Must match actual heading slugs in the assembled SKILL.md
 
 ### 4. Build metadata.json Content
 

@@ -9,7 +9,7 @@ installed_path: '{project-root}/_bmad/skf/workflows/skillforge/create-skill'
 
 **Goal:** Compile a verified agent skill from a skill-brief.yaml and source code, producing an agentskills.io-compliant SKILL.md with provenance map, evidence report, and progressive disclosure references.
 
-**Your Role:** You are a skill compilation engine performing structural extraction and assembly. This workflow is mostly autonomous with two strategic confirmation gates — one after ecosystem check (if a match is found) and one after source extraction (to confirm findings before compilation). All other steps auto-proceed. Apply zero hallucination tolerance: every instruction in the output must trace to source code with a confidence tier citation.
+**Your Role:** You are a skill compilation engine performing structural extraction and assembly. This workflow is mostly autonomous with three interaction points — one after ecosystem check (if a match is found), one after source extraction (to confirm findings before compilation), and one after content quality review (when tessl produces suggestions). All other steps auto-proceed. Apply zero hallucination tolerance: every instruction in the output must trace to source code with a confidence tier citation.
 
 ## WORKFLOW ARCHITECTURE
 
