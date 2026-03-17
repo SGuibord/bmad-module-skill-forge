@@ -55,15 +55,16 @@ The installer detects the existing `_bmad/` directory and installs SKF alongside
 
 ## Prerequisites
 
-| Tool                                                                   | Required For       | Install                       |
-|------------------------------------------------------------------------|--------------------|-----------------------------|
-| [Node.js](https://nodejs.org/) >= 22                                   | Installation, npx commands | <https://nodejs.org>          |
-| `gh` (GitHub CLI)                                                      | All modes          | <https://cli.github.com>      |
-| `ast-grep`  (CLI tool for code structural search, lint, and rewriting) | Forge + Deep modes | <https://ast-grep.github.io>  |
-| `ast-grep` MCP server (recommended alongside CLI)                      | Forge + Deep modes | <https://github.com/ast-grep/ast-grep-mcp> |
-| `qmd` (local hybrid search engine for project files)                   | Deep mode          | <https://github.com/tobi/qmd> |
+| Tool                                                                   | Required For               | Install                                                |
+|------------------------------------------------------------------------|----------------------------|--------------------------------------------------------|
+| [Node.js](https://nodejs.org/) >= 22                                   | Installation, npx commands | <https://nodejs.org>                                   |
+| `gh` (GitHub CLI)                                                      | All modes                  | <https://cli.github.com>                               |
+| `ast-grep`  (CLI tool for code structural search, lint, and rewriting) | Forge + Deep modes         | <https://ast-grep.github.io>                           |
+| `ast-grep` MCP server (recommended alongside CLI)                      | Forge + Deep modes         | <https://github.com/ast-grep/ast-grep-mcp>             |
+| `qmd` (local hybrid search engine for project files)                   | Deep mode                  | <https://github.com/tobi/qmd>                          |
+| `SNYK_TOKEN` (Snyk API token — **Enterprise plan required**)           | Optional security scan     | <https://docs.snyk.io/snyk-api/authentication-for-api> |
 
-Don't worry if you don't have all tools — SKF detects what's available and sets your tier automatically.
+Don't worry if you don't have all tools — SKF detects what's available and sets your tier automatically. Security scanning via Snyk is optional and requires an Enterprise plan; it does not affect your tier level.
 
 ---
 

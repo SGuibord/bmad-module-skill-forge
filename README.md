@@ -166,12 +166,14 @@ The `setup-forge` workflow detects available tools and writes the tier to `forge
 
 `skill-check` includes security scanning via [Snyk Agent Scan](https://github.com/snyk/agent-scan) to check for prompt injection risks, sensitive data exposure, and unsafe tool permissions. To enable:
 
-1. Create a free Snyk account at [app.snyk.io](https://app.snyk.io)
+1. You need a Snyk account with API access — the Snyk API requires an **Enterprise plan** (see [Snyk API authentication docs](https://docs.snyk.io/snyk-api/authentication-for-api))
 2. Copy your API token from Account Settings
 3. Add to your environment: `export SNYK_TOKEN=your-token`
 4. Re-run `@Ferris SF` to detect the token
 
-Security scanning runs automatically during validation. Use `--no-security-scan` to skip. Security scan availability does not affect your tier level.
+> **Note:** The Snyk API is not available on free or Team plans. If you don't have an Enterprise account, security scanning will be skipped gracefully — it does not affect your tier level or block skill compilation.
+
+Security scanning runs automatically during validation. Use `--no-security-scan` to skip.
 
 ## Knowledge Base
 

@@ -122,13 +122,13 @@ Record any security warnings in evidence-report. Security findings are advisory 
 
 Display actionable guidance:
 
-"Security scan requires a Snyk token. To enable:
-1. Create a free account at [app.snyk.io](https://app.snyk.io)
+"Security scan requires a Snyk API token. **Important:** The Snyk API requires an Enterprise plan ([authentication docs](https://docs.snyk.io/snyk-api/authentication-for-api)). To enable:
+1. Obtain a Snyk Enterprise account with API access
 2. Get your API token from Account Settings → API Token
 3. Set `SNYK_TOKEN=your-token` in your environment or `.env`
 4. Re-run [SF] Setup Forge to update tool detection, then re-run [CS] Create Skill
 
-Use `--no-security-scan` flag in skill-check to skip, or `--security-scan-runner pipx|uvx|local` to control the execution method."
+If you don't have an Enterprise account, use `--no-security-scan` flag in skill-check to skip, or `--security-scan-runner pipx|uvx|local` to control the execution method. Security scanning is optional and does not affect tier level or block skill compilation."
 
 Record: "Security scan skipped — SNYK_TOKEN not configured"
 
