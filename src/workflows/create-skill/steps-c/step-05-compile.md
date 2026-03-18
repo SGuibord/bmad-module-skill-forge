@@ -110,7 +110,7 @@ Group functions logically by module, file, or functional area.
 
 ### 6. Build provenance-map.json Content
 
-One entry per extracted claim: claim text, source_file, source_line, confidence tier (T1/T1-low/T2), extraction_method, ast_node_type. See `{skillSectionsData}` for full schema.
+One entry per extracted export: export_name, export_type, params[] (typed strings), return_type, source_file, source_line, confidence tier (T1/T1-low/T2), extraction_method, ast_node_type. See `{skillSectionsData}` for full schema.
 
 ### 7. Build evidence-report.md Content
 

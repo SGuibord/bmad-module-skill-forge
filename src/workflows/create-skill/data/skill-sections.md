@@ -176,7 +176,10 @@ Each reference file includes:
   "generated_at": "{ISO-8601}",
   "entries": [
     {
-      "claim": "getToken accepts userId and optional TokenOptions",
+      "export_name": "getToken",
+      "export_type": "function",
+      "params": ["userId: string", "options?: TokenOptions"],
+      "return_type": "Token",
       "source_file": "src/auth/index.ts",
       "source_line": 42,
       "confidence": "T1",

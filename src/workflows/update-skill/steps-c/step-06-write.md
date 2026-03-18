@@ -82,17 +82,19 @@ Update `{skills_output_folder}/{skill_name}/metadata.json`:
 Write to `{forge_data_folder}/{skill_name}/provenance-map.json`:
 
 **For each export in the updated skill:**
-- Update `file_path` if moved
-- Update `start_line`, `end_line` from fresh extraction
-- Update `extraction_timestamp` to current date for re-extracted exports
-- Update `confidence_tier` from extraction results
-- Update `content_hash` for modified exports
+- Update `export_name` if renamed
+- Update `params[]` array if parameters changed (add, remove, or modify individual entries)
+- Update `return_type` if changed
+- Update `source_file` if moved
+- Update `source_line` from fresh extraction
+- Update `confidence` from extraction results
+- Update `extraction_method` and `ast_node_type` if re-extracted with different tools
 
 **For deleted exports:**
 - Remove entry from provenance map
 
 **For new exports:**
-- Add new entry with full extraction metadata
+- Add new entry with full structured fields: `export_name`, `export_type`, `params[]`, `return_type`, `source_file`, `source_line`, `confidence`, `extraction_method`, `ast_node_type`
 
 **Add update operation metadata:**
 ```json
