@@ -84,38 +84,7 @@ Read `{outputFile}` and extract the category scores calculated in previous steps
 
 **Read testMode from {outputFile} frontmatter.**
 
-**IF naive mode — use redistributed weights:**
-
-| Category | Score | Weight | Weighted |
-|----------|-------|--------|----------|
-| Export Coverage | {N}% | 45% | {N * 0.45}% |
-| Signature Accuracy | {N}% | 25% | {N * 0.25}% |
-| Type Coverage | {N}% | 20% | {N * 0.20}% |
-| External Validation | {N}% | 10% | {N * 0.10}% |
-| **Total** | | **100%** | **{sum}%** |
-
-**IF contextual mode — use full weights:**
-
-| Category | Score | Weight | Weighted |
-|----------|-------|--------|----------|
-| Export Coverage | {N}% | 36% | {N * 0.36}% |
-| Signature Accuracy | {N}% | 22% | {N * 0.22}% |
-| Type Coverage | {N}% | 14% | {N * 0.14}% |
-| Coherence | {N}% | 18% | {N * 0.18}% |
-| External Validation | {N}% | 10% | {N * 0.10}% |
-| **Total** | | **100%** | **{sum}%** |
-
-**External Validation unavailable:**
-If External Validation is N/A (neither skill-check nor tessl available), redistribute its 10% weight proportionally to the other active categories:
-- Naive: Export Coverage 50%, Signature Accuracy 28%, Type Coverage 22%
-- Contextual: Export Coverage 40%, Signature Accuracy 24%, Type Coverage 16%, Coherence 20%
-
-**Quick tier adjustment:**
-If Signature Accuracy and Type Coverage are N/A (Quick tier, no AST):
-- Naive + external available: Export Coverage 90%, External Validation 10%
-- Naive + external N/A: Export Coverage 100%
-- Contextual + external available: Export Coverage 54%, Coherence 36%, External Validation 10%
-- Contextual + external N/A: Export Coverage 60%, Coherence 40%
+Apply the weight distribution from `{scoringRulesFile}` for the detected mode (naive or contextual). The scoring rules define category weights, external validation redistribution when unavailable, and Quick tier adjustments. Calculate the weighted score for each category and sum for the total.
 
 ### 4. Determine Pass/Fail
 
