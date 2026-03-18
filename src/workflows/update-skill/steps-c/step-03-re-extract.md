@@ -74,7 +74,9 @@ Perform tier-aware extraction on only the changed files identified in step 02, p
 
 **Remote Source Resolution (Forge/Deep only):**
 
-Load and follow `{remoteSourceResolutionData}` for ephemeral clone setup, version reconciliation, and AST tool unavailability handling.
+**MCP source access check (before ephemeral clone):** If MCP source-reading tools are available (zread, deepwiki, or similar) and `source_repo` is set in metadata.json, use MCP tools to fetch only the changed files from the change manifest. This avoids ephemeral clone overhead entirely. MCP provides full source file content — label confidence as T1 (equivalent to local read). AST analysis (ast-grep) is not available on MCP-fetched content; use the fetched source text for pattern-based extraction at T1-low, or pass to the AST tool if the content can be written to a temp file.
+
+**If MCP unavailable:** Load and follow `{remoteSourceResolutionData}` for ephemeral clone setup, version reconciliation, and AST tool unavailability handling.
 
 **Quick tier (text pattern matching):**
 - Extract function/class/type names via regex patterns
