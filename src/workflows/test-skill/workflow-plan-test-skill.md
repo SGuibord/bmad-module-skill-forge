@@ -265,7 +265,7 @@ Ferris (Audit mode): methodical, precise, evidence-based. Zero hallucination —
 - **Previous:** create-skill (required — SKILL.md must exist)
 - **Next:** export-skill (if pass) or update-skill (if fail)
 - **Input contract:** `{skills_output_folder}/{name}/SKILL.md` + `metadata.json` + `{sidecar_path}/forge-tier.yaml`
-- **Output contract:** `{output_folder}/test-report-{skill_name}.md` with frontmatter: workflowType, testResult, score, nextWorkflow
+- **Output contract:** `{forge_data_folder}/{skill_name}/test-report-{skill_name}.md` with frontmatter: workflowType, testResult, score, nextWorkflow
 
 ### Output Template (Structured)
 

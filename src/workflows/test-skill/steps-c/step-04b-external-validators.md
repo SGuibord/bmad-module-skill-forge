@@ -3,7 +3,7 @@ name: 'step-04b-external-validators'
 description: 'Run external validation tools (skill-check, tessl) and capture scores for scoring step'
 
 nextStepFile: './step-05-score.md'
-outputFile: '{output_folder}/test-report-{skill_name}.md'
+outputFile: '{forge_data_folder}/{skill_name}/test-report-{skill_name}.md'
 ---
 
 # Step 4b: External Validators

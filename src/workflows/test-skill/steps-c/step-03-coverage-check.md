@@ -3,7 +3,7 @@ name: 'step-03-coverage-check'
 description: 'Compare documented exports in SKILL.md against actual source API surface'
 
 nextStepFile: './step-04-coherence-check.md'
-outputFile: '{output_folder}/test-report-{skill_name}.md'
+outputFile: '{forge_data_folder}/{skill_name}/test-report-{skill_name}.md'
 scoringRulesFile: '../data/scoring-rules.md'
 ---
 
