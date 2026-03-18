@@ -32,7 +32,7 @@ Validate internal consistency of the skill documentation. In contextual mode (st
 
 ### Step-Specific Rules:
 
-- 🎯 Use subprocess optimization: Pattern 1 (grep for references across files), Pattern 2 (per-reference deep validation)
+- 🎯 Use subprocess optimization: grep for references across files, then per-reference deep validation
 - 💬 Subprocess returns structured findings only, not full file contents
 - 🚫 DO NOT BE LAZY — For EACH reference in contextual mode, launch a subprocess to validate the target
 - ⚙️ If subprocess unavailable, perform validation in main thread sequentially

@@ -32,7 +32,7 @@ Compare the exports, functions, classes, types, and interfaces documented in SKI
 
 ### Step-Specific Rules:
 
-- 🎯 Use subprocess optimization for per-file AST analysis (Pattern 2) when available
+- 🎯 Use subprocess optimization for per-file AST analysis when available
 - 💬 Subprocess returns structured findings only, not full file contents
 - 🚫 DO NOT BE LAZY — For EACH source file, launch a subprocess for deep analysis
 - ⚙️ If subprocess unavailable, perform analysis in main thread sequentially
