@@ -99,7 +99,6 @@ Append the **Test Summary** section to `{outputFile}`:
 **Skill:** {skill_name}
 **Test Mode:** {naive|contextual}
 **Forge Tier:** {detected_tier}
-**Threshold:** {threshold}%
 
 **Mode Rationale:** {brief explanation of why this mode was selected}
 

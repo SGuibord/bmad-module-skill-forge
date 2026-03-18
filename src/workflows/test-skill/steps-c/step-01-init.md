@@ -150,7 +150,6 @@ testMode: ''
 forgeTier: '{detected_tier}'
 testResult: ''
 score: ''
-threshold: ''
 testDate: '{current_date}'
 stepsCompleted: ['step-01-init']
 nextWorkflow: ''
