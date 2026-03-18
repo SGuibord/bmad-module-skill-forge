@@ -72,8 +72,8 @@ Look for {outputFile}.
 ### 2. Verify Prerequisites
 
 **Check forge-tier.yaml:**
-- Look for `{forge_data_folder}/forge-tier.yaml`
-- **IF missing:** HARD HALT — "**Cannot proceed.** forge-tier.yaml not found at `{forge_data_folder}/forge-tier.yaml`. Please run the setup-forge workflow first to configure your forge tier (Quick/Forge/Deep)."
+- Look for `{sidecar_path}/forge-tier.yaml`
+- **IF missing:** HARD HALT — "**Cannot proceed.** forge-tier.yaml not found at `{sidecar_path}/forge-tier.yaml`. Please run the setup-forge workflow first to configure your forge tier (Quick/Forge/Deep)."
 - **IF found:** Read and note the forge tier value
 
 **Apply tier override:** Read `{sidecar_path}/preferences.yaml`. If `tier_override` is set and is a valid tier value (Quick, Forge, or Deep), use it instead of the detected tier.

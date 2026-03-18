@@ -31,10 +31,10 @@ When `source_type: "docs-only"`:
 
 During brief creation, attempt to auto-detect the source version before defaulting to `"1.0.0"`. Check the first matching file in the source:
 
-- **Python:** `pyproject.toml` (`[project] version`), `setup.py` (`version=`), or `__version__` in `__init__.py`
+- **Python:** `pyproject.toml` `[project] version` (static) → if `dynamic = ["version"]`, check `__init__.py` for `__version__` → `_version.py` if exists → `setup.py` `version=` → `git describe --tags --abbrev=0`
 - **JavaScript/TypeScript:** `package.json` (`"version"`)
-- **Rust:** `Cargo.toml` (`[package] version`)
-- **Go:** version tag from `go.mod` or latest git tag
+- **Rust:** `Cargo.toml` `[package] version` (static) → if `version = { workspace = true }`, resolve from workspace root `Cargo.toml` → `git describe --tags --abbrev=0`
+- **Go:** version tag from `go.mod` or `git describe --tags --abbrev=0`
 
 If the source is a remote GitHub repo, use `gh api repos/{owner}/{repo}/contents/{file}` to read the version file. If the source is local, read the file directly.
 

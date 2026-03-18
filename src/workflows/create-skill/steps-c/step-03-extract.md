@@ -119,6 +119,21 @@ Degrade to Quick tier extraction. Note the degradation reason in context for the
 
 After the initial AST scan, check for public exports from the entry point (`__init__.py`, `index.ts`, `lib.rs`) that were NOT found by AST extraction. These are likely module-level re-exports. Follow the **Re-Export Tracing** protocol in `{extractionPatternsData}` to resolve them to their actual definition files. This ensures module re-export patterns (common in Python libraries with clean public APIs) do not create gaps in the extraction inventory.
 
+### 4b. Validate Exports Against Package Entry Point
+
+After extraction, validate the collected exports against the package's actual public API surface:
+
+- **Python:** Read `{source_root}/__init__.py` — extract all import statements to build the actual public export list. Compare against AST-extracted exports:
+  - In AST results but not in `__init__.py` → mark as internal (exclude from `metadata.json` exports, keep in provenance-map with a note)
+  - In `__init__.py` but not in AST results → flag as extraction gap (add to inventory, trace via re-export protocol)
+- **TypeScript/JavaScript:** Read `index.ts`/`index.js` — extract named exports. Same comparison logic.
+- **Rust:** Read `lib.rs` — extract `pub use` items. Same comparison logic.
+- **Go:** Scan package-level files for exported (capitalized) identifiers.
+
+Use the entry point as the authoritative source for `metadata.json`'s `exports[]` array. This prevents internal symbols from inflating the exports list and ensures all public API items are captured.
+
+**If entry point is missing or unreadable:** Skip validation with a warning. Use the AST-extracted list as-is.
+
 ### 5. Build Extraction Inventory
 
 Compile all extracted data into a structured inventory:

@@ -70,6 +70,13 @@ Load {heuristicsFile} for stack skill candidate detection rules.
 
 DO NOT BE LAZY — For EACH qualifying unit, launch a subprocess (or analyze in main thread) that:
 
+**Size-aware strategy selection:**
+- **< 50 files:** Full export scan — analyze every file for exports
+- **50-200 files:** Targeted scan — entry points (`__init__.py`, `index.ts`, `lib.rs`) + public modules + barrel exports only
+- **200+ files:** Entry-point strategy — analyze top-level entry point for public API surface, list submodule entry points, analyze each submodule entry point only. Report coverage confidence based on percentage of files analyzed.
+
+**Per-unit analysis (scaled by strategy above):**
+
 1. Scans the unit's directory for export/public interface files
 2. Counts and categorizes exports based on forge tier:
    - **Quick tier:** Count files by type, identify index/barrel files, list directory structure
@@ -80,6 +87,7 @@ DO NOT BE LAZY — For EACH qualifying unit, launch a subprocess (or analyze in 
    - Primary export patterns (barrel exports, direct exports, re-exports)
    - Public API surface size estimate
    - Key entry points
+   - Analysis strategy used and coverage confidence
 
 **Per-unit export summary:**
 
