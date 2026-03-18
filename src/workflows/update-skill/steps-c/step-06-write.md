@@ -65,9 +65,16 @@ Write the merged SKILL.md content to `{skills_output_folder}/{skill_name}/SKILL.
 
 Update `{skills_output_folder}/{skill_name}/metadata.json`:
 - Update `version`: if a source version was detected during re-extraction and differs from the current metadata version, use the source version; otherwise increment patch version
-- Update `last_updated` timestamp to current date
-- Update `export_count` to reflect current total
-- Update `confidence_distribution` with new T1/T1-low/T2 counts
+- Update `generation_date` timestamp to current ISO-8601 date
+- Update `exports` array to reflect current export list
+- Update `stats` from re-extraction results:
+  - `exports_documented`: count of exports with documentation in the merged skill
+  - `exports_public_api`: count of exports from public entry points (`__init__.py`, `index.ts`, `lib.rs`, or equivalent)
+  - `exports_internal`: count of all other non-underscore-prefixed exports
+  - `exports_total`: `exports_public_api` + `exports_internal`
+  - `public_api_coverage`: `exports_documented / exports_public_api` (`null` if `exports_public_api` is 0)
+  - `total_coverage`: `exports_documented / exports_total` (`null` if `exports_total` is 0)
+  - `confidence_t1`, `confidence_t2`, `confidence_t3`: update counts from re-extraction results
 - For stack skills: update `library_count`, `integration_count` if changed
 
 ### 3. Write Updated provenance-map.json
