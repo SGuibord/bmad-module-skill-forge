@@ -3,7 +3,7 @@ name: 'step-02-detect-mode'
 description: 'Determine naive (individual) vs contextual (stack) testing mode'
 
 nextStepFile: './step-03-coverage-check.md'
-outputFile: '{output_folder}/test-report-{skill_name}.md'
+outputFile: '{forge_data_folder}/{skill_name}/test-report-{skill_name}.md'
 ---
 
 # Step 2: Detect Mode
@@ -99,7 +99,6 @@ Append the **Test Summary** section to `{outputFile}`:
 **Skill:** {skill_name}
 **Test Mode:** {naive|contextual}
 **Forge Tier:** {detected_tier}
-**Threshold:** {threshold}%
 
 **Mode Rationale:** {brief explanation of why this mode was selected}
 

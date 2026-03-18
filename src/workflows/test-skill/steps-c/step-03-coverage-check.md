@@ -3,8 +3,9 @@ name: 'step-03-coverage-check'
 description: 'Compare documented exports in SKILL.md against actual source API surface'
 
 nextStepFile: './step-04-coherence-check.md'
-outputFile: '{output_folder}/test-report-{skill_name}.md'
+outputFile: '{forge_data_folder}/{skill_name}/test-report-{skill_name}.md'
 scoringRulesFile: '../data/scoring-rules.md'
+sourceAccessProtocol: '../data/source-access-protocol.md'
 ---
 
 # Step 3: Coverage Check
@@ -32,7 +33,7 @@ Compare the exports, functions, classes, types, and interfaces documented in SKI
 
 ### Step-Specific Rules:
 
-- 🎯 Use subprocess optimization for per-file AST analysis (Pattern 2) when available
+- 🎯 Use subprocess optimization for per-file AST analysis when available
 - 💬 Subprocess returns structured findings only, not full file contents
 - 🚫 DO NOT BE LAZY — For EACH source file, launch a subprocess for deep analysis
 - ⚙️ If subprocess unavailable, perform analysis in main thread sequentially
@@ -66,6 +67,12 @@ Coverage scoring adapts: instead of comparing SKILL.md against source code expor
 
 **If source-based skill:** Continue with standard coverage check below.
 
+### 0b. Load Source Access Protocol
+
+Load `{sourceAccessProtocol}` and follow both sections:
+1. **Source API Surface Definition** — determines what counts as the public API for coverage denominator
+2. **Source Access Resolution** — 5-state waterfall to determine how source files will be read and sets `analysis_confidence`
+
 ### 1. Extract Documented Exports from SKILL.md
 
 Read SKILL.md and extract all documented items:
@@ -80,14 +87,16 @@ Build the **documented inventory** — a list of everything the SKILL.md claims 
 
 ### 2. Analyze Source Code (Tier-Dependent)
 
+Start from the package entry point (see 0b) and identify the public API surface. Then analyze those exports at the appropriate tier depth.
+
 **Quick Tier (no tools):**
-- Read source files directly
-- Identify exported items by scanning for `export` keywords, `module.exports`, or language-specific export patterns
+- Read the entry point file(s) directly
+- Identify public exports by scanning for `export` keywords, `module.exports`, `__init__.py` imports, or language-specific export patterns
 - Compare against documented inventory by name matching
 - Cannot verify signatures — note as "unverified" in report
 
 **Forge Tier (ast-grep available):**
-DO NOT BE LAZY — For EACH source file in the skill's source path, launch a subprocess that:
+DO NOT BE LAZY — For EACH source file that defines public API exports, launch a subprocess that:
 1. Uses ast-grep to extract all exported symbols with their full signatures
 2. Matches each export against the documented inventory
 3. Returns structured findings:
@@ -150,6 +159,7 @@ Append the **Coverage Analysis** section to `{outputFile}`:
 ## Coverage Analysis
 
 **Tier:** {forge_tier}
+**Source Access:** {analysis_confidence} (full | provenance-map | metadata-only | remote-only | docs-only)
 **Source Path:** {source_path}
 **Files Analyzed:** {count}
 

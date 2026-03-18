@@ -2,7 +2,7 @@
 name: 'step-06-report'
 description: 'Generate gap report with remediation suggestions and finalize test report'
 
-outputFile: '{output_folder}/test-report-{skill_name}.md'
+outputFile: '{forge_data_folder}/{skill_name}/test-report-{skill_name}.md'
 scoringRulesFile: '../data/scoring-rules.md'
 outputFormatsFile: '../data/output-section-formats.md'
 ---

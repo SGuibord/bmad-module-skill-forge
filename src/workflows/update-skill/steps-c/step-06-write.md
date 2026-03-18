@@ -82,17 +82,19 @@ Update `{skills_output_folder}/{skill_name}/metadata.json`:
 Write to `{forge_data_folder}/{skill_name}/provenance-map.json`:
 
 **For each export in the updated skill:**
-- Update `file_path` if moved
-- Update `start_line`, `end_line` from fresh extraction
-- Update `extraction_timestamp` to current date for re-extracted exports
-- Update `confidence_tier` from extraction results
-- Update `content_hash` for modified exports
+- Update `export_name` if renamed
+- Update `params[]` array if parameters changed (add, remove, or modify individual entries)
+- Update `return_type` if changed
+- Update `source_file` if moved
+- Update `source_line` from fresh extraction
+- Update `confidence` from extraction results
+- Update `extraction_method` and `ast_node_type` if re-extracted with different tools
 
 **For deleted exports:**
 - Remove entry from provenance map
 
 **For new exports:**
-- Add new entry with full extraction metadata
+- Add new entry with full structured fields: `export_name`, `export_type`, `params[]`, `return_type`, `source_file`, `source_line`, `confidence`, `extraction_method`, `ast_node_type`
 
 **Add update operation metadata:**
 ```json
@@ -169,13 +171,27 @@ For each file written:
 
 **All files written and verified.**"
 
-### 7. Present MENU OPTIONS
+### 7. Run Post-Write Validation (Deferred from Step 05)
+
+External tool checks deferred from step-05 now run against the written files:
+
+**If skill-check available:**
+- Run: `npx skill-check check {skills_output_folder}/{skill_name} --fix --format json --no-security-scan`
+- If `body.max_lines` reported, run: `npx skill-check split-body {skills_output_folder}/{skill_name} --write`
+- Run: `npx skill-check diff` if original version was preserved
+- Run: `npx skill-check check {skills_output_folder}/{skill_name} --format json` for security scan
+
+Record findings in the evidence report (section 4). These are advisory — do not block on warnings.
+
+**If skill-check unavailable:** Skip with note — structural checks from step-05 are sufficient.
+
+### 8. Present MENU OPTIONS
 
 Display: "**Proceeding to report...**"
 
 #### Menu Handling Logic:
 
-- After all writes verified, immediately load, read entire file, then execute {nextStepFile}
+- After all writes verified and post-write validation complete, immediately load, read entire file, then execute {nextStepFile}
 
 #### EXECUTION RULES:
 

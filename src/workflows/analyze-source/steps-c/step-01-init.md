@@ -72,8 +72,8 @@ Look for {outputFile}.
 ### 2. Verify Prerequisites
 
 **Check forge-tier.yaml:**
-- Look for `{forge_data_folder}/forge-tier.yaml`
-- **IF missing:** HARD HALT — "**Cannot proceed.** forge-tier.yaml not found at `{forge_data_folder}/forge-tier.yaml`. Please run the setup-forge workflow first to configure your forge tier (Quick/Forge/Deep)."
+- Look for `{sidecar_path}/forge-tier.yaml`
+- **IF missing:** HARD HALT — "**Cannot proceed.** forge-tier.yaml not found at `{sidecar_path}/forge-tier.yaml`. Please run the setup-forge workflow first to configure your forge tier (Quick/Forge/Deep)."
 - **IF found:** Read and note the forge tier value
 
 **Apply tier override:** Read `{sidecar_path}/preferences.yaml`. If `tier_override` is set and is a valid tier value (Quick, Forge, or Deep), use it instead of the detected tier.
@@ -86,15 +86,23 @@ Look for {outputFile}.
 
 I'll analyze your project to identify discrete skillable units and produce skill-brief.yaml files for each recommended unit.
 
-**Please provide the project root path to analyze:**
+**Please provide the project root path(s) to analyze:**
 
-This should be the root directory of the repo or multi-service project you want to decompose."
+This can be:
+- A single root directory of a repo or multi-service project
+- Multiple paths or URLs (comma-separated) for multi-repo analysis (e.g., integration/stack skills)
+
+Examples:
+- `/path/to/project`
+- `owner/repo, owner/repo2`
+- `/path/to/project, https://github.com/owner/repo2`"
 
 Wait for user input.
 
-**Validate the path:**
-- Check that the path exists and contains source files
-- **IF invalid:** "That path doesn't appear to be a valid project directory. Please provide the correct path."
+**Validate the path(s):**
+- For each provided path/URL: check that it exists (local) or is accessible (remote)
+- **IF any invalid:** "Path `{path}` doesn't appear to be valid. Please correct it."
+- Store as `project_paths[]` array in report frontmatter (single path stored as 1-element array for consistency)
 
 ### 4. Collect Optional Scope Hints
 
@@ -133,7 +141,7 @@ lastContinued: ''
 date: '{current_date}'
 user_name: '{user_name}'
 project_name: '{project_name}'
-project_path: '{provided_project_path}'
+project_paths: ['{provided_project_path}']
 forge_tier: '{detected_tier}'
 existing_skills: [{list of existing skill names}]
 confirmed_units: []
@@ -165,7 +173,7 @@ Display: "**Proceeding to project scan...**"
 
 ## CRITICAL STEP COMPLETION NOTE
 
-ONLY WHEN the output report has been created with populated frontmatter (project_path, forge_tier, existing_skills) will you load and read fully {nextStepFile} to execute and begin the project scan.
+ONLY WHEN the output report has been created with populated frontmatter (project_paths, forge_tier, existing_skills) will you load and read fully {nextStepFile} to execute and begin the project scan.
 
 ---
 

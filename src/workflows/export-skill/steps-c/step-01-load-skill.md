@@ -117,7 +117,7 @@ Load `{sidecar_path}/preferences.yaml` (if exists):
 
 ### 4b. Check Test Report (Quality Gate)
 
-Search for a test report at `{output_folder}/test-report-{skill-name}.md`:
+Search for a test report at `{forge_data_folder}/{skill_name}/test-report-{skill_name}.md`:
 
 **If test report found:**
 - Read frontmatter `testResult` and `score`
