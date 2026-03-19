@@ -4,7 +4,7 @@
 
 # Skill Forge (SKF)
 
-**Agent Skill Compiler — AST-verified, version-pinned, zero hallucination**
+**Turn code and docs into instructions AI agents can actually follow.**
 
 [![Quality & Validation](https://github.com/armelhbobdad/bmad-module-skill-forge/actions/workflows/quality.yaml/badge.svg)](https://github.com/armelhbobdad/bmad-module-skill-forge/actions/workflows/quality.yaml)
 [![npm](https://img.shields.io/npm/v/bmad-module-skill-forge)](https://www.npmjs.com/package/bmad-module-skill-forge)
@@ -13,7 +13,7 @@
 [![Docs](https://img.shields.io/badge/docs-online-green)](https://armelhbobdad.github.io/bmad-module-skill-forge/)
 [![GitHub stars](https://img.shields.io/github/stars/armelhbobdad/bmad-module-skill-forge?style=social)](https://github.com/armelhbobdad/bmad-module-skill-forge/stargazers)
 
-*Transforms code repositories, documentation, and developer discourse into [agentskills.io](https://agentskills.io)-compliant agent skills with AST-backed provenance.*
+*Skill Forge analyzes your code repositories, documentation, and developer discourse to build verified instruction files for AI agents. Every instruction links back to where it came from — nothing is made up.*
 
 **If SKF helps your agent stop hallucinating, give it a ⭐ — it helps others find this tool.**
 
@@ -21,208 +21,77 @@
 
 ---
 
-SKF is a standalone BMAD module that provides a single expert agent (Ferris, Skill Architect & Integrity Guardian) and ten workflows spanning source analysis, skill briefing, AST-backed compilation, integrity testing, and ecosystem-ready export across progressive capability tiers (Quick/Forge/Deep).
+## The Problem
 
-## Why SKF
+You ask an AI agent to use a library. It invents function names that don't exist. It guesses parameter types. You paste documentation into the context — it still gets details wrong. You write instructions by hand — they go stale the moment the code changes.
 
-- AST-verified instructions with line-level provenance — no hallucinated guidance
-- Progressive capability model that meets developers where they are
-- Full lifecycle: discover, brief, compile, test, audit, update, export
-- Version-pinned skills that track source changes and detect drift
-- Zero hallucination tolerance — every instruction traces to code
+This isn't an edge case. It's the default experience.
 
-## How BMad Works
+## How Skill Forge Fixes This
 
-BMad works because it turns big, fuzzy work into **repeatable workflows**. Each workflow is broken into small steps with clear instructions, so the AI follows the same path every time. It also uses a **shared knowledge base** (standards and patterns) so outputs are consistent, not random. In short: **structured steps + shared standards = reliable results**.
+1. **Analyzes your sources** — extracts real function signatures, types, and patterns from code repositories, documentation websites, and developer discourse
+2. **Compiles verified instruction files** — every instruction links to the exact file and line it came from
+3. **Follows an open standard** — skills comply with the [agentskills.io](https://agentskills.io) spec and work across Claude, Cursor, Copilot, and other AI agents
 
-## How SKF Fits In
+## Before vs After
 
-SKF plugs into BMad the same way a specialist plugs into a team. It uses the same step-by-step workflow engine and shared standards, but focuses exclusively on skill compilation and quality assurance. That means you get **evidence-based agent skills**, **AST-verified instructions**, and **drift detection** that align with the rest of the BMad process.
+**Without SKF** — your agent guesses:
 
-## Architecture & Flow
+```python
+import cognee
 
-BMad is a small **agent + workflow engine**. There is no external orchestrator — everything runs inside the LLM context window through structured instructions.
-
-### Building Blocks
-
-Each workflow directory contains these files, and each has a specific job:
-
-| File                      | What it does                                                                                                        | When it loads                                     |
-|---------------------------|---------------------------------------------------------------------------------------------------------------------|---------------------------------------------------|
-| `forger.agent.yaml`       | Expert persona — identity, principles, critical actions, menu of triggers                                           | First — always in context                         |
-| `workflow.md`             | Human-readable entry point — goals, mode menu (Create/Edit/Validate), routes to first step                          | Second — presents mode choice                     |
-| `steps-c/*.md`            | **Create** steps — primary execution, 4-9 sequential files                                                          | One at a time (just-in-time)                      |
-| `data/*.md`               | Workflow-specific reference data — schemas, heuristics, rules, patterns                                             | Read by steps on demand                           |
-| `templates/*.md`          | Output skeletons with placeholder vars — steps fill these in to produce the final artifact                          | Read by steps when generating output              |
-| `skf-knowledge-index.csv` | Knowledge fragment index — id, name, tags, tier, file path                                                          | Read by steps to decide which fragments to load   |
-| `knowledge/*.md`          | 10 reusable fragments — cross-cutting principles and patterns (e.g., `zero-hallucination.md`, `confidence-tiers.md`) | Selectively read into context when a step directs |
-
-```mermaid
-flowchart LR
-  U[User] --> A[Agent Persona]
-  A --> W[Workflow Entry: workflow.md]
-  W --> S[Step Files: steps-c/]
-  S --> K[Knowledge Fragments<br/>skf-knowledge-index.csv → knowledge/*.md]
-  S --> D[Data & Templates<br/>data/*.md, templates/*.md]
-  S --> O[Outputs: skills/reports<br/>when a step writes output]
+# Agent hallucinates: sync call, wrong parameter name, missing await
+results = cognee.search("What does Cognee do?", mode="graph")
 ```
 
-### How It Works at Runtime
+**With SKF** — your agent reads the verified skill:
 
-1. **Trigger** — User types `@Ferris CS` (or fuzzy match like `create-skill`). The agent menu in `forger.agent.yaml` maps the trigger to the workflow path.
-2. **Agent loads** — `forger.agent.yaml` injects the persona (identity, principles, critical actions) into the context window. Sidecar files (`forge-tier.yaml`, `preferences.yaml`) are loaded for persistent state.
-3. **Workflow loads** — `workflow.md` presents the mode choice and routes to the first step file.
-4. **Step-by-step execution** — Only the current step file is in context (just-in-time loading). Each step explicitly names the next one. The LLM reads, executes, saves output, then loads the next step. No future steps are ever preloaded.
-5. **Knowledge injection** — Steps consult `skf-knowledge-index.csv` and selectively load fragments from `knowledge/` by tags and relevance. Cross-cutting principles (zero hallucination, confidence tiers, provenance) are loaded only when a step directs — not preloaded.
-6. **Data injection** — Steps read `data/*.md` files as needed (schemas, heuristics, extraction patterns). This is deliberate context engineering: only the data relevant to the current step enters the context window.
-7. **Templates** — When a step produces output (e.g., a skill brief or test report), it reads the template file and fills in placeholders with computed results. The template provides consistent structure; the step provides the content.
-8. **Progress tracking** — Each step appends to an output file with state tracking. Resume mode reads this state and routes to the next incomplete step.
+```python
+import cognee
 
-### Ferris Operating Modes
+# Agent follows the skill instruction:
+# `search(query_text: str, query_type: SearchType = GRAPH_COMPLETION): list`
+# [AST:cognee/api/v1/search/search.py:L26] Confidence: T1
+results = await cognee.search(
+    query_text="What does Cognee do?",
+    query_type=cognee.SearchType.GRAPH_COMPLETION
+)
+```
 
-Ferris operates in four workflow-driven modes (mode is determined by which workflow is running, not conversation state):
-
-| Mode          | Workflows          | Behavior                                                    |
-|---------------|--------------------|-------------------------------------------------------------|
-| **Architect** | SF, AN, BS, CS, QS, SS | Exploratory, assembling — discovers structure and scope     |
-| **Surgeon**   | US                 | Precise, preserving — extracts and compiles with provenance |
-| **Audit**     | AS, TS             | Judgmental, scoring — evaluates quality and detects drift   |
-| **Delivery**  | EX                 | Packaging, ecosystem-ready — bundles for distribution       |
+The skill told the agent the real function name, the real parameters, and that the call requires `await` — all traced to the exact source line. This is from a [real generated skill](https://github.com/armelhbobdad/oh-my-skills).
 
 ## Install
 
 Requires [Node.js](https://nodejs.org/) >= 22.
 
-There are three ways to install SKF, depending on your setup.
-
-### Method 1: Standalone (recommended for trying SKF)
-
 ```bash
 npx bmad-module-skill-forge install
 ```
 
-Installs SKF on its own. You'll be prompted for project name, output folders, and which IDEs to configure. The installer generates IDE-specific command files (e.g. `.claude/commands/`, `.cursor/commands/`) so workflows appear in your IDE's command palette.
+You'll be prompted for project name, output folders, and IDE configuration. See the [docs](https://armelhbobdad.github.io/bmad-module-skill-forge/getting-started/) for other install methods.
 
-### Method 2: As a custom module during BMad Method installation
+## Quick Start
 
-```bash
-npx bmad-method install
-```
+1. **Set up your environment:** `@Ferris SF` — detects your tools and sets your capability tier
+2. **Generate your first skill:** `@Ferris QS <package-name>` — creates a verified skill in under a minute
+3. **Full quality path:** `@Ferris BS` then `@Ferris CS` — brief first, then compile for maximum accuracy
 
-When prompted **"Add custom modules from your computer?"**, select Yes and provide the path to the SKF `src/` folder (clone this repo first):
+See the [workflows docs](https://armelhbobdad.github.io/bmad-module-skill-forge/workflows/) for all 10 available workflows.
 
-```
-Path to custom module folder: /path/to/bmad-module-skill-forge/src/
-```
+## Who Is This For?
 
-This installs BMad core + SKF together with full IDE integration, manifests, and help catalog. Best when you want the complete BMad development workflow.
+- **You use AI agents to write code** and they keep getting API calls wrong — hallucinating function names, guessing parameter types, inventing methods that don't exist
+- **You maintain a library** and want to ship official, verified instruction files so AI agents use your API correctly
+- **You manage a codebase with many dependencies** and want a consolidated "stack skill" that teaches your agent how all the pieces fit together
+- **You use a SaaS API or closed-source tool** with no public code — SKF can generate skills from documentation alone
 
-### Method 3: Add SKF to an existing BMad project
+## Learn More
 
-If you already have BMad installed, you can add SKF afterward by running the standalone installer in the same directory:
-
-```bash
-npx bmad-module-skill-forge install
-```
-
-The installer detects the existing `_bmad/` directory and installs SKF alongside your current modules. IDE command files are generated for SKF workflows.
-
-## Quickstart
-
-1. **Setup your forge:** `@Ferris SF` — detects tools, sets your tier (Quick/Forge/Deep)
-2. **Quick skill (fastest):** `@Ferris QS <package-name>` — fast skill from a package name
-3. **Full skill:** `@Ferris BS` then `@Ferris CS` — brief then compile for maximum quality
-4. **Stack skill:** `@Ferris SS` — consolidated project stack skill with integration patterns
-5. **Export:** `@Ferris EX` — package for distribution, update CLAUDE.md
-
-## Workflows
-
-| Trigger | Command | Purpose |
-| --- | --- | --- |
-| SF | `skf_setup_forge` | Initialize forge environment, detect tools, set tier |
-| AN | `skf_analyze_source` | Discover what to skill in a large repo |
-| BS | `skf_brief_skill` | Design a skill scope through guided discovery |
-| CS | `skf_create_skill` | Compile a skill from brief (supports --batch) |
-| QS | `skf_quick_skill` | Fast skill from package name or GitHub URL |
-| SS | `skf_create_stack_skill` | Consolidated project stack skill with integration patterns |
-| US | `skf_update_skill` | Smart regeneration preserving \[MANUAL\] sections |
-| AS | `skf_audit_skill` | Drift detection between skill and current source |
-| TS | `skf_test_skill` | Cognitive completeness verification — quality gate before export |
-| EX | `skf_export_skill` | Package for distribution, inject into CLAUDE.md/AGENTS.md |
-
-## Progressive Capability Model
-
-| Tier | Tools | Capability |
-| --- | --- | --- |
-| **Quick** | gh + skill-check + tessl | Source reading + spec validation + content quality review |
-| **Forge** | + ast-grep | Structural truth, T1 confidence |
-| **Deep** | + QMD | Knowledge search, temporal provenance |
-
-The `setup-forge` workflow detects available tools and writes the tier to `forge-tier.yaml`. All subsequent workflows adapt their behavior to the detected tier.
-
-> **Recommended:** If your IDE supports MCP servers, install the [ast-grep MCP server](https://github.com/ast-grep/ast-grep-mcp) alongside the CLI. SKF's extraction protocol prefers the MCP tool for compact, memory-efficient AST queries and falls back to CLI streaming for large codebases.
-
-### Security Scanning (Optional)
-
-`skill-check` includes security scanning via [Snyk Agent Scan](https://github.com/snyk/agent-scan) to check for prompt injection risks, sensitive data exposure, and unsafe tool permissions. To enable:
-
-1. You need a Snyk account with API access — the Snyk API requires an **Enterprise plan** (see [Snyk API authentication docs](https://docs.snyk.io/snyk-api/authentication-for-api))
-2. Copy your API token from Account Settings
-3. Add to your environment: `export SNYK_TOKEN=your-token`
-4. Re-run `@Ferris SF` to detect the token
-
-> **Note:** The Snyk API is not available on free or Team plans. If you don't have an Enterprise account, security scanning will be skipped gracefully — it does not affect your tier level or block skill compilation.
-
-Security scanning runs automatically during validation. Use `--no-security-scan` to skip.
-
-## Knowledge Base
-
-SKF relies on a curated skill compilation knowledge base:
-
-- Index: `src/knowledge/skf-knowledge-index.csv`
-- Fragments: `src/knowledge/`
-
-Workflows load only the fragments required for the current task to stay focused and compliant.
-
-## Configuration
-
-SKF variables are defined in `src/module.yaml` and prompted during install:
-
-| Variable               | Purpose                                                                                              | Default                     |
-|------------------------|------------------------------------------------------------------------------------------------------|-----------------------------|
-| `skills_output_folder` | Where generated skills are saved                                                                     | `{project-root}/skills`     |
-| `forge_data_folder`    | Where workspace artifacts are stored                                                                 | `{project-root}/forge-data` |
-| `tier_override`        | Force a specific tier for comparison or testing (in `_bmad/_memory/forger-sidecar/preferences.yaml`) | `~` (auto-detect)           |
-
-Runtime configuration (tool detection, tier, parallel settings) is managed by the `setup-forge` workflow in `forge-tier.yaml`.
-
-## Module Structure
-
-```
-src/
-├── module.yaml
-├── module-help.csv
-├── agents/
-│   └── forger.agent.yaml
-├── forger/
-│   ├── forge-tier.yaml
-│   ├── preferences.yaml
-│   └── README.md
-├── knowledge/
-│   ├── skf-knowledge-index.csv
-│   └── *.md (10 fragments)
-└── workflows/
-    ├── setup-forge/
-    ├── analyze-source/
-    ├── brief-skill/
-    ├── create-skill/
-    ├── quick-skill/
-    ├── create-stack-skill/
-    ├── update-skill/
-    ├── audit-skill/
-    ├── test-skill/
-    └── export-skill/
-```
+- **[Getting Started](https://armelhbobdad.github.io/bmad-module-skill-forge/getting-started/)** — Installation, prerequisites, and your first skill
+- **[Concepts](https://armelhbobdad.github.io/bmad-module-skill-forge/concepts/)** — Plain-English definitions of all key terms
+- **[How It Works](https://armelhbobdad.github.io/bmad-module-skill-forge/architecture/)** — Architecture, capability tiers, output format, and design decisions
+- **[Workflows](https://armelhbobdad.github.io/bmad-module-skill-forge/workflows/)** — All 10 workflows with commands and connection diagrams
+- **[Examples](https://armelhbobdad.github.io/bmad-module-skill-forge/examples/)** — Real-world scenarios, tips, and troubleshooting
 
 ## Acknowledgements
 

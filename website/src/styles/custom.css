@@ -393,7 +393,7 @@ footer {
 }
 
 :root[data-theme='dark'] footer {
-  background-color: #020617;
+  background-color: var(--sl-color-black);
 }
 
 /* ============================================
