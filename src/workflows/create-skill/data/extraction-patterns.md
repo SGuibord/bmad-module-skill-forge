@@ -130,7 +130,8 @@ When MCP tools are unavailable or the repo exceeds 500 files in scope, use `--js
 # Patterns are matched against the full file path as emitted by ast-grep.
 # Ensure paths are relative to the same root as the patterns (strip ./ prefix if needed).
 ast-grep -p '{pattern}' -l {language} --json=stream {path} | python3 -c "
-import sys, json, fnmatch
+import sys, json, fnmatch, signal
+signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 EXCLUDES = {exclude_patterns}
 
