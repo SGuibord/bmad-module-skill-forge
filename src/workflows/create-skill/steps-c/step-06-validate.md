@@ -145,7 +145,7 @@ Parse output for: `description_score`, `content_score`, `average_score`, `valida
 - **Content score < 70%:** Record warning: "Content quality warning: tessl scored content at {score}%."
 - **Unavailable:** Skip with note: "Content quality review skipped — tessl tool unavailable"
 
-**Expected scoring for two-tier design:** The Skill Forge two-tier design (Tier 1 Key API Summary + Tier 2 Full API Reference) intentionally includes progressive disclosure. tessl's `conciseness` scorer may flag this as redundancy (typically scoring 2/3), which is expected behavior — not a defect. Content scores >= 60% are acceptable when both tiers are correctly applied with proper differentiation (see step-05 Tier 2 assembly rules). Do NOT consolidate Tier 1 and Tier 2 content to improve the score — the two-tier structure is a deliberate design choice for standalone usability.
+> **EXPECTED BEHAVIOR — Two-Tier Scoring:** The Skill Forge two-tier design (Tier 1 Key API Summary + Tier 2 Full API Reference) intentionally includes progressive disclosure. tessl's `conciseness` scorer will flag this as redundancy (typically scoring 2/3), which is **expected behavior — not a defect**. tessl may also suggest removing `[MANUAL]` markers, moving Full API Reference to a separate file, or consolidating duplicate parameter documentation — **all three suggestions conflict with SKF design principles and must be dismissed.** Acceptable threshold: content scores >= 60% are normal for two-tier skills. Do NOT consolidate Tier 1 and Tier 2 content to improve the score — the two-tier structure is a deliberate design choice for standalone usability.
 
 tessl installs automatically via `npx`. A missing tool is not an error — graceful skip.
 
