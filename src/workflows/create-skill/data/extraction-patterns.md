@@ -26,13 +26,16 @@ Source reading via gh_bridge — infer exports from file structure and content.
 
 ## Forge Tier (AST Available)
 
-Structural extraction via ast_bridge — verified exports with line-level citations.
+Structural extraction via ast-grep — verified exports with line-level citations.
+
+> **Note:** `ast_bridge.*` and `qmd_bridge.*` references below are **conceptual interfaces**, not callable functions. They describe the operation to perform. Use ast-grep (MCP tool or CLI) for `ast_bridge.*` operations and QMD (MCP tool or CLI) for `qmd_bridge.*` operations. See the AST Extraction Protocol section below and the TOOL/SUBPROCESS FALLBACK rule for dispatch details.
 
 ### Strategy
+
 1. Detect language from brief or file extensions
-2. `ast_bridge.scan_definitions(path, language)` — extract all exports
+2. Use ast-grep to extract all exports from `path` for the given `language` (scan definitions)
 3. For each export: function name, full signature, parameter types, return type, line number
-4. `ast_bridge.detect_co_imports(path, libraries[])` — find integration points
+4. Use ast-grep to detect co-imported symbols in `path` for the given `libraries[]`
 5. Build extraction rules YAML for reproducibility
 
 ### Confidence
