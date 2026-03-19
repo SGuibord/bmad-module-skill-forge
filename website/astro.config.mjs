@@ -39,7 +39,7 @@ export default defineConfig({
     sitemap(),
     starlight({
       title: 'Skill Forge (SKF)',
-      tagline: 'AST-verified, provenance-backed agent skills from code repositories, documentation, and developer discourse.',
+      tagline: 'Turn code and docs into instructions AI agents can actually follow.',
 
       logo: {
         src: './public/img/skf-logo.svg',
@@ -92,9 +92,10 @@ export default defineConfig({
       sidebar: [
         { label: 'Welcome', slug: 'index' },
         { label: 'Getting Started', slug: 'getting-started' },
-        { label: 'Architecture', slug: 'architecture' },
-        { label: 'Agents', slug: 'agents' },
+        { label: 'Concepts', slug: 'concepts' },
+        { label: 'How It Works', slug: 'architecture' },
         { label: 'Workflows', slug: 'workflows' },
+        { label: 'Agents', slug: 'agents' },
         { label: 'Examples', slug: 'examples' },
       ],
 
