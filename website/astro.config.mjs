@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import sitemap from '@astrojs/sitemap';
+import mermaid from 'astro-mermaid';
 import rehypeMarkdownLinks from './src/rehype-markdown-links.js';
 import rehypeBasePaths from './src/rehype-base-paths.js';
 import { getSiteUrl } from './src/lib/site-url.js';
@@ -36,6 +37,7 @@ export default defineConfig({
   },
 
   integrations: [
+    mermaid(),
     sitemap(),
     starlight({
       title: 'Skill Forge (SKF)',
