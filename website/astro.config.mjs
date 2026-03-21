@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import sitemap from '@astrojs/sitemap';
+import mermaid from 'astro-mermaid';
 import rehypeMarkdownLinks from './src/rehype-markdown-links.js';
 import rehypeBasePaths from './src/rehype-base-paths.js';
 import { getSiteUrl } from './src/lib/site-url.js';
@@ -36,6 +37,7 @@ export default defineConfig({
   },
 
   integrations: [
+    mermaid(),
     sitemap(),
     starlight({
       title: 'Skill Forge (SKF)',
@@ -83,6 +85,13 @@ export default defineConfig({
             content: `${siteUrl}/llms.txt`,
           },
         },
+        {
+          tag: 'script',
+          attrs: {
+            src: `${basePath}js/mermaid-lightbox.js`,
+            defer: true,
+          },
+        },
       ],
 
       // Custom CSS
@@ -93,7 +102,7 @@ export default defineConfig({
         { label: 'Welcome', slug: 'index' },
         { label: 'Getting Started', slug: 'getting-started' },
         { label: 'Concepts', slug: 'concepts' },
-        { label: 'How It Works', slug: 'architecture' },
+        { label: 'How It Works', slug: 'how-it-works' },
         { label: 'Workflows', slug: 'workflows' },
         { label: 'Agents', slug: 'agents' },
         { label: 'Examples', slug: 'examples' },
