@@ -183,6 +183,38 @@ Write the updated forge-tier.yaml.
 
 **IF forge tier is NOT Deep:** Skip this section silently. No messaging.
 
+### 5b. CCC Index Registry Registration (Forge+ and Deep with ccc)
+
+**IF `tools.ccc` is true in forge-tier.yaml (Forge+ or Deep with ccc available):**
+
+Ensure the source path used for extraction is indexed by ccc and registered in the `ccc_index_registry` array.
+
+**Index verification:**
+
+Dispatch to ccc CLI (`ccc index {source_root}`) or ccc MCP tool — `ccc_bridge.ensure_index` is a conceptual interface, not a callable function. This is a no-op if the source was already indexed during setup-forge or step-02b.
+
+**Registry update:**
+
+Read `{forgeTierConfig}` and update the `ccc_index_registry` array.
+
+Deduplicate by `source_repo` (the canonical upstream URL from brief_data) combined with `skill_name` — NOT by local `path`, which may be an ephemeral clone path that changes on every run for remote repos. If an entry with matching `source_repo` + `skill_name` already exists, replace it. Otherwise, append:
+
+```yaml
+  - source_repo: "{brief.source_repo}"
+    path: "{source_root}"
+    skill_name: "{name}"
+    indexed_at: "{current ISO date}"
+    source_workflow: "create-skill"
+```
+
+Write the updated forge-tier.yaml.
+
+**Error handling:**
+- If ccc indexing fails: log the error, continue. Do NOT fail the workflow.
+- If forge-tier.yaml update fails: log the error, continue.
+
+**IF `tools.ccc` is false:** Skip this section silently. No messaging.
+
 ### 6. Menu Handling Logic
 
 **Auto-proceed step — no user interaction.**

@@ -103,7 +103,7 @@ Perform tier-aware extraction on only the changed files identified in step 02, p
 DO NOT BE LAZY — For EACH file in the change manifest with status MODIFIED, ADDED, or RENAMED, launch a subprocess that:
 
 1. Loads the source file
-2. Performs tier-appropriate extraction (Quick/Forge/Deep)
+2. Performs tier-appropriate extraction (Quick/Forge/Forge+/Deep)
 3. For each export found:
    - Record: export name, type (function/class/type/constant), signature
    - Record: file path, start line, end line
@@ -118,6 +118,23 @@ DO NOT BE LAZY — For EACH file in the change manifest with status MODIFIED, AD
 **For MOVED files:** Re-extract at new location to update file:line references.
 
 **Re-export tracing (Forge/Deep only):** After extracting changed files, check if any public exports from the package entry point (`__init__.py`, `index.ts`, `lib.rs`) are unresolved — particularly when a changed file is part of a module re-export chain. Follow the **Re-Export Tracing** protocol in `{extractionPatternsData}` to trace unresolved symbols to their actual definition files.
+
+### 2b. CCC Semantic Ranking (Forge+ and Deep with ccc)
+
+**IF `tools.ccc` is true in forge-tier.yaml:**
+
+Before aggregating extraction results, use CCC to assess semantic significance of changes:
+
+1. Run `ccc_bridge.search("{skill_name}", source_root, top_k=15)` to get the skill's most semantically central files
+2. Cross-reference the change manifest files with CCC results
+3. Files appearing in BOTH the change manifest AND CCC's top results are **semantically significant changes** — flag them for priority in the merge step
+4. Store `{ccc_significant_changes: [{file, score}]}` in context
+
+This helps the merge step (section 4) prioritize which changes are most likely to affect the skill's core content vs. peripheral modifications.
+
+CCC failures: skip ranking silently, all changes treated equally.
+
+**IF `tools.ccc` is false:** Skip this section silently.
 
 ### 3. Deep Tier QMD Enrichment (Conditional)
 
@@ -200,7 +217,7 @@ ONLY WHEN all changed files have been extracted and results compiled will you lo
 - Every changed file from manifest extracted with tier-appropriate method
 - All exports labeled with confidence tier (T1/T1-low/T2)
 - AST file:line citations on every extracted export
-- QMD enrichment performed for Deep tier (skipped with notice for Quick/Forge)
+- QMD enrichment performed for Deep tier (skipped with notice for Quick/Forge/Forge+)
 - Extraction results compiled with per-file detail
 - Summary displayed before auto-proceeding
 - No unchanged files extracted

@@ -67,11 +67,11 @@ STOP — do not proceed.
 **If forge-tier.yaml exists:**
 
 Extract:
-- `forge_tier` — Quick, Forge, or Deep
+- `forge_tier` — Quick, Forge, Forge+, or Deep
 - `available_tools` — list of detected tools (gh_bridge, ast_bridge, qmd_bridge, skill-check)
 - `project_root` — project root path
 
-**Apply tier override:** Read `{sidecar_path}/preferences.yaml`. If `tier_override` is set and is a valid tier value (Quick, Forge, or Deep), use it instead of the detected tier.
+**Apply tier override:** Read `{sidecar_path}/preferences.yaml`. If `tier_override` is set and is a valid tier value (Quick, Forge, Forge+, or Deep), use it instead of the detected tier.
 
 ### 2. Validate Available Tools
 
@@ -109,6 +109,7 @@ If no optional inputs provided, auto-detection will be used.
 **Forge Tier:** {tier_description}
 - Quick: Source reading and import counting
 - Forge: + AST-backed structural analysis
+- Forge+: + CCC semantic co-import augmentation
 - Deep: + Temporal integration evolution
 
 **Available Tools:** {tool_list}

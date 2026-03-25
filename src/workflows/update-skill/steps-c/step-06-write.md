@@ -115,7 +115,7 @@ Write to `{forge_data_folder}/{skill_name}/provenance-map.json`:
 
 ### 4. Write Updated evidence-report.md
 
-Append update operation section to `{forge_data_folder}/{skill_name}/evidence-report.md`:
+Append update operation section to `{forge_data_folder}/{skill_name}/evidence-report.md` (create the file with a standard header if it does not yet exist):
 
 ```markdown
 ## Update Operation — {current_date}
@@ -182,7 +182,7 @@ External tool checks deferred from step-05 now run against the written files:
 
 **If skill-check available:**
 - Run: `npx skill-check check {skills_output_folder}/{skill_name} --fix --format json --no-security-scan`
-- If `body.max_lines` reported, prefer selective split (see `knowledge/split-body-strategy.md`). Fall back to `npx skill-check split-body {skills_output_folder}/{skill_name} --write` if not feasible. Verify anchors resolve after split.
+- If `body.max_lines` reported, prefer selective split — extract only the largest Tier 2 section(s) to `references/`, keeping Tier 1 inline (inline passive context achieves 100% task accuracy vs 79% for on-demand retrieval). Fall back to `npx skill-check split-body {skills_output_folder}/{skill_name} --write` if not feasible. Verify anchors resolve after split.
 - Run: `npx skill-check diff` if original version was preserved
 - Run: `npx skill-check check {skills_output_folder}/{skill_name} --format json` for security scan
 

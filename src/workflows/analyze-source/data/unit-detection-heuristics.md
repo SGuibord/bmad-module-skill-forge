@@ -111,4 +111,5 @@ Flag units as stack skill candidates when:
 |------------|-------------------|
 | Quick | File structure analysis: directory trees, manifest files, entry points, naming conventions |
 | Forge | AST analysis: export surfaces, import graphs, dependency trees, type hierarchies |
+| Forge+ | AST + CCC: semantic file pre-ranking before structural analysis, CCC signals for relevance scoring |
 | Deep | AST + QMD: temporal evolution, refactoring patterns, semantic relationships, architectural drift |

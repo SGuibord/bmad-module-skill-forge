@@ -101,7 +101,7 @@ If fails: auto-fix (deterministic), re-validate once, record result. If passes: 
 
 **If step 2 reported `body.max_lines` failure:**
 
-**Preferred approach — selective split:** Rather than a full `split-body`, identify which Tier 2 section(s) are largest (usually `## Full API Reference`) and manually extract only those to `references/`. Keep all Tier 1 content and smaller Tier 2 sections inline. This preserves agent accuracy — inline passive context achieves 100% task accuracy vs 79% for on-demand retrieval (per Vercel research). See `knowledge/split-body-strategy.md` for the full rationale.
+**Preferred approach — selective split:** Rather than a full `split-body`, identify which Tier 2 section(s) are largest (usually `## Full API Reference`) and manually extract only those to `references/`. Keep all Tier 1 content and smaller Tier 2 sections inline. This preserves agent accuracy — inline passive context achieves 100% task accuracy vs 79% for on-demand retrieval (per Vercel research). The rationale: inline passive context achieves 100% task accuracy vs 79% for on-demand retrieval (per Vercel research).
 
 **If manual selective split is not feasible**, fall back to the automated full split:
 

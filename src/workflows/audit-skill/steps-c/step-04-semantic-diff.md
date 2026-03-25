@@ -1,6 +1,6 @@
 ---
 name: 'step-04-semantic-diff'
-description: 'Compare QMD knowledge context for meaning-level changes (Deep tier only, skip at Quick/Forge)'
+description: 'Compare QMD knowledge context for meaning-level changes (Deep tier only, skip at Quick/Forge/Forge+)'
 
 nextStepFile: './step-05-severity-classify.md'
 outputFile: '{forge_data_folder}/{skill_name}/drift-report-{timestamp}.md'
@@ -10,7 +10,7 @@ outputFile: '{forge_data_folder}/{skill_name}/drift-report-{timestamp}.md'
 
 ## STEP GOAL:
 
-Compare QMD knowledge context between the original skill creation and current state to detect meaning-level changes that structural diff cannot catch. This step executes ONLY at Deep tier — at Quick and Forge tiers, it appends a skip notice and auto-proceeds.
+Compare QMD knowledge context between the original skill creation and current state to detect meaning-level changes that structural diff cannot catch. This step executes ONLY at Deep tier — at Quick, Forge, and Forge+ tiers, it appends a skip notice and auto-proceeds.
 
 ## MANDATORY EXECUTION RULES (READ FIRST):
 
@@ -35,7 +35,7 @@ Compare QMD knowledge context between the original skill creation and current st
 - 🚫 FORBIDDEN to repeat structural findings from Step 03
 - 💬 Use subprocess Pattern 3 (data operations) when available for QMD queries
 - ⚙️ If subprocess unavailable, query QMD in main thread
-- 🔀 CONDITIONAL: Skip entire analysis at Quick/Forge tier — append skip notice only
+- 🔀 CONDITIONAL: Skip entire analysis at Quick/Forge/Forge+ tier — append skip notice only
 
 ## EXECUTION PROTOCOLS:
 
@@ -57,7 +57,7 @@ Compare QMD knowledge context between the original skill creation and current st
 
 ### 1. Check Forge Tier
 
-**IF forge tier is Quick or Forge:**
+**IF forge tier is Quick, Forge, or Forge+:**
 
 Append to {outputFile}:
 
@@ -179,7 +179,7 @@ ONLY WHEN the ## Semantic Drift section (or skip notice) has been appended to {o
 
 ### ✅ SUCCESS:
 
-- Forge tier checked FIRST — skip gracefully at Quick/Forge
+- Forge tier checked FIRST — skip gracefully at Quick/Forge/Forge+
 - Deep tier: QMD knowledge context queried and compared
 - All semantic findings have T2 confidence labels
 - Findings clearly distinguished from structural drift (T1)

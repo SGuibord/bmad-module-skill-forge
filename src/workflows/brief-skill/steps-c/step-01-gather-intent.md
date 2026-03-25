@@ -3,7 +3,7 @@ name: 'step-01-gather-intent'
 description: 'Initialize brief-skill workflow, discover forge tier, and gather user intent for skill creation'
 
 nextStepFile: './step-02-analyze-target.md'
-forgeTierFile: '{project-root}/_bmad/_memory/forger-sidecar/forge-tier.yaml'
+forgeTierFile: '{sidecar_path}/forge-tier.yaml'
 ---
 
 # Step 1: Gather Intent
@@ -61,10 +61,10 @@ To initialize the brief-skill workflow by discovering the forge tier configurati
 Attempt to load `{forgeTierFile}`:
 
 **If found:**
-- Read the tier level (quick, forge, or deep)
+- Read the tier level (quick, forge, forge+, or deep)
 - Note available tools for scoping guidance later
 
-**Apply tier override:** Read `{sidecar_path}/preferences.yaml`. If `tier_override` is set and is a valid tier value (Quick, Forge, or Deep), use it instead of the detected tier.
+**Apply tier override:** Read `{sidecar_path}/preferences.yaml`. If `tier_override` is set and is a valid tier value (Quick, Forge, Forge+, or Deep), use it instead of the detected tier.
 
 **If not found:**
 - Display: "**Note:** No forge tier configuration found. Defaulting to Quick tier. Run **setup-forge** first for full capabilities."

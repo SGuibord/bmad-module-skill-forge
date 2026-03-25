@@ -28,7 +28,7 @@ Source reading via gh_bridge — infer exports from file structure and content.
 
 Structural extraction via ast-grep — verified exports with line-level citations.
 
-> **Note:** `ast_bridge.*` and `qmd_bridge.*` references below are **conceptual interfaces**, not callable functions. They describe the operation to perform. Use ast-grep (MCP tool or CLI) for `ast_bridge.*` operations and QMD (MCP tool or CLI) for `qmd_bridge.*` operations. See the AST Extraction Protocol section below and the TOOL/SUBPROCESS FALLBACK rule for dispatch details.
+> **Note:** `ast_bridge.*`, `qmd_bridge.*`, and `ccc_bridge.*` references below are **conceptual interfaces**, not callable functions. They describe the operation to perform. Use ast-grep (MCP tool or CLI) for `ast_bridge.*` operations, QMD (MCP tool or CLI) for `qmd_bridge.*` operations, and ccc CLI or MCP for `ccc_bridge.*` operations. See the AST Extraction Protocol section below and the TOOL/SUBPROCESS FALLBACK rule for dispatch details.
 
 ### Strategy
 
@@ -49,6 +49,42 @@ Structural extraction via ast-grep — verified exports with line-level citation
 - Rust: `pub fn $NAME($$$PARAMS) -> $RET`
 - Python: function definitions within `__all__` list
 - Go: capitalized function definitions
+
+---
+
+## Forge+ Tier (AST + CCC)
+
+Identical extraction to Forge tier. CCC adds an upstream semantic discovery step that pre-ranks the file extraction queue.
+
+### When CCC Pre-Discovery Applies
+
+CCC pre-discovery runs in step-02b-ccc-discover (before this extraction step) when ALL of the following are true:
+- Tier is Forge+ or Deep
+- `tools.ccc: true` in forge-tier.yaml
+- `ccc_index.status` is `"fresh"`, `"stale"`, `"created"`, or `"none"`/`"failed"` (step-02b attempts lazy indexing for the latter two)
+
+The discovery step stores `{ccc_discovery: [{file, score, snippet}]}` in context. This extraction step consumes those results to pre-rank the file list.
+
+### CCC Pre-Ranking Strategy
+
+When `{ccc_discovery}` is present and non-empty:
+
+1. Files appearing in `{ccc_discovery}` results move to the front of the extraction queue, sorted by relevance score descending
+2. Files NOT in CCC results remain in the queue — they are not excluded, only deprioritized
+3. If the CCC intersection with scoped files produces <10 files: include all scoped files (CCC results too narrow)
+4. Proceed with the AST Extraction Protocol on the pre-ranked list
+
+### ast-grep Patterns
+
+Same patterns as Forge tier — see Forge tier section above. CCC pre-ranking does not change which AST patterns are used, only which files are processed first.
+
+### Confidence
+
+All results: T1 (AST-verified) — identical to Forge tier. CCC is upstream discovery only and is invisible in the output artifact.
+
+### Important
+
+CCC pre-discovery failures (ccc unavailable, command error, empty results) always result in standard Forge extraction behavior. This is not reported to the user as a problem — it is normal behavior when ccc has no relevant results for the skill's scope.
 
 ---
 

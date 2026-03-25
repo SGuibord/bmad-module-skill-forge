@@ -22,8 +22,8 @@ With confidence tiers:
 
 | Tier | Label | Source | Extraction Method | Available At |
 | --- | --- | --- | --- | --- |
-| T1 | AST-verified | Source code | ast-grep structural parsing | Forge, Deep |
-| T1-low | Source-read | Source code | Pattern matching, file reading | Quick, Forge, Deep |
+| T1 | AST-verified | Source code | ast-grep structural parsing | Forge, Forge+, Deep |
+| T1-low | Source-read | Source code | Pattern matching, file reading | Quick, Forge, Forge+, Deep |
 | T2 | QMD-enriched | Knowledge base | QMD semantic search + synthesis | Deep |
 | T3 | External reference | Docs, URLs | External documentation lookup | All tiers |
 
@@ -131,7 +131,7 @@ Every generated skill includes a confidence distribution in `metadata.json`:
     "t2": 12,
     "t3": 3
   },
-  "extraction_tier": "deep"
+  "extraction_tier": "deep"  // valid values: "quick", "forge", "forge+", "deep"
 }
 ```
 

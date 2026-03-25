@@ -138,7 +138,7 @@ Compile a skill from a brief — the core compilation engine. Takes a skill-brie
 - Pattern: Linear with conditional branches within steps (tier-dependent)
 - Phases: Load → Check → Extract → Enrich → Compile → Validate → Generate → Report
 - Estimated steps: 8
-- Conditional logic: Steps 03/04 branch internally by forge tier (Quick/Forge/Deep)
+- Conditional logic: Steps 03/04 branch internally by forge tier (Quick/Forge/Forge+/Deep)
 - No branching steps — conditions stay within each step
 
 **User Interaction:**
@@ -225,6 +225,7 @@ create-skill/
 └── steps-c/
     ├── step-01-load-brief.md           (~150 lines, Init with Input Discovery)
     ├── step-02-ecosystem-check.md      (~120 lines, conditional gate)
+    ├── step-02b-ccc-discover.md        (~160 lines, conditional auto-proceed)
     ├── step-03-extract.md              (~200 lines, complex middle)
     ├── step-03b-fetch-temporal.md      (~240 lines, conditional auto-proceed)
     ├── step-03c-fetch-docs.md          (~215 lines, conditional auto-proceed)
@@ -241,6 +242,7 @@ create-skill/
 |------|------|------|-------------|------|
 | 01 | load-brief | Init (Input Discovery) | Auto-proceed (P3) | Load brief, resolve source, load forge tier |
 | 02 | ecosystem-check | Middle (Simple) | Conditional: auto if no match, user choice if match | Check ecosystem |
+| 02b | ccc-discover | Middle (Simple) | Auto-proceed (P3) — Forge+/Deep only | CCC semantic discovery to pre-rank files for extraction |
 | 03 | extract | Middle (Standard) | C only (P2) — Gate 2 | Tier-dependent extraction |
 | 03b | fetch-temporal | Middle (Simple) | Auto-proceed (P3) — Deep only | Fetch temporal context (issues, PRs, changelogs) and index into QMD |
 | 03c | fetch-docs | Middle (Simple) | Auto-proceed (P3) — when doc_urls present | Fetch remote documentation from brief-specified URLs for T3-confidence content |
@@ -257,7 +259,7 @@ create-skill/
 - If --batch: discover all briefs in specified directory
 - Load and validate brief structure (required fields: name, version, source_repo, language, scope)
 - Resolve source code location (local path or GitHub owner/repo)
-- Load forge-tier.yaml from sidecar — determine tier (Quick/Forge/Deep)
+- Load forge-tier.yaml from sidecar — determine tier (Quick/Forge/Forge+/Deep)
 - If forge-tier.yaml missing: halt with "Run [SF] Setup Forge first"
 - Auto-proceed to step-02
 

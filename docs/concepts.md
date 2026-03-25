@@ -31,25 +31,27 @@ Provenance means every instruction in a skill traces back to where it came from.
 
 ---
 
-## Confidence Tiers (T1/T2/T3)
+## Confidence Tiers (T1/T1-low/T2/T3)
 
 Each piece of information in a skill carries a confidence level based on where it came from:
 
 - **T1 — AST extraction:** Pulled directly from source code via AST parsing. This is structural truth — the function signature actually exists in the code right now.
+- **T1-low — Source reading:** Found by reading source files directly without AST parsing. The location is correct but the type signature may be inferred. Produced by Quick tier and by Forge/Deep when ast-grep cannot parse a specific file.
 - **T2 — Evidence:** Found in issues, PRs, changelogs, or documentation within the repository. Reliable context, but not as definitive as code.
 - **T3 — External:** Pulled from external documentation or websites. Treated with caution and clearly marked.
 
-**Example:** A function signature is T1. A deprecation warning from a closed GitHub issue is T2. A usage example from a blog post is T3.
+**Example:** A function signature is T1. A source-read export without AST verification is T1-low. A deprecation warning from a closed GitHub issue is T2. A usage example from a blog post is T3.
 
 ---
 
-## Capability Tiers (Quick/Forge/Deep)
+## Capability Tiers (Quick/Forge/Forge+/Deep)
 
 Your capability tier depends on which tools you have installed. Each tier builds on the previous one:
 
-- **Quick** — GitHub CLI only. SKF reads source files and builds best-effort skills. Works in under a minute.
+- **Quick** — No tools required. SKF reads source files and builds best-effort skills. Works in under a minute. GitHub CLI used when available.
 - **Forge** — Adds [ast-grep](https://ast-grep.github.io). SKF uses AST parsing for structural truth. Instructions are verified against the actual code structure.
-- **Deep** — Adds [QMD](https://github.com/tobi/qmd). SKF indexes knowledge for semantic search. Skills get enriched with historical context, deprecation warnings, and cross-reference intelligence.
+- **Forge+** — Adds [cocoindex-code](https://github.com/cocoindex-io/cocoindex-code). SKF uses semantic code search to discover relevant source regions before AST extraction, improving coverage on large codebases.
+- **Deep** — Adds [GitHub CLI](https://cli.github.com) + [QMD](https://github.com/tobi/qmd). Requires ast-grep, gh, and QMD. SKF indexes knowledge for semantic search and performs GitHub repository exploration. Skills get enriched with historical context, deprecation warnings, and cross-reference intelligence.
 
 You don't need all tools to start. SKF detects what you have and sets your tier automatically. See [How It Works](../how-it-works.md) for the full technical treatment.
 

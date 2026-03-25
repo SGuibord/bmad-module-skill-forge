@@ -10,7 +10,7 @@
 | language | string | Primary programming language | Must be detected or user-specified |
 | scope | object | Inclusion/exclusion boundaries | Must have type + at least one pattern |
 | description | string | What this skill covers | 1-3 sentences |
-| forge_tier | string | Compilation tier | One of: quick, forge, deep |
+| forge_tier | string | Compilation tier | One of: quick, forge, forge+, deep |
 | created | string | Creation date | ISO date format |
 | created_by | string | User who created the brief | From config user_name |
 
@@ -67,7 +67,7 @@ source_type: "source"                    # "source" (default) or "docs-only"
 source_repo: "{github-url-or-local-path}"
 language: "{detected-language}"
 description: "{brief-description}"
-forge_tier: "{quick|forge|deep}"
+forge_tier: "{quick|forge|forge+|deep}"
 created: "{date}"
 created_by: "{user_name}"
 scope:
@@ -116,6 +116,6 @@ Created by: {created_by}
 3. `language` must be a recognized programming language
 4. `scope.type` must be one of the three defined types
 5. `scope.include` must have at least one pattern
-6. `forge_tier` must match the tier from forge-tier.yaml (or default to quick)
+6. `forge_tier` must be one of: quick, forge, forge+, deep (must match the tier from forge-tier.yaml, or default to quick)
 7. When `source_type: "docs-only"`: `doc_urls` must have >= 1 entry, `source_repo` becomes optional
 8. Each `doc_urls` entry must have a valid `url` field

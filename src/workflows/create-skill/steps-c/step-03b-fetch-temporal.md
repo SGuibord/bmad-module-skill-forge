@@ -27,7 +27,7 @@ To fetch temporal context (issues, PRs, changelogs, release notes) from the sour
 
 ### Step-Specific Rules:
 
-- 🎯 Deep tier only — Quick and Forge tiers skip this step entirely and silently
+- 🎯 Deep tier only — Quick, Forge, and Forge+ tiers skip this step entirely and silently
 - 🎯 GitHub repositories only — other source types degrade gracefully
 - 🚫 FORBIDDEN to halt the workflow if fetching or indexing fails
 - 🚫 FORBIDDEN to modify extraction data from step-03 — this step only creates QMD collections
@@ -56,7 +56,7 @@ To fetch temporal context (issues, PRs, changelogs, release notes) from the sour
 
 Evaluate the following conditions sequentially. **If ANY condition fails, skip silently to section 5 (auto-proceed) with no output:**
 
-1. **Tier is Deep:** If tier is Quick or Forge, skip silently.
+1. **Tier is Deep:** If tier is Quick, Forge, or Forge+, skip silently.
 2. **Source is GitHub:** Verify `source_repo` is a GitHub URL (`https://github.com/...`) or `owner/repo` format. If the source is a local path, a non-GitHub URL, or any other format, skip silently.
 3. **`gh` CLI is available:** Run `gh auth status` to verify the CLI is installed and authenticated. If it fails, skip silently.
 
@@ -200,7 +200,7 @@ After temporal context is fetched and indexed (or skipped for any reason), immed
 #### EXECUTION RULES:
 
 - This is an auto-proceed step with no user choices
-- Quick/Forge tiers skip directly to next step with no output
+- Quick/Forge/Forge+ tiers skip directly to next step with no output
 - Non-GitHub sources skip directly to next step with no output
 - Cached collections (< 7 days old) skip with brief cache-hit message
 - Deep tier with fresh fetch displays brief confirmation then auto-proceeds
@@ -216,7 +216,7 @@ ONLY WHEN temporal context is indexed into QMD (or the step is skipped due to el
 
 ### ✅ SUCCESS:
 
-- Non-eligible scenarios (Quick/Forge tier, non-GitHub source, no `gh` CLI) skipped silently
+- Non-eligible scenarios (Quick/Forge/Forge+ tier, non-GitHub source, no `gh` CLI) skipped silently
 - Cached collections (< 7 days old) detected and re-fetch skipped
 - Temporal data fetched via `gh` CLI into staging directory (generic + targeted)
 - Targeted searches performed for up to 10 top_exports function names
@@ -231,7 +231,7 @@ ONLY WHEN temporal context is indexed into QMD (or the step is skipped due to el
 - Halting the workflow due to a `gh` CLI, QMD, or network failure
 - Leaving staging files on disk after indexing (must clean up)
 - Overwriting or modifying extraction data from step-03
-- Displaying skip messages for Quick/Forge tiers (should be silent)
+- Displaying skip messages for Quick/Forge/Forge+ tiers (should be silent)
 - Attempting to fetch temporal data from non-GitHub sources
 - Not registering the collection in forge-tier.yaml after successful indexing
 

@@ -61,10 +61,11 @@ Halt with: "Forge halted: No forge configuration found. Run [SF] Setup Forge fir
 
 **If file exists:**
 Extract and report:
-- `tier`: Quick, Forge, or Deep
-- `tools`: which tools are available (gh, ast-grep, qmd)
+- `tier`: Quick, Forge, Forge+, or Deep
+- `tools`: which tools are available (gh, ast-grep, ccc, qmd)
+- `ccc_index`: ccc index state (status, indexed_path, last_indexed) — needed by step-02b
 
-**Apply tier override:** Read `{preferencesFile}`. If `tier_override` is set and is a valid tier value (Quick, Forge, or Deep), use it instead of the detected tier.
+**Apply tier override:** Read `{preferencesFile}`. If `tier_override` is set and is a valid tier value (Quick, Forge, Forge+, or Deep), use it instead of the detected tier.
 
 ### 2. Discover Skill Brief
 
@@ -138,6 +139,7 @@ Proceeding to ecosystem check..."
 Where tier_description follows positive capability framing:
 - Quick: "Source reading and spec validation"
 - Forge: "AST-backed structural extraction"
+- Forge+: "Semantic-guided precision — ccc pre-ranks files before AST extraction"
 - Deep: "Full intelligence — structural + contextual + temporal"
 
 ### 6. Menu Handling Logic

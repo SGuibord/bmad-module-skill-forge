@@ -2,7 +2,7 @@
 name: create-stack-skill
 description: Consolidated project stack skill with integration patterns
 web_bundle: true
-installed_path: '{project-root}/_bmad/skf/workflows/create-stack-skill'
+installed_path: '{project-root}/_bmad/skf/workflows/skillforge/create-stack-skill'
 ---
 
 # Create Stack Skill

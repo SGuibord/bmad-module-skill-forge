@@ -63,17 +63,31 @@ tools:
   ast_grep: {true/false from detection}
   gh_cli: {true/false from detection}
   qmd: {true/false from detection}
+  ccc: {true/false from detection}
+  ccc_daemon: {ccc_daemon from step-01 if available: "healthy"|"stopped"|"error", or ~}
   security_scan: {true/false — true when SNYK_TOKEN is set}
 
 # Capability tier (derived from tool availability)
-# Quick = no tools required | Forge = + ast-grep | Deep = + ast-grep + gh + QMD
+# Quick = no tools | Forge = + ast-grep | Forge+ = + ast-grep + ccc | Deep = + ast-grep + gh + QMD
 tier: {calculated_tier}
 tier_detected_at: {current ISO timestamp}
+
+# CCC semantic index state (managed by setup-forge step-01b and extraction workflows)
+ccc_index:
+  indexed_path: {ccc_indexed_path from step-01b, or ~}
+  last_indexed: {ccc_last_indexed from step-01b, or ~}
+  status: {ccc_index_status from step-01b: "fresh"|"created"|"none"|"failed"}
+  staleness_threshold_hours: 24
+
+# CCC index registry (tracks which source paths have been indexed for skill workflows)
+ccc_index_registry: []
 
 # QMD collection registry (populated by create-skill, consumed by audit/update-skill)
 # Each entry tracks a QMD collection created during skill workflows
 qmd_collections: []
 ```
+
+**Note on re-runs:** The `qmd_collections` and `ccc_index_registry` arrays must be preserved across re-runs. Before overwriting forge-tier.yaml, read the existing `qmd_collections` and `ccc_index_registry` arrays and re-inject them into the new write. These arrays are populated by create-skill workflows and must not be reset.
 
 **This file is ALWAYS overwritten** on every run — it reflects current tool state.
 
@@ -90,15 +104,19 @@ Check if `{project-root}/_bmad/_memory/forger-sidecar/preferences.yaml` exists:
 # Created by setup-forge workflow on first run
 # Edit this file to customize Ferris behavior
 
-# Override detected tier (set to Quick, Forge, or Deep to force a tier)
+# Override detected tier (set to Quick, Forge, Forge+, or Deep to force a tier)
 tier_override: ~
 
 # Passive context injection (set to false to skip snippet generation and CLAUDE.md updates during export)
 passive_context: true
 
-# Skill generation defaults
-default_source_authority: community
-default_confidence_threshold: 0.7
+# Language defaults
+output_language: ~
+skill_format_version: ~
+
+# Output preferences
+citation_style: ~
+confidence_display: ~
 ```
 
 **If it DOES exist:** Do not modify. Preserve entirely.
@@ -133,7 +151,7 @@ ONLY WHEN forge-tier.yaml has been written successfully and preferences.yaml exi
 
 ### ✅ SUCCESS:
 
-- forge-tier.yaml written with accurate tool booleans, tier, timestamp, and empty qmd_collections registry
+- forge-tier.yaml written with accurate tool booleans (including ccc), tier, timestamp, ccc_index state, and preserved qmd_collections/ccc_index_registry arrays
 - preferences.yaml exists (created with defaults on first run, preserved on re-run)
 - forge-data/ directory exists (created or pre-existing)
 - Auto-proceeded to step-03

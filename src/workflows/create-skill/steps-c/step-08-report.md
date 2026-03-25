@@ -74,6 +74,7 @@ Where `{primary_confidence}` is the predominant confidence tier (T1 if Forge/Dee
 | T1 (AST) | {t1_count} | Structurally verified via ast-grep |
 | T1-low (Source) | {t1_low_count} | Inferred from source reading |
 | T2 (QMD) | {t2_count} | Enriched with temporal context |
+| T3 (External) | {t3_count} | Sourced from external documentation URLs |
 
 **Output Files:**
 - `skills/{name}/SKILL.md` — Active skill with trigger-based usage

@@ -168,7 +168,7 @@ The brief's `doc_urls` field drives the doc_fetcher step. The agent uses whateve
 
 ### Progressive Capability
 
-Start with Quick mode (no setup required), upgrade to Forge (install ast-grep), then Deep (install QMD). Each tier builds on the previous — you never lose capability.
+Start with Quick mode (no setup required), upgrade to Forge (install ast-grep), then Forge+ (install cocoindex-code for semantic discovery), then Deep (install QMD). Each tier builds on the previous — you never lose capability.
 
 ### Batch Operations
 
@@ -207,6 +207,9 @@ An official skill already exists for this package. Consider installing it with `
 
 **Quick mode skills have lower confidence**
 Quick mode reads source without AST analysis. Install ast-grep to upgrade to Forge mode for structural truth (T1 confidence).
+
+**Want semantic discovery for large codebases?**
+Install [cocoindex-code](https://github.com/cocoindex-io/cocoindex-code) to unlock Forge+ mode. CCC indexes your codebase and pre-ranks files by semantic relevance before AST extraction, improving coverage on projects with 500+ files.
 
 ---
 
