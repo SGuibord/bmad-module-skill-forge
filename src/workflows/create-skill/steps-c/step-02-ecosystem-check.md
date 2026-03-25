@@ -1,7 +1,7 @@
 ---
 name: 'step-02-ecosystem-check'
 description: 'Check agentskills.io ecosystem for existing official skill before compilation'
-nextStepFile: './step-03-extract.md'
+nextStepFile: './step-02b-ccc-discover.md'
 ---
 
 # Step 2: Ecosystem Check

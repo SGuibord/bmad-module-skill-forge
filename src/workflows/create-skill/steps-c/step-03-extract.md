@@ -92,7 +92,16 @@ Load `{sourceResolutionData}` completely. Follow the **Remote Source Resolution*
 5. Infer types from JSDoc, docstrings, type annotations
 6. Confidence: All results T1-low — `[SRC:{file}:L{line}]`
 
-**Forge/Deep Tier (AST available):**
+**Forge/Forge+/Deep Tier (AST available):**
+
+**CCC Discovery Integration (Forge+ and Deep with ccc only):**
+
+If `{ccc_discovery}` is in context and non-empty (populated by step-02b):
+- Sort the filtered file list by CCC relevance score: files appearing in `{ccc_discovery}` results move to the front of the extraction queue, sorted by their relevance score descending
+- Files NOT in CCC results remain in the queue after ranked files — they are not excluded, only deprioritized
+- Display: "**CCC discovery: {N} files pre-ranked by semantic relevance** — extraction will prioritize these first."
+
+If `{ccc_discovery}` is empty or not in context: proceed with existing file ordering (no change to current behavior).
 
 ⚠️ **CRITICAL:** Before executing AST extraction, load the **AST Extraction Protocol** section from `{extractionPatternsData}`. Follow the decision tree based on the file count from step-01's file tree. This determines whether to use the MCP tool, scoped YAML rules, or CLI streaming. Never use `ast-grep --json` (without `=stream`) — it loads the entire result set into memory and will fail on large codebases.
 
