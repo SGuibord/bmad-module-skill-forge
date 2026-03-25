@@ -61,10 +61,10 @@ Halt with: "Forge halted: No forge configuration found. Run [SF] Setup Forge fir
 
 **If file exists:**
 Extract and report:
-- `tier`: Quick, Forge, or Deep
+- `tier`: Quick, Forge, Forge+, or Deep
 - `tools`: which tools are available (gh, ast-grep, qmd)
 
-**Apply tier override:** Read `{preferencesFile}`. If `tier_override` is set and is a valid tier value (Quick, Forge, or Deep), use it instead of the detected tier.
+**Apply tier override:** Read `{preferencesFile}`. If `tier_override` is set and is a valid tier value (Quick, Forge, Forge+, or Deep), use it instead of the detected tier.
 
 ### 2. Discover Skill Brief
 

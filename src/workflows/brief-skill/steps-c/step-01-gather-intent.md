@@ -64,7 +64,7 @@ Attempt to load `{forgeTierFile}`:
 - Read the tier level (quick, forge, or deep)
 - Note available tools for scoping guidance later
 
-**Apply tier override:** Read `{sidecar_path}/preferences.yaml`. If `tier_override` is set and is a valid tier value (Quick, Forge, or Deep), use it instead of the detected tier.
+**Apply tier override:** Read `{sidecar_path}/preferences.yaml`. If `tier_override` is set and is a valid tier value (Quick, Forge, Forge+, or Deep), use it instead of the detected tier.
 
 **If not found:**
 - Display: "**Note:** No forge tier configuration found. Defaulting to Quick tier. Run **setup-forge** first for full capabilities."

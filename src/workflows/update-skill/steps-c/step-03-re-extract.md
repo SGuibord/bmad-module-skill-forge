@@ -103,7 +103,7 @@ Perform tier-aware extraction on only the changed files identified in step 02, p
 DO NOT BE LAZY — For EACH file in the change manifest with status MODIFIED, ADDED, or RENAMED, launch a subprocess that:
 
 1. Loads the source file
-2. Performs tier-appropriate extraction (Quick/Forge/Deep)
+2. Performs tier-appropriate extraction (Quick/Forge/Forge+/Deep)
 3. For each export found:
    - Record: export name, type (function/class/type/constant), signature
    - Record: file path, start line, end line
@@ -200,7 +200,7 @@ ONLY WHEN all changed files have been extracted and results compiled will you lo
 - Every changed file from manifest extracted with tier-appropriate method
 - All exports labeled with confidence tier (T1/T1-low/T2)
 - AST file:line citations on every extracted export
-- QMD enrichment performed for Deep tier (skipped with notice for Quick/Forge)
+- QMD enrichment performed for Deep tier (skipped with notice for Quick/Forge/Forge+)
 - Extraction results compiled with per-file detail
 - Summary displayed before auto-proceeding
 - No unchanged files extracted

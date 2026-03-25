@@ -24,6 +24,7 @@ With progressive capability:
 | --- | --- | --- | --- |
 | Quick | No tools required | Fast, template-driven, package-name resolution | Speed-first skill creation |
 | Forge | ast-grep available | AST-backed structural analysis, line-level citations | Precision-focused compilation |
+| Forge+ | ast-grep + ccc | Semantic discovery + AST verification, pre-ranked extraction | Intelligent precision compilation |
 | Deep | ast-grep + gh + qmd | AST + GitHub exploration + QMD synthesis, maximum provenance | Full intelligence pipeline |
 
 ## Pattern Examples
@@ -35,12 +36,13 @@ With progressive capability:
 **Implementation:** Each tool is verified by executing its version command — presence in PATH is insufficient. The tier is the highest level where all required tools pass verification:
 
 ```
-ast-grep --version  → required for Forge
+ast-grep --version  → required for Forge and above
+ccc --help + ccc doctor → required for Forge+
 gh --version        → required for Deep
 qmd status          → required for Deep
 ```
 
-If ast-grep passes but gh fails, the tier is Forge (not a "degraded Deep").
+If ast-grep passes but gh fails, the tier is Forge (not a "degraded Deep"). If ast-grep and ccc pass but gh and qmd fail, the tier is Forge+ (not a "degraded Deep").
 
 **Key Points:**
 - Tools must be functional, not just installed
@@ -59,6 +61,10 @@ Quick:  "Fast, template-driven skill creation — package-name resolution and
 Forge:  "AST-backed structural analysis — line-level citations with verified
          signatures. Precision-focused compilation."
 
+Forge+: "Semantic-guided precision compilation — cocoindex-code maps the codebase
+         semantically before AST extraction runs. Every skill begins with a ranked
+         discovery pass, then AST-backed verification."
+
 Deep:   "Full intelligence pipeline — AST verification plus GitHub exploration
          and QMD knowledge synthesis. Maximum provenance depth."
 ```
@@ -75,6 +81,7 @@ Deep:   "Full intelligence pipeline — AST verification plus GitHub exploration
 **Implementation:**
 - **Quick:** Reads source files, applies pattern matching for exports and signatures, produces T1-low citations. Uses `gh_bridge` for file structure when available as a convenience, not a requirement.
 - **Forge:** Uses `ast_bridge.scan_definitions()` for structural parsing, produces T1 citations with exact AST node types. Falls back to source reading for files ast-grep cannot parse.
+- **Forge+:** Identical extraction to Forge, plus ccc semantic pre-discovery narrows the file set before ast-grep runs. For large codebases, `ccc_bridge.search()` produces a ranked candidate list. ast-grep operates on that list rather than the full tree. All results remain T1 (AST-verified) — ccc is upstream, not in the extraction chain.
 - **Deep:** Identical extraction to Forge, plus QMD enrichment in a separate step. T2 annotations layer on top of the T1 base without replacing it.
 
 **Key Points:**
@@ -89,6 +96,7 @@ Deep:   "Full intelligence pipeline — AST verification plus GitHub exploration
 **Implementation:**
 - **Quick (Naive mode):** Export Coverage 45%, Signature Accuracy 25%, Type Coverage 20%, External Validation 10%. No coherence check — AST verification unavailable. When external validation tools (skill-check, tessl) are unavailable, their 10% is redistributed proportionally across the remaining categories.
 - **Forge (Contextual mode):** Export Coverage 40%, Signature Accuracy 25%, Type Coverage 15%, Coherence 20%. Full AST-backed verification.
+- **Forge+ (Contextual mode):** Same weights as Forge. The improved extraction coverage (from ccc pre-ranking) may increase T1 count and reduce gaps, but the scoring weights themselves do not change.
 - **Deep (Contextual mode):** Same weights as Forge, plus cross-repo verification and QMD coherence checks feed into the coherence score.
 
 **Key Points:**

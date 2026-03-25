@@ -134,7 +134,7 @@ Append temporal metadata to each export in the snapshot.
 Log: "No QMD extraction collection found for {skill_name}. Temporal enrichment skipped. Re-run [CS] Create Skill to generate the collection."
 Continue without T2 enrichment — this is not an error.
 
-**IF forge tier is Quick or Forge:**
+**IF forge tier is Quick, Forge, or Forge+:**
 Skip this section. Temporal context requires Deep tier.
 
 ### 5. Validate Extraction Completeness

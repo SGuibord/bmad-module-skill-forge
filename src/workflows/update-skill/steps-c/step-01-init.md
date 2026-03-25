@@ -89,10 +89,10 @@ Search for the test report at `{forge_data_folder}/{skill_name}/test-report-{ski
 ### 3. Load Forge Tier Configuration
 
 **Load `{sidecar_path}/forge-tier.yaml`:**
-- Extract: `tier` (Quick, Forge, or Deep), available tools
+- Extract: `tier` (Quick, Forge, Forge+, or Deep), available tools
 - If missing: **ABORT** — "No forge-tier.yaml found. Run setup-forge first to detect available tools."
 
-**Apply tier override:** Read `{sidecar_path}/preferences.yaml`. If `tier_override` is set and is a valid tier value (Quick, Forge, or Deep), use it instead of the detected tier.
+**Apply tier override:** Read `{sidecar_path}/preferences.yaml`. If `tier_override` is set and is a valid tier value (Quick, Forge, Forge+, or Deep), use it instead of the detected tier.
 
 **Determine analysis capabilities:**
 - **Quick:** text pattern matching only → T1-low confidence

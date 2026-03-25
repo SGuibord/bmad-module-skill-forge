@@ -82,10 +82,10 @@ Load `{sidecar_path}/forge-tier.yaml` to detect available tools.
 - HALT workflow
 
 **If found:**
-- Extract tier level: Quick / Forge / Deep
+- Extract tier level: Quick / Forge / Forge+ / Deep
 - Extract available tools: gh_bridge, ast_bridge, qmd_bridge
 
-**Apply tier override:** Read `{sidecar_path}/preferences.yaml`. If `tier_override` is set and is a valid tier value (Quick, Forge, or Deep), use it instead of the detected tier.
+**Apply tier override:** Read `{sidecar_path}/preferences.yaml`. If `tier_override` is set and is a valid tier value (Quick, Forge, Forge+, or Deep), use it instead of the detected tier.
 
 ### 3. Load Skill Artifacts
 

@@ -6,8 +6,24 @@ tools:
   ast_grep: ~
   gh_cli: ~
   qmd: ~
+  ccc: ~
+  security_scan: ~
 
 # Capability tier (derived from tool availability)
-# Quick = no tools required | Forge = + ast-grep | Deep = + ast-grep + gh + QMD
+# Quick = no tools | Forge = + ast-grep | Forge+ = + ast-grep + ccc | Deep = + ast-grep + gh + QMD
 tier: ~
 tier_detected_at: ~
+
+# CCC semantic index state (managed by setup-forge and extraction workflows)
+ccc_index:
+  indexed_path: ~
+  last_indexed: ~
+  status: "none"
+  staleness_threshold_hours: 24
+
+# CCC index registry (tracks which source paths have been indexed for skill workflows)
+ccc_index_registry: []
+
+# QMD collection registry (populated by create-skill, consumed by audit/update-skill)
+# Each entry tracks a QMD collection created during skill workflows
+qmd_collections: []
