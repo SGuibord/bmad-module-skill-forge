@@ -54,7 +54,7 @@ Drift report with severity levels (added/removed/changed exports, breaking chang
 ### Key Instructions to LLM
 
 - Primary agent: Ferris (Audit mode)
-- Tiered operation: Forge tier (structural only) vs Deep tier (full semantic + QMD)
+- Tiered operation: Forge/Forge+ tier (structural, with optional CCC augmentation) vs Deep tier (full semantic + QMD)
 - The spec references AST diff for structural comparison and QMD for semantic context
 - CI integration is noted as optional export (ADR-A decision)
 

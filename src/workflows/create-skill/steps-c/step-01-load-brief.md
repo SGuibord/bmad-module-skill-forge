@@ -62,7 +62,8 @@ Halt with: "Forge halted: No forge configuration found. Run [SF] Setup Forge fir
 **If file exists:**
 Extract and report:
 - `tier`: Quick, Forge, Forge+, or Deep
-- `tools`: which tools are available (gh, ast-grep, qmd)
+- `tools`: which tools are available (gh, ast-grep, ccc, qmd)
+- `ccc_index`: ccc index state (status, indexed_path, last_indexed) — needed by step-02b
 
 **Apply tier override:** Read `{preferencesFile}`. If `tier_override` is set and is a valid tier value (Quick, Forge, Forge+, or Deep), use it instead of the detected tier.
 

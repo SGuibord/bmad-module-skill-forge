@@ -97,7 +97,7 @@ SKF uses an additive tier model. Each tier is the previous tier plus one tool. Y
 | **Quick** | `gh_bridge` + `skill-check` + `tessl` | Source reading + spec validation + content quality review. Best-effort skills in under a minute. |
 | **Forge** | + `ast_bridge` | Structural truth. AST-verified signatures. Co-import detection. T1 confidence. |
 | **Forge+** | + `ccc_bridge` | Semantic discovery. CCC pre-ranks files by meaning before AST extraction. Better coverage on large codebases. |
-| **Deep** | + `qmd_bridge` | Knowledge search. Temporal provenance. Drift detection. Full intelligence. |
+| **Deep** | + `gh_bridge` + `qmd_bridge` | Requires ast-grep + gh + QMD. Knowledge search. Temporal provenance. Drift detection. Full intelligence. |
 
 Setup detects your installed tools and sets your tier automatically:
 
@@ -146,7 +146,8 @@ Every claim in a generated skill carries a confidence tier that traces to its so
 | Tier | Source | Tool | What It Means |
 |------|--------|------|---------------|
 | **T1** | AST extraction | `ast_bridge` | Current code, structurally verified. Immutable for that version. |
-| **T2** | QMD evidence / source reading | `qmd_bridge` / `gh_bridge` | Historical + planned context (issues, PRs, changelogs, docs). |
+| **T1-low** | Source reading | `gh_bridge` | Source-read without AST verification. Location correct, signature may be inferred. |
+| **T2** | QMD evidence | `qmd_bridge` | Historical + planned context (issues, PRs, changelogs, docs). |
 | **T3** | External documentation | `doc_fetcher` | External, untrusted. Quarantined. |
 
 ### Temporal Provenance
@@ -174,7 +175,7 @@ Your forge tier limits what authority claims a skill can make:
 | Quick | No | No | No | `community` | Best-effort |
 | Forge | Yes | No | No | `official` | Structural (AST-verified) |
 | Forge+ | Yes | Yes | No | `official` | Structural + semantic discovery |
-| Deep | Yes | opt. | Yes | `official` | Full (structural + contextual + temporal) |
+| Deep | Yes | opt. (enhances when installed) | Yes | `official` | Full (structural + contextual + temporal) |
 
 ---
 
@@ -320,7 +321,7 @@ Export injects a managed section between markers:
 
 ## Tool Ecosystem
 
-### 6 Tools
+### 7 Tools
 
 | Tool | Wraps | Purpose |
 |------|-------|---------|

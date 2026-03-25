@@ -174,7 +174,7 @@ Three CLAUDE.md cases:
 **Output Specifications:**
 - Type: Action-based (file writes + console output)
 - Files written:
-  1. `{skills_output_folder}/{name}/context-snippet.md` — ADR-L v2 format (~50-80 tokens/skill)
+  1. `{skills_output_folder}/{name}/context-snippet.md` — ADR-L v2 format (~80-120 tokens/skill)
   2. CLAUDE.md or AGENTS.md — managed `<!-- SKF:BEGIN/END -->` section per ADR-J (3 cases: create/append/regenerate)
   3. agentskills.io package structure — ready for `npx skills publish`
 - Console output: Token count report + export summary with distribution instructions

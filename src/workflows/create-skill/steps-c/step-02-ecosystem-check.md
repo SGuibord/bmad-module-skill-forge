@@ -131,7 +131,7 @@ If no match is found, this step auto-proceeds with no user interaction.
 - Match presented factually with clear options if found
 - No-match case auto-proceeds silently
 - User decision respected (Proceed/Install/Abort)
-- Auto-proceeded to step-03 (when no match or user chose Proceed)
+- Auto-proceeded to step-02b (when no match or user chose Proceed)
 
 ### ❌ SYSTEM FAILURE:
 

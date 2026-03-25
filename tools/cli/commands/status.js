@@ -146,7 +146,7 @@ function displayStatus(status, version) {
   const tools = ft.tools || {};
   console.log(chalk.white.bold('  Forge Tier'));
   if (status.tierDetected) {
-    const tierColors = { Quick: chalk.yellow, Forge: chalk.hex('#F59E0B'), Deep: chalk.hex('#FCD34D') };
+    const tierColors = { Quick: chalk.yellow, Forge: chalk.hex('#F59E0B'), 'Forge+': chalk.hex('#E88D0E'), Deep: chalk.hex('#FCD34D') };
     const tierColor = tierColors[ft.tier] || chalk.white;
     console.log(`    Tier:         ${tierColor(ft.tier)}`);
     console.log(`    Detected:     ${chalk.dim(ft.tier_detected_at || '(unknown)')}`);
@@ -155,6 +155,7 @@ function displayStatus(status, version) {
   }
   console.log(`    ast-grep:     ${formatTool(tools.ast_grep)}`);
   console.log(`    gh CLI:       ${formatTool(tools.gh_cli)}`);
+  console.log(`    ccc:          ${formatTool(tools.ccc)}`);
   console.log(`    QMD:          ${formatTool(tools.qmd)}`);
   console.log('');
 

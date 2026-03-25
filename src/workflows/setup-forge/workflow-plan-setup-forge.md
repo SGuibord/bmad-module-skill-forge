@@ -104,9 +104,9 @@ Initialize forge environment, detect tools, set tier, auto-index project
 
 **Structure Implications:**
 - Simple `steps-c/` folder only, no edit/validate modes
-- No `step-01b-continue.md` needed
+- step-01b added for CCC index verification (Forge+ integration)
 - No document template — output is config files written directly
-- Standard init step without continuation logic
+- Standard init step with step-01b bridge to config writing
 
 ---
 
@@ -179,7 +179,7 @@ Initialize forge environment, detect tools, set tier, auto-index project
 - Frequency: Single execution per run (idempotent, safe to re-run)
 
 **Success Criteria:**
-- All 3 tools (ast-grep, gh, qmd) verified via version/status commands, results accurately recorded
+- All 4 tools (ast-grep, gh, qmd, ccc) verified via version/status commands, results accurately recorded
 - Correct tier assigned from tool availability (or tier_override respected if set)
 - forge-tier.yaml written with tools, tier, and tier_detected_at timestamp
 - preferences.yaml exists with defaults (created on first run, preserved on re-run)
@@ -233,6 +233,7 @@ setup-forge/
 │   └── tier-rules.md             # Tier calculation rules + capability descriptions
 └── steps-c/
     ├── step-01-detect-and-tier.md
+    ├── step-01b-ccc-index.md
     ├── step-02-write-config.md
     ├── step-03-auto-index.md
     └── step-04-report.md
@@ -244,9 +245,10 @@ No templates/ directory (non-document workflow).
 
 | Step | File | Type | Menu | Goal |
 |------|------|------|------|------|
-| 01 | step-01-detect-and-tier.md | Init (Non-Continuable) | Auto-proceed | Verify 3 tools functional, check tier_override, calculate tier, read previous tier |
+| 01 | step-01-detect-and-tier.md | Init (Non-Continuable) | Auto-proceed | Verify 4 tools functional (ast-grep, gh, qmd, ccc), check tier_override, calculate tier, read previous tier |
+| 01b | step-01b-ccc-index.md | Middle (Simple + Conditional) | Auto-proceed | Verify/create CCC index for Forge+/Deep tiers when ccc available, skip silently otherwise |
 | 02 | step-02-write-config.md | Middle (Simple) | Auto-proceed | Write forge-tier.yaml, create preferences.yaml defaults if missing, ensure forge-data/ exists |
-| 03 | step-03-auto-index.md | Middle (Simple + Conditional) | Auto-proceed | QMD index project (Deep only), skip gracefully otherwise |
+| 03 | step-03-auto-index.md | Middle (Simple + Conditional) | Auto-proceed | QMD index project (Deep only) + CCC registry hygiene, skip gracefully otherwise |
 | 04 | step-04-report.md | Final Step | None | Display status with positive framing, handle --update-spec, report tier changes |
 
 ### Step Detail: step-01-detect-and-tier
@@ -384,8 +386,8 @@ step-01 ──→ step-02 ──→ step-03 ──→ step-04
 - Type: Init (Non-Continuable)
 - Input Discovery: No
 - Menu: Auto-proceed (Pattern 3)
-- Next Step: step-02-write-config.md
-- No step-01b needed (single-session)
+- Next Step: step-01b-ccc-index.md
+- step-01b handles CCC index verification before config writing
 
 **Supporting Files:**
 - data/tier-rules.md (created in foundation step)

@@ -64,6 +64,7 @@ tools:
   gh_cli: {true/false from detection}
   qmd: {true/false from detection}
   ccc: {true/false from detection}
+  ccc_daemon: {ccc_daemon from step-01 if available: "healthy"|"stopped"|"error", or ~}
   security_scan: {true/false — true when SNYK_TOKEN is set}
 
 # Capability tier (derived from tool availability)
@@ -75,7 +76,7 @@ tier_detected_at: {current ISO timestamp}
 ccc_index:
   indexed_path: {ccc_indexed_path from step-01b, or ~}
   last_indexed: {ccc_last_indexed from step-01b, or ~}
-  status: {ccc_index_status from step-01b: "fresh"|"stale"|"none"|"failed"}
+  status: {ccc_index_status from step-01b: "fresh"|"created"|"none"|"failed"}
   staleness_threshold_hours: 24
 
 # CCC index registry (tracks which source paths have been indexed for skill workflows)
@@ -109,9 +110,13 @@ tier_override: ~
 # Passive context injection (set to false to skip snippet generation and CLAUDE.md updates during export)
 passive_context: true
 
-# Skill generation defaults
-default_source_authority: community
-default_confidence_threshold: 0.7
+# Language defaults
+output_language: ~
+skill_format_version: ~
+
+# Output preferences
+citation_style: ~
+confidence_display: ~
 ```
 
 **If it DOES exist:** Do not modify. Preserve entirely.

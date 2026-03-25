@@ -109,6 +109,7 @@ If no optional inputs provided, auto-detection will be used.
 **Forge Tier:** {tier_description}
 - Quick: Source reading and import counting
 - Forge: + AST-backed structural analysis
+- Forge+: + CCC semantic co-import augmentation
 - Deep: + Temporal integration evolution
 
 **Available Tools:** {tool_list}

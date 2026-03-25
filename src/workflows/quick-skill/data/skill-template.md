@@ -73,7 +73,15 @@ Indexed format targeting ~80-120 tokens per skill:
   "generated_by": "quick-skill",
   "generation_date": "{date}",
   "confidence_tier": "Quick",
+  "extraction_tier": "quick",
+  "spec_version": "1.3",
   "exports": ["{export_1}", "{export_2}"],
+  "confidence_distribution": {
+    "t1": 0,
+    "t1_low": "{exports_count}",
+    "t2": 0,
+    "t3": 0
+  },
   "stats": {
     "exports_documented": "{number}",
     "exports_public_api": "{number}",

@@ -59,11 +59,11 @@ For Quick and Forge tiers, or when ccc is unavailable, skip silently and proceed
 
 **If tier is Quick or Forge:**
 
-Auto-proceed silently. Display no message. Immediately load, read entire file, then execute `{nextStepFile}`.
+Set `{ccc_discovery: []}` in context. Auto-proceed silently. Display no message. Immediately load, read entire file, then execute `{nextStepFile}`.
 
 **If tier is Forge+ or Deep:**
 
-Check `tools.ccc` from forge-tier.yaml. If `tools.ccc` is false, auto-proceed silently.
+Check `tools.ccc` from forge-tier.yaml. If `tools.ccc` is false, set `{ccc_discovery: []}` in context and auto-proceed to section 5.
 
 If `tools.ccc` is true, continue to section 2.
 
@@ -85,7 +85,7 @@ Where:
 - `brief.name` is the skill name from the brief
 - `brief.scope` is the scope field (e.g., "Full library", "Public API", or specific module names)
 
-**Query length cap:** Truncate to 80 characters if longer — ccc semantic search is sensitive to overly long queries.
+**Query length cap:** Truncate to 80 characters if longer — ccc semantic search is sensitive to overly long queries. When truncating, keep the full skill name and trim `brief.scope` from the end. If `brief.scope` is very short (< 10 chars), append terms from `brief.description` to fill the remaining space.
 
 ### 4. Execute CCC Semantic Search
 

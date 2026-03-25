@@ -191,16 +191,17 @@ Ensure the source path used for extraction is indexed by ccc and registered in t
 
 **Index verification:**
 
-Run `ccc_bridge.ensure_index(source_root)` — this is a no-op if the source was already indexed during setup-forge or step-02b.
+Dispatch to ccc CLI (`ccc index {source_root}`) or ccc MCP tool — `ccc_bridge.ensure_index` is a conceptual interface, not a callable function. This is a no-op if the source was already indexed during setup-forge or step-02b.
 
 **Registry update:**
 
 Read `{forgeTierConfig}` and update the `ccc_index_registry` array.
 
-If an entry with `path` matching `{source_root}` already exists, replace it. Otherwise, append:
+Deduplicate by `source_repo` (the canonical upstream URL from brief_data) combined with `skill_name` — NOT by local `path`, which may be an ephemeral clone path that changes on every run for remote repos. If an entry with matching `source_repo` + `skill_name` already exists, replace it. Otherwise, append:
 
 ```yaml
-  - path: "{source_root}"
+  - source_repo: "{brief.source_repo}"
+    path: "{source_root}"
     skill_name: "{name}"
     indexed_at: "{current ISO date}"
     source_workflow: "create-skill"

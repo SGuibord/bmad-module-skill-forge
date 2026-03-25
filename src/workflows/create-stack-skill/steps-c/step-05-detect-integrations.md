@@ -73,7 +73,7 @@ For each library pair (A, B):
 
 **CCC Semantic Augmentation (Forge+ and Deep with ccc):**
 
-If `tools.ccc` is true in forge-tier.yaml, augment co-import detection with semantic search:
+If `tools.ccc` is true AND `ccc_index.status` is `"fresh"` or `"stale"` in forge-tier.yaml, augment co-import detection with semantic search (max 1 query per library pair):
 
 For each library pair that has exactly 1 co-import file (below the 2-file threshold), run `ccc_bridge.search("{libA} {libB}", source_root, top_k=10)` to find files where the two libraries interact semantically — even without explicit import co-location. If CCC returns additional files where both libraries appear, add them to the pair's co-import candidate list and re-evaluate against the 2-file threshold.
 

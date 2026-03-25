@@ -56,7 +56,7 @@ For Quick and Forge tiers, or when ccc is unavailable, skip silently and proceed
 
 Read `{ccc}` from step-01 context.
 
-**If `{ccc}` is false:** Set `{ccc_index_result: "none", ccc_indexed_path: null, ccc_last_indexed: null}`. Proceed directly to section 5 (Auto-Proceed) — no output, no messaging.
+**If `{ccc}` is false:** Set `{ccc_index_result: "none", ccc_indexed_path: null, ccc_last_indexed: null}`. Proceed directly to section 4 (Auto-Proceed) — no output, no messaging.
 
 **If `{ccc}` is true:** Continue to section 2.
 
@@ -68,10 +68,10 @@ Check the `ccc_index` section:
 - If `ccc_index.indexed_path` matches `{project-root}` AND `ccc_index.status` is `"fresh"`:
   - Check freshness: if `ccc_index.last_indexed` is within `staleness_threshold_hours` (default 24h) of now → index is fresh
   - Store `{ccc_index_result: "fresh", ccc_indexed_path: {project-root}, ccc_last_indexed: {existing timestamp}}`
-  - Proceed to section 5
+  - Proceed to section 4
 
 - If `ccc_index.indexed_path` matches `{project-root}` but timestamp is older than threshold:
-  - Store `{ccc_index_result: "stale"}` — proceed to section 3 for re-index
+  - Store `{ccc_index_result: "stale", ccc_indexed_path: {existing path}, ccc_last_indexed: {existing timestamp}}` — proceed to section 3 for re-index
 
 - If `ccc_index` is missing, has null values, or path doesn't match:
   - Proceed to section 3 for initial index
@@ -105,10 +105,10 @@ ccc index
 
 **If fails:**
 - Store `{ccc_index_result: "failed", ccc_indexed_path: null, ccc_last_indexed: null}`
-- Display: "CCC indexing failed: {error}. Semantic discovery will be unavailable. Forge+ capabilities active without ccc pre-search."
+- Display: "CCC indexing failed: {error}. Extraction will use direct AST scanning — semantic pre-ranking unavailable this session."
 - Continue — this is NOT a workflow error
 
-### 5. Auto-Proceed
+### 4. Auto-Proceed
 
 "**Proceeding to write configuration...**"
 

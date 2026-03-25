@@ -2,7 +2,7 @@
 
 ## Principle
 
-Every capability tier — Quick, Forge, and Deep — produces legitimate, useful skills. Tiers describe what tools are available, not a quality hierarchy. A Quick skill is complete at its tier; a Deep skill adds depth, not correctness. Framing is always positive: describe what each tier enables, never what it lacks.
+Every capability tier — Quick, Forge, Forge+, and Deep — produces legitimate, useful skills. Tiers describe what tools are available, not a quality hierarchy. A Quick skill is complete at its tier; a Deep skill adds depth, not correctness. Framing is always positive: describe what each tier enables, never what it lacks.
 
 ## Rationale
 
@@ -112,7 +112,7 @@ When a tool becomes unavailable mid-session (e.g., ast-grep uninstalled between 
 3. New extractions use the current tier's capabilities
 4. The tier change is logged in the sidecar for audit trail
 
-When source is remote (GitHub URL) and tier is Forge or Deep:
+When source is remote (GitHub URL) and tier is Forge, Forge+, or Deep:
 1. AST extraction requires local files — ast-grep cannot operate on remote URLs
 2. The extraction step attempts an **ephemeral shallow clone** to a system temp path (if `git` is available)
 3. If the clone succeeds: AST extraction proceeds on the local clone, then the temp directory is cleaned up

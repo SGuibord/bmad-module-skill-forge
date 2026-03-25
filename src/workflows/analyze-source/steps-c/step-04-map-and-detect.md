@@ -100,8 +100,8 @@ DO NOT BE LAZY — For EACH qualifying unit, launch a subprocess (or analyze in 
 
 **Per-unit export summary:**
 
-| Unit | Files | Exports | Export Pattern | API Surface | Scripts/Assets |
-|------|-------|---------|----------------|-------------|----------------|
+| Unit | Files | Exports | Export Pattern | API Surface | Scripts/Assets | CCC Signals |
+|------|-------|---------|----------------|-------------|----------------|-------------|
 | {name} | {count} | {count} | {pattern} | {small/medium/large} | {N scripts, M assets or --} | {CCC signals or --} |
 
 ### 3. Map Import Graph

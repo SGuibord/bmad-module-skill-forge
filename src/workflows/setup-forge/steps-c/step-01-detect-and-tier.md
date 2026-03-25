@@ -116,7 +116,7 @@ ccc availability gates the Forge+ tier and enhances Deep tier when present.
 - Use `{tier_override}` as `{calculated_tier}`
 - Note that override is active for the report step
 
-**If no override, apply tier rules from {tierRulesData}:**
+**If no override, apply tier rules from {tierRulesData} in order — the first matching rule wins. Do not continue checking once a match is found:**
 - `{ast_grep}` AND `{gh_cli}` AND `{qmd}` all true → **Deep**
 - `{ast_grep}` AND `{ccc}` both true (regardless of gh/qmd) → **Forge+**
 - `{ast_grep}` true (regardless of ccc/gh/qmd) → **Forge**
@@ -151,8 +151,8 @@ ONLY WHEN all 4 core tools have been verified, optional security scan checked, a
 - Existing forge-tier.yaml read for re-run comparison (if present)
 - Existing preferences.yaml read for tier_override (if present)
 - Tier correctly calculated from tool results or override applied
-- All results stored in context for step-02
-- Auto-proceeded to step-02
+- All results stored in context for step-01b and step-02
+- Auto-proceeded to step-01b
 
 ### ❌ SYSTEM FAILURE:
 

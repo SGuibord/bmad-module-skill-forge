@@ -97,6 +97,7 @@ Search for the test report at `{forge_data_folder}/{skill_name}/test-report-{ski
 **Determine analysis capabilities:**
 - **Quick:** text pattern matching only → T1-low confidence
 - **Forge:** AST structural extraction → T1 confidence
+- **Forge+:** AST structural extraction + CCC semantic ranking → T1 confidence (with ccc signals)
 - **Deep:** AST + QMD semantic enrichment → T1 + T2 confidence
 
 ### 4. Load Provenance Map

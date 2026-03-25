@@ -61,7 +61,7 @@ Identical extraction to Forge tier. CCC adds an upstream semantic discovery step
 CCC pre-discovery runs in step-02b-ccc-discover (before this extraction step) when ALL of the following are true:
 - Tier is Forge+ or Deep
 - `tools.ccc: true` in forge-tier.yaml
-- `ccc_index.status` is `"fresh"` or `"stale"` in forge-tier.yaml
+- `ccc_index.status` is `"fresh"`, `"stale"`, `"created"`, or `"none"`/`"failed"` (step-02b attempts lazy indexing for the latter two)
 
 The discovery step stores `{ccc_discovery: [{file, score, snippet}]}` in context. This extraction step consumes those results to pre-rank the file list.
 
