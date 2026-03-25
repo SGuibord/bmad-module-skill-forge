@@ -15,11 +15,11 @@ SKF has 10 workflows. You trigger them by typing commands to [Ferris](../agents.
 
 **Command:** `@Ferris SF`
 
-**Purpose:** Initialize forge environment, detect tools, set capability tier, verify QMD collection health.
+**Purpose:** Initialize forge environment, detect tools (ast-grep, ccc, gh, qmd), set capability tier, index project in CCC (Forge+), verify QMD collection health (Deep).
 
 **When to Use:** First time using SKF in a project. Run once per project.
 
-**Key Steps:** Detect tools → Determine tier → Write forge-tier.yaml → QMD hygiene (Deep)
+**Key Steps:** Detect tools → CCC index check (Forge+) → Determine tier → Write forge-tier.yaml → QMD hygiene (Deep)
 
 **Agent:** Ferris (Architect mode)
 

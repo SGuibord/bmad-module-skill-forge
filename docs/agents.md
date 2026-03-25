@@ -22,6 +22,7 @@ Ferris handles all SKF workflows. You always interact with Ferris — he switche
 
 **Key Capabilities:**
 - AST analysis via ast-grep for structural truth
+- Semantic code discovery via cocoindex-code for intelligent file pre-ranking
 - QMD knowledge search for temporal context and evidence
 - agentskills.io specification compliance and validation
 - GitHub source navigation and package-to-repo resolution

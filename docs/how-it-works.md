@@ -35,7 +35,7 @@ Each workflow directory contains these files, and each has a specific job:
 | `data/*.md`               | Workflow-specific reference data — schemas, heuristics, rules, patterns                                             | Read by steps on demand                           |
 | `templates/*.md`          | Output skeletons with placeholder vars — steps fill these in to produce the final artifact                          | Read by steps when generating output              |
 | `skf-knowledge-index.csv` | Knowledge fragment index — id, name, tags, tier, file path                                                          | Read by steps to decide which fragments to load   |
-| `knowledge/*.md`          | 11 reusable fragments — cross-cutting principles and patterns (e.g., `zero-hallucination.md`, `confidence-tiers.md`) | Selectively read into context when a step directs |
+| `knowledge/*.md`          | 12 reusable fragments — cross-cutting principles and patterns (e.g., `zero-hallucination.md`, `confidence-tiers.md`, `ccc-bridge.md`) | Selectively read into context when a step directs |
 
 ```mermaid
 flowchart LR
@@ -96,6 +96,7 @@ SKF uses an additive tier model. Each tier is the previous tier plus one tool. Y
 |------|-------|-------------|
 | **Quick** | `gh_bridge` + `skill-check` + `tessl` | Source reading + spec validation + content quality review. Best-effort skills in under a minute. |
 | **Forge** | + `ast_bridge` | Structural truth. AST-verified signatures. Co-import detection. T1 confidence. |
+| **Forge+** | + `ccc_bridge` | Semantic discovery. CCC pre-ranks files by meaning before AST extraction. Better coverage on large codebases. |
 | **Deep** | + `qmd_bridge` | Knowledge search. Temporal provenance. Drift detection. Full intelligence. |
 
 Setup detects your installed tools and sets your tier automatically:
@@ -105,10 +106,10 @@ Setup detects your installed tools and sets your tier automatically:
 ```
 
 ```
-Forge initialized. Tools: gh, ast-grep, QMD. Tier: Deep. Ready.
+Forge initialized. Tools: gh, ast-grep, ccc, QMD. Tier: Deep. Ready.
 ```
 
-Don't have ast-grep or QMD yet? No problem — Quick mode works with just the GitHub CLI. Install tools later; your tier upgrades automatically.
+Don't have ast-grep, cocoindex-code, or QMD yet? No problem — Quick mode works with just the GitHub CLI. Install tools later; your tier upgrades automatically.
 
 ### Tier Override — Comparing Output Across Tiers
 
@@ -128,10 +129,13 @@ This is useful for comparing skill quality across tiers for the same target:
 # 2. Change to tier_override: Forge
 @Ferris CS                # recompile at Forge tier — compare output
 
-# 3. Reset to tier_override: ~ (auto-detect)
+# 3. Change to tier_override: Forge+
+@Ferris CS                # recompile with semantic discovery — compare coverage
+
+# 4. Reset to tier_override: ~ (auto-detect)
 ```
 
-Set `tier_override` to `Quick`, `Forge`, or `Deep`. Set to `~` (null) to return to auto-detection. The override is respected by all tier-aware workflows (CS, SS, US, AS, TS).
+Set `tier_override` to `Quick`, `Forge`, `Forge+`, or `Deep`. Set to `~` (null) to return to auto-detection. The override is respected by all tier-aware workflows (CS, SS, US, AS, TS).
 
 ---
 
@@ -165,11 +169,12 @@ Progressive disclosure controls how much context surfaces at each level:
 
 Your forge tier limits what authority claims a skill can make:
 
-| Forge Tier | AST? | QMD? | Max Authority | Accuracy Guarantee |
-|-----------|------|------|---------------|-------------------|
-| Quick | No | No | `community` | Best-effort |
-| Forge | Yes | No | `official` | Structural (AST-verified) |
-| Deep | Yes | Yes | `official` | Full (structural + contextual + temporal) |
+| Forge Tier | AST? | CCC? | QMD? | Max Authority | Accuracy Guarantee |
+|-----------|------|------|------|---------------|-------------------|
+| Quick | No | No | No | `community` | Best-effort |
+| Forge | Yes | No | No | `official` | Structural (AST-verified) |
+| Forge+ | Yes | Yes | No | `official` | Structural + semantic discovery |
+| Deep | Yes | opt. | Yes | `official` | Full (structural + contextual + temporal) |
 
 ---
 
@@ -323,6 +328,7 @@ Export injects a managed section between markers:
 | **`skill-check`** | [thedaviddias/skill-check](https://github.com/thedaviddias/skill-check) | Validation + auto-fix (`check --fix`), quality scoring (0-100), security scan, split-body, diff comparison |
 | **`tessl`** | [tessl](https://tessl.io) | Content quality review, actionability scoring, progressive disclosure evaluation, AI judge with suggestions |
 | **`ast_bridge`** | ast-grep CLI | Structural extraction, custom AST queries, co-import detection |
+| **`ccc_bridge`** | cocoindex-code | Semantic code search, project indexing, file discovery pre-ranking |
 | **`qmd_bridge`** | QMD (local search) | BM25 keyword search, vector semantic search, collection indexing |
 | **`doc_fetcher`** | Environment web tools | Remote documentation fetching for T3-confidence content. Tool-agnostic — uses whatever web fetching is available (Firecrawl, WebFetch, curl, etc.). Output quarantined as T3. |
 
@@ -333,6 +339,7 @@ When tools disagree, higher priority wins for instructions. Lower priority is pr
 | Priority | Source | Tool |
 |----------|--------|------|
 | 1 (highest) | AST extraction | `ast_bridge` |
+| 1b | CCC discovery (pre-ranking) | `ccc_bridge` |
 | 2 | QMD evidence | `qmd_bridge` |
 | 3 | Source reading (non-AST) | `gh_bridge` |
 | 4 | External documentation | `doc_fetcher` |
