@@ -101,8 +101,8 @@ async function runTests() {
       assert(skfAgent.agent.critical_actions !== undefined, 'SKF agent has critical_actions');
       assert(skfAgent.agent.menu !== undefined, 'SKF agent has menu');
       assert(
-        Array.isArray(skfAgent.agent.menu) && skfAgent.agent.menu.length === 11,
-        'SKF agent menu has 11 workflows',
+        Array.isArray(skfAgent.agent.menu) && skfAgent.agent.menu.length === 13,
+        'SKF agent menu has 13 workflows',
         `Found ${Array.isArray(skfAgent.agent.menu) ? skfAgent.agent.menu.length : 'non-array'}`,
       );
 

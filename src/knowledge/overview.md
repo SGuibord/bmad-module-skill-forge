@@ -31,6 +31,7 @@ With knowledge files:
 | [manual-section-integrity.md](manual-section-integrity.md) | \[MANUAL\] marker preservation and merge algorithm                | CS, US, AS, TS, EX                 |
 | [qmd-registry.md](qmd-registry.md)                         | Progressive QMD collection registry and collection gate principle | SF, BS, CS, US, AS                 |
 | [ccc-bridge.md](ccc-bridge.md)                             | ccc_bridge interface, indexing lifecycle, Forge+ discovery-before-extraction | SF, CS, SS, AS, US, BS             |
+| [architecture-verification.md](architecture-verification.md) | Pre-code verification pipeline, integration verdicts, iteration loop | VS, RA, SS                        |
 | [split-body-strategy.md](split-body-strategy.md)           | Selective vs full split-body, detection pattern, agent accuracy   | CS, QS, US, TS, EX                |
 
 ## JiT Loading Protocol

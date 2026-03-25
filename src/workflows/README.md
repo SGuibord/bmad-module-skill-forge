@@ -1,6 +1,6 @@
 # SKF Workflows
 
-Ten workflows covering the full skill compilation lifecycle — from source discovery through verified export.
+Twelve workflows covering the full skill lifecycle — from source discovery through verified export, with pre-code architecture verification.
 
 All workflows are triggered via Ferris (`@Ferris <code>`) and execute as step-by-step sequences with just-in-time step loading.
 
@@ -13,7 +13,9 @@ All workflows are triggered via Ferris (`@Ferris <code>`) and execute as step-by
 | BS | [brief-skill](brief-skill/workflow.md) | 5 | Architect | Design a skill scope through guided discovery |
 | CS | [create-skill](create-skill/workflow.md) | 8 | Surgeon | Compile a skill from brief with provenance (supports --batch) |
 | QS | [quick-skill](quick-skill/workflow.md) | 6 | Surgeon | Fast skill from package name or GitHub URL — no brief needed |
-| SS | [create-stack-skill](create-stack-skill/workflow.md) | 9 | Surgeon | Consolidated project stack skill with integration patterns |
+| SS | [create-stack-skill](create-stack-skill/workflow.md) | 9 | Surgeon | Consolidated project stack skill with integration patterns (code-mode + compose-mode) |
+| VS | [verify-stack](verify-stack/workflow.md) | 6 | Audit | Validate tech stack feasibility against architecture and PRD |
+| RA | [refine-architecture](refine-architecture/workflow.md) | 6 | Architect | Improve architecture doc using verified skill data |
 | US | [update-skill](update-skill/workflow.md) | 7 | Surgeon | Regenerate after source changes, preserving \[MANUAL\] sections |
 | AS | [audit-skill](audit-skill/workflow.md) | 6 | Audit | Drift detection between skill and current source code |
 | TS | [test-skill](test-skill/workflow.md) | 6 | Audit | Cognitive completeness verification — quality gate before export |
@@ -37,6 +39,12 @@ SF → BS → CS → TS → EX
 
 ```
 SF → QS → EX
+```
+
+**Pre-code stack verification:**
+
+```
+SF → CS×N (per library) → VS → RA → SS (compose) → TS → EX
 ```
 
 **Maintenance:**
@@ -119,9 +127,21 @@ Fastest path to a skill. Accepts a GitHub URL or package name, resolves to sourc
 
 ### create-stack-skill (SS)
 
-**9 steps** | **Data:** integration-patterns.md, manifest-patterns.md, stack-skill-template.md
+**9 steps** | **Data:** integration-patterns.md, manifest-patterns.md, stack-skill-template.md, compose-mode-rules.md
 
-Analyzes dependency manifests (package.json, requirements.txt, Cargo.toml, etc.) to detect libraries, ranks by import frequency, discovers co-import integration patterns between libraries, compiles a consolidated stack skill documenting how libraries connect, validates, and generates output.
+Two modes: **Code-mode** analyzes dependency manifests and co-import patterns from actual source code. **Compose-mode** synthesizes a stack skill from pre-generated individual skills + architecture document (no codebase required). Both produce the same output format — consolidated stack skill with integration patterns.
+
+### verify-stack (VS)
+
+**6 steps** | **Data:** integration-verification-rules.md, coverage-patterns.md, feasibility-report-template.md
+
+Pre-code verification engine. Cross-references generated skills against architecture and PRD documents. Three passes: coverage verification (does a skill exist for each tech?), integration verification (do the APIs actually connect?), and requirements verification (does the stack cover the PRD?). Produces a feasibility report with evidence-backed verdicts and prescriptive recommendations. Re-runnable — swap libraries, regenerate skills, re-verify.
+
+### refine-architecture (RA)
+
+**6 steps** | **Data:** refinement-rules.md
+
+Architecture improvement engine. Takes the original architecture document and refines it using verified skill data and VS feasibility findings. Fills gaps, flags issues, suggests improvements — all backed by specific API evidence from the generated skills. Produces a refined architecture document.
 
 ### update-skill (US)
 

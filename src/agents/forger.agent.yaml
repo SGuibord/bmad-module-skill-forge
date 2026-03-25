@@ -80,6 +80,14 @@ agent:
       workflow: "{project-root}/_bmad/skf/workflows/skillforge/audit-skill/workflow.md"
       description: "[AS] Audit Skill — check for drift"
 
+    - trigger: VS or fuzzy match on verify-stack
+      workflow: "{project-root}/_bmad/skf/workflows/skillforge/verify-stack/workflow.md"
+      description: "[VS] Verify Stack — validate tech stack feasibility against architecture and PRD"
+
+    - trigger: RA or fuzzy match on refine-architecture
+      workflow: "{project-root}/_bmad/skf/workflows/skillforge/refine-architecture/workflow.md"
+      description: "[RA] Refine Architecture — improve architecture doc using verified skill data"
+
     - trigger: TS or fuzzy match on test-skill
       workflow: "{project-root}/_bmad/skf/workflows/skillforge/test-skill/workflow.md"
       description: "[TS] Test Skill — verify completeness"
