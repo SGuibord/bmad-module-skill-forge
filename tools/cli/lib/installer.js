@@ -238,6 +238,7 @@ class Installer {
       document_output_language: 'en',
       skills_output_folder: config.skills_output_folder || 'skills',
       forge_data_folder: config.forge_data_folder || 'forge-data',
+      sidecar_path: '_bmad/_memory/forger-sidecar',
       skf_folder: config.skfFolder,
       ides: config.ides || [],
     };
