@@ -51,6 +51,18 @@ npx bmad-module-skill-forge install
 
 The installer detects the existing `_bmad/` directory and installs SKF alongside your current modules.
 
+### Updating an existing SKF installation
+
+To move to a newer (or older) SKF version, run the installer again in your project directory:
+
+```bash
+npx bmad-module-skill-forge@latest install
+```
+
+The installer reads the installed version from your manifest and shows the delta in the prompt — for example `v0.8.3 → v0.8.4 available`. Pick **Update** to replace SKF files while keeping your `config.yaml` intact. The option label adapts to the direction you're moving (upgrade, reinstall the same version, or downgrade) so you always see exactly what you're about to apply. Pick **Fresh install** instead if you want to wipe everything and start clean.
+
+> The `@latest` suffix forces npx to fetch the newest published version instead of reusing a cached copy from a previous run.
+
 ---
 
 ## Prerequisites
