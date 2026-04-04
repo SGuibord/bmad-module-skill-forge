@@ -76,6 +76,18 @@ Before generating new snippet content, check for a prior snippet:
 
 This preserved value will be used as a fallback in section 3 if new gotchas cannot be derived.
 
+### 2.7. Resolve Platform Root Path
+
+Using the `--platform` flag parsed in step-01 (default: `claude`), resolve the root path prefix:
+
+| Platform | `{platform_root}` |
+|----------|-------------------|
+| `claude` | `.claude/skills/` |
+| `cursor` | `.cursor/skills/` |
+| `copilot` | `.agents/skills/` |
+
+Store `{platform_root}` for use in snippet generation. The context-snippet.md written to disk uses this platform's root path.
+
 ### 3. Generate Snippet Content
 
 **For single skills (`skill_type: "single"`):**
@@ -91,7 +103,7 @@ This preserved value will be used as a fallback in section 3 if new gotchas cann
 
 Generate:
 ```
-[{skill-name} v{version}]|root: skills/{skill-name}/
+[{skill-name} v{version}]|root: {platform_root}{skill-name}/
 |IMPORTANT: {skill-name} v{version} — read SKILL.md before writing {skill-name} code. Do NOT rely on training data.
 |quick-start:{SKILL.md#quick-start}
 |api: {export-1}(), {export-2}(), {export-3}, {export-4}(), {export-5}
@@ -107,7 +119,7 @@ Generate:
 
 Generate:
 ```
-[{project}-stack v{version}]|root: skills/{project}-stack/
+[{project}-stack v{version}]|root: {platform_root}{project}-stack/
 |IMPORTANT: {project}-stack — read SKILL.md before writing integration code. Do NOT rely on training data.
 |stack: {dep-1}@{v1}, {dep-2}@{v2}, {dep-3}@{v3}
 |integrations: {pattern-1}, {pattern-2}

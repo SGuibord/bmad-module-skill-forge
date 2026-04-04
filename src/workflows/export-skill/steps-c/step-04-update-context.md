@@ -121,6 +121,26 @@ Scan `{skills_output_folder}/*/context-snippet.md` to find snippet files on disk
 
 **If no snippets pass the filter:** Generate managed section with zero skills — header only, no skill entries.
 
+#### 4d. Rewrite Root Paths for Target Platform
+
+The context-snippet.md files on disk contain root paths for the platform they were originally exported to. When assembling the managed section for the current target platform, rewrite root paths if they differ:
+
+**Platform root path mapping:**
+
+| Platform | Root Path Prefix |
+|----------|-----------------|
+| `claude` | `.claude/skills/` |
+| `cursor` | `.cursor/skills/` |
+| `copilot` | `.agents/skills/` |
+
+For each snippet being included in the managed section:
+
+1. Read the `root:` value from the snippet's first line
+2. If the root prefix does not match the current target platform's prefix, rewrite it
+3. Example: if snippet has `root: .claude/skills/my-lib/` but target is `cursor`, rewrite to `root: .cursor/skills/my-lib/`
+
+This ensures each platform's managed section points to the correct platform-specific skill directory.
+
 **Sort skills alphabetically by name.**
 
 Count totals:

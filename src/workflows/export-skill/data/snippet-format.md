@@ -1,5 +1,17 @@
 # Context Snippet Format (Vercel-Aligned Indexed Format)
 
+## Platform Root Path Mapping
+
+The snippet `root:` path must reflect the platform-specific skills directory:
+
+| Platform | Root Path Prefix |
+|----------|-----------------|
+| `claude` | `.claude/skills/` |
+| `cursor` | `.cursor/skills/` |
+| `copilot` | `.agents/skills/` |
+
+The root path in context-snippet.md on disk uses the **primary export platform's** root. When assembling managed sections for other platforms, step-04 rewrites root paths to match the target platform.
+
 ## Format Rules
 
 - Indexed pipe-delimited format per skill — retrieval instruction + file map + inline gotchas
@@ -13,7 +25,7 @@
 ## Single Skill Snippet Template
 
 ```markdown
-[{skill-name} v{version}]|root: skills/{skill-name}/
+[{skill-name} v{version}]|root: {platform_root}{skill-name}/
 |IMPORTANT: {skill-name} v{version} — read SKILL.md before writing {skill-name} code. Do NOT rely on training data.
 |quick-start:{SKILL.md#quick-start}
 |api: {top exports with () for functions, comma-separated}
@@ -21,7 +33,7 @@
 |gotchas: {2-3 most critical pitfalls or breaking changes, inline}
 ```
 
-- **Line 1:** Skill name + version + root path — version signals training data staleness
+- **Line 1:** Skill name + version + platform-aware root path — version signals training data staleness
 - **Line 2 (IMPORTANT):** Retrieval instruction — always present
 - **Line 3 (quick-start):** Anchor pointer to Quick Start section
 - **Line 4 (api):** Top exports from metadata.json `exports` array (up to 10, with `()` for functions)
@@ -31,7 +43,7 @@
 ## Stack Skill Snippet Template
 
 ```markdown
-[{project}-stack v{version}]|root: skills/{project}-stack/
+[{project}-stack v{version}]|root: {platform_root}{project}-stack/
 |IMPORTANT: {project}-stack — read SKILL.md before writing integration code. Do NOT rely on training data.
 |stack: {dep-1}@{v1}, {dep-2}@{v2}, {dep-3}@{v3}
 |integrations: {pattern-1}, {pattern-2}
@@ -48,4 +60,4 @@
 - If fewer exports than the limit, list all available
 - If no exports data available, omit the api line
 - Section anchors must be verified against actual SKILL.md headings during generation. For split-body skills (where `references/` exists and `## Full` headings are stubs), if a heading is missing from SKILL.md, rewrite the anchor to point to the reference file path (preferred). Omit the anchor line only if the heading cannot be found in either SKILL.md or `references/*.md`
-- Skill path is relative to project root
+- Skill path is relative to project root and uses the platform-specific root prefix (see Platform Root Path Mapping above)
