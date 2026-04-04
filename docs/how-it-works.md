@@ -249,11 +249,13 @@ When categories are skipped, their combined weight (36%) is redistributed propor
 ### Pass/Fail
 
 ```
-Default threshold: 80%
+threshold = custom_threshold OR 80% (default)
 
-score >= 80%  →  PASS  →  Recommend export-skill
-score <  80%  →  FAIL  →  Recommend update-skill
+score >= threshold  →  PASS  →  Recommend export-skill
+score <  threshold  →  FAIL  →  Recommend update-skill
 ```
+
+The default is 80%. You can override it by specifying a custom threshold when invoking the workflow (e.g., "test this skill with a 70% threshold").
 
 ### Gap Severities
 
