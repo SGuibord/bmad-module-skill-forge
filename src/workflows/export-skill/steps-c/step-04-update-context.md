@@ -101,6 +101,11 @@ Read `{skills_output_folder}/.export-manifest.json` — see [knowledge/version-p
     "skill-name": {
       "active_version": "0.6.0",
       "versions": {
+        "0.1.0": {
+          "platforms": ["claude"],
+          "last_exported": "2026-01-15",
+          "status": "deprecated"
+        },
         "0.5.0": {
           "platforms": ["claude"],
           "last_exported": "2026-03-15",
@@ -117,6 +122,12 @@ Read `{skills_output_folder}/.export-manifest.json` — see [knowledge/version-p
 }
 ```
 
+**Status values:**
+- `"active"` — currently exported; snippet appears in managed sections
+- `"archived"` — previously exported, not active; files retained for rollback
+- `"deprecated"` — dropped via drop-skill workflow; excluded from all exports (files may or may not exist on disk)
+- `"draft"` — created but never exported
+
 **v1 manifest** (no `schema_version` field — migrate in-place to v2):
 1. For each entry in `exports`, read its `platforms` and `last_exported`
 2. Resolve the skill's current version from `{resolved_skill_package}/metadata.json`
@@ -132,8 +143,9 @@ Determine the set of skills to include in the rebuilt index:
 
 1. Start with all skill names listed in the manifest's `exports` object (if manifest exists)
 2. For each skill, record its `active_version` from the manifest (v2 schema)
-3. Add the current export target skill name (ensures it is always included even before manifest is written) — use the version from `{resolved_skill_package}/metadata.json` as its `active_version`
-4. This is the **exported skill set** — each entry has a skill name and its resolved `active_version`
+3. **Exclude deprecated skills:** If the `active_version` entry in `versions.{active_version}` has `status: "deprecated"`, skip this skill entirely — it has been dropped via drop-skill workflow and must not appear in the managed section. Log: "Skipping {skill-name} — active version v{active_version} is deprecated"
+4. Add the current export target skill name (ensures it is always included even before manifest is written) — use the version from `{resolved_skill_package}/metadata.json` as its `active_version`
+5. This is the **exported skill set** — each entry has a skill name and its resolved `active_version`
 
 #### 4c. Resolve and Filter Snippets (manifest-driven — replaces glob scan)
 
