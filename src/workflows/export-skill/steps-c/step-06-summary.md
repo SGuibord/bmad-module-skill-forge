@@ -103,7 +103,7 @@ Your skill is committed to the project's `skills/` directory and ships with your
 
 **Team members** will automatically have access when they pull the latest changes.
 
-**To update team context:** Ensure {target-file} is committed with the managed section update."
+**To update team context:** Ensure all target files ({target-file-list}) are committed with the managed section updates."
 
 **If `community`:**
 

@@ -10,7 +10,7 @@ The snippet `root:` path must reflect the platform-specific skills directory:
 | `cursor` | `.cursor/skills/` |
 | `copilot` | `.agents/skills/` |
 
-The root path in context-snippet.md on disk uses the **primary export platform's** root. When assembling managed sections for other platforms, step-04 rewrites root paths to match the target platform.
+The root path in context-snippet.md on disk uses the **first platform in `target_platforms`** (the first entry from config.yaml IDE mapping, or the explicit `--platform` flag value if provided). When assembling managed sections for other platforms, step-04 rewrites root paths to match the target platform.
 
 ## Format Rules
 
