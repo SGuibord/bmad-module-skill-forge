@@ -69,17 +69,21 @@ Auto-proceed immediately to {nextStepFile}.
 
 Load {managedSectionData} and read the complete format template and three-case logic.
 
-### 3. Determine Target File
+### 3. Determine Target File(s)
 
-Based on the `--platform` flag parsed in step-01:
+Using the `target_platforms` list resolved in step-01, determine all target files:
 
 | Platform | Target File |
 |----------|-------------|
-| `claude` (default) | CLAUDE.md |
+| `claude` | CLAUDE.md |
 | `cursor` | .cursorrules |
 | `copilot` | AGENTS.md |
 
-Resolve target file path at project root: `{project-root}/{target-file}`
+For each platform in `target_platforms`, resolve target file path: `{project-root}/{target-file}`
+
+**If multiple platforms:** Sections 4-9 execute as a loop — one full pass per target platform. Each iteration uses the same skill index but rewrites root paths per platform (section 4d) and writes to the platform-specific target file.
+
+**Processing order:** Process platforms in the order listed in `target_platforms`.
 
 ### 4. Rebuild Complete Skill Index
 
@@ -189,7 +193,7 @@ Assemble the complete managed section:
 
 ### 7. Present Change Preview
 
-"**Context update prepared.**
+"**Context update prepared.{if multi-platform: ' (platform {i}/{total}: {platform})'}**
 
 **Target:** `{project-root}/{target-file}`
 **Case:** {1: Create / 2: Append / 3: Regenerate}
@@ -220,9 +224,16 @@ Auto-proceed to {nextStepFile}.
 
 Display: "**Select:** [C] Continue — write changes to {target-file}"
 
+**Multi-platform behavior:** When processing multiple platforms, present all platforms' previews together before asking for a single confirmation. After confirmation, write all target files sequentially, verifying each one.
+
+"**Targets:** {list all platform → target-file pairs}
+**Ready to write changes to all targets?**"
+
+Display: "**Select:** [C] Continue — write changes to all targets"
+
 #### Menu Handling Logic:
 
-- IF C: Write the changes to target file, verify write succeeded, then load, read entire file, then execute {nextStepFile}
+- IF C: Write the changes to all target files (or single target), verify each write succeeded, then load, read entire file, then execute {nextStepFile}
 - IF Any other: help user respond, then [Redisplay Menu Options](#8-present-menu-options)
 
 #### EXECUTION RULES:
@@ -252,11 +263,12 @@ After successful write and verification in section 9:
 2. Add or update the current skill's entry:
    ```json
    "{skill-name}": {
-     "platforms": ["{platform}"],
+     "platforms": ["{target_platforms list}"],
      "last_exported": "{current-date}"
    }
    ```
-   - If the skill already has a manifest entry, merge the platform into the existing `platforms` array (deduplicate) and update `last_exported`
+   - Set `platforms` to the full `target_platforms` list (all platforms processed in this export, not just one)
+   - If the skill already has a manifest entry, merge all platforms into the existing `platforms` array (deduplicate) and update `last_exported`
 3. Write the updated manifest to `{skills_output_folder}/.export-manifest.json`
 
 **Dry-run mode:** Do NOT update the manifest. Display: "**[DRY RUN] Export manifest would be updated for {skill-name} on platform {platform}.**"
@@ -274,7 +286,9 @@ ONLY WHEN the user confirms changes by selecting 'C' (or auto-proceed in dry-run
 ### ✅ SUCCESS:
 
 - Managed section format loaded from {managedSectionData}
-- Target file correctly determined from platform flag
+- Target file(s) correctly determined from platform flag or config.yaml ides list
+- Multi-platform loop executed for all target_platforms
+- Root paths rewritten per platform in managed section
 - Complete skill index rebuilt from exported skills only (filtered via .export-manifest.json per ADR-K)
 - Export manifest updated after successful write (non-dry-run only)
 - Correct case detected (create/append/regenerate)
