@@ -18,9 +18,9 @@
 
 | Platform | Flag Value | Target File |
 |----------|-----------|-------------|
-| Claude | `claude` (default) | CLAUDE.md |
+| Copilot | `copilot` (default) | AGENTS.md |
+| Claude | `claude` | CLAUDE.md |
 | Cursor | `cursor` | .cursorrules |
-| Copilot | `copilot` | AGENTS.md |
 
 ## Four-Case Logic
 

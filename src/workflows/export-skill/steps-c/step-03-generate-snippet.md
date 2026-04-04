@@ -78,7 +78,7 @@ This preserved value will be used as a fallback in section 3 if new gotchas cann
 
 ### 2.7. Resolve Platform Root Path
 
-Using the `--platform` flag parsed in step-01 (default: `claude`), resolve the root path prefix:
+Using the `--platform` flag parsed in step-01 (default: `copilot`), resolve the root path prefix:
 
 | Platform | `{platform_root}` |
 |----------|-------------------|

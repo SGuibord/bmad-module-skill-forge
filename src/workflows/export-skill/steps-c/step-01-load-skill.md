@@ -83,7 +83,7 @@ If `--platform` is NOT provided, read the `ides` list from config.yaml and map t
 | Other values | Skip with note: "Unrecognized IDE '{value}' in config.yaml — skipping." |
 
 - If mapping produces one or more platforms, store as `target_platforms` list
-- If mapping produces zero platforms (empty ides list or all unrecognized), fall back to `["claude"]` with note: "No recognized IDEs in config.yaml — defaulting to claude."
+- If mapping produces zero platforms (empty ides list or all unrecognized), fall back to `["copilot"]` with note: "No recognized IDEs in config.yaml — defaulting to copilot (.agents/skills/)."
 
 "**Skill:** {skill-name}
 **Platform(s):** {platform-list} ({target-file-list})
