@@ -54,6 +54,8 @@ To read the resolved GitHub repository source and extract the public API surface
 
 **CRITICAL:** Follow this sequence exactly. Do not skip, reorder, or improvise unless user explicitly requests a change.
 
+**Ref-aware source reading:** When `source_ref` is set from tag resolution (see step-01), append `?ref={source_ref}` to all GitHub API content and tree requests (e.g., `gh api repos/{owner}/{repo}/contents/{path}?ref={source_ref}`) to read from the tagged version. When using web browsing, use the tagged URL format (e.g., `github.com/{owner}/{repo}/blob/{source_ref}/{path}`). This ensures extraction reads from the same source version resolved during tag resolution.
+
 ### 1. Read README
 
 Read `README.md` from the repository root via web browsing.

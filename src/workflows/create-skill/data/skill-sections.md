@@ -196,6 +196,7 @@ Indexed pipe-delimited format for CLAUDE.md managed section (~80-120 tokens per 
   "source_repo": "{github-url}",
   "source_root": "{resolved-source-path}",
   "source_commit": "{commit-hash}",
+  "source_ref": "{source_ref or null}",
   "confidence_tier": "{Quick|Forge|Forge+|Deep}",
   "spec_version": "1.3",
   "generation_date": "{ISO-8601}",
@@ -264,6 +265,7 @@ Each reference file includes:
   "skill_name": "{name}",
   "source_repo": "{url}",
   "source_commit": "{hash}",
+  "source_ref": "v0.5.0",
   "generated_at": "{ISO-8601}",
   "entries": [
     {

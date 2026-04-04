@@ -356,6 +356,7 @@ Machine-readable provenance for every skill:
   "source_repo": "https://github.com/topoteretes/cognee",
   "source_root": "cognee/",
   "source_commit": null,
+  "source_ref": "v0.5.5",
   "confidence_tier": "Deep",
   "spec_version": "1.3",
   "generation_date": "2026-03-20T16:55:00+04:00",

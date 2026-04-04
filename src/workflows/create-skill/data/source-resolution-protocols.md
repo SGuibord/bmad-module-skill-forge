@@ -1,5 +1,37 @@
 # Source Resolution Protocols
 
+## Tag Resolution (when target_version is set)
+
+When `brief.target_version` is present AND `source_repo` is a remote URL, resolve the target version to a git tag before cloning:
+
+1. **List available tags:**
+   - `gh api repos/{owner}/{repo}/tags --paginate --jq '.[].name'`
+   - Fallback: `git ls-remote --tags {source_repo} | sed 's|.*refs/tags/||'`
+
+2. **Match `target_version` against tags** in priority order:
+   - **Exact match:** `{target_version}` (e.g., `0.5.0`)
+   - **With `v` prefix:** `v{target_version}` (e.g., `v0.5.0`)
+   - **With package scope (monorepos):** `{brief.name}@{target_version}` or `@{scope}/{brief.name}@{target_version}`
+
+3. **Resolution outcomes:**
+   - **Single match:** Store the matched tag as `source_ref`. Use it as `{branch}` in all subsequent clone/API commands.
+   - **Multiple matches:** Present the matching tags to the user — "Multiple tags match version {target_version}: {list}. Which one should I use?" Wait for selection.
+   - **Zero matches:** ⚠️ Warn: "No git tag found matching version {target_version}. Closest available tags: {list 5 nearest by semver sort}. Falling back to default branch — **extracted code may not match target version.**" Set `source_ref` to `HEAD` and proceed with default branch.
+
+4. **Store `source_ref`** in context. This value is written to metadata.json and provenance-map.json for downstream workflows (update-skill, audit-skill) to re-clone from the same ref.
+
+When `brief.target_version` is NOT set: skip tag resolution. Set `source_ref` to `HEAD` (default branch behavior, unchanged from before).
+
+### Local Source Warning
+
+When `brief.target_version` is set AND `source_repo` is a local path:
+
+⚠️ "**Local source may not match target version {target_version}.** Ensure you've checked out the correct version locally, or use a remote GitHub URL so SKF can clone from the git tag automatically."
+
+Proceed with local files as-is. Set `source_ref` to `"local"`.
+
+---
+
 ## Remote Source Resolution (Forge/Deep only)
 
 If `source_repo` is a local path: proceed with the tier-appropriate strategy as normal.
@@ -8,17 +40,17 @@ If `source_repo` is a remote URL (GitHub URL or owner/repo format) AND tier is F
 
 1. **Check `git` availability:** Verify `git` is functional (`git --version`). If `git` is not available, skip to the fallback warning below.
 
-2. **Ephemeral shallow clone:** Clone the repository to a system temp path for AST access:
+2. **Ephemeral shallow clone:** Clone the repository to a system temp path for AST access. Use `source_ref` from tag resolution (or `{branch}` for the default branch if no tag was resolved):
 
    ```
    temp_path = {system_temp}/skf-ephemeral-{skill-name}-{timestamp}/
-   git clone --depth 1 --branch {branch} --single-branch --filter=blob:none {source_repo} {temp_path}
+   git clone --depth 1 --branch {source_ref} --single-branch --filter=blob:none {source_repo} {temp_path}
    ```
 
    **If `include_patterns` are NOT specified:**
 
    ```
-   git clone --depth 1 --branch {branch} --single-branch --filter=blob:none {source_repo} {temp_path}
+   git clone --depth 1 --branch {source_ref} --single-branch --filter=blob:none {source_repo} {temp_path}
    ```
 
    **If `include_patterns` ARE specified**, use sparse-checkout to limit the clone scope:
@@ -132,13 +164,17 @@ After the source path is accessible, capture the current commit hash for provena
 
 - **Local path:** `git -C {source_root} rev-parse HEAD` — if the path is a git repo
 - **Ephemeral clone (Forge/Deep):** already captured during clone (step 3 above)
-- **Quick tier (remote, no clone):** `gh api repos/{owner}/{repo}/commits/{branch} --jq '.sha'`
+- **Quick tier (remote, no clone):** `gh api repos/{owner}/{repo}/commits/{source_ref} --jq '.sha'`
 
 Store the result as `source_commit` in context. If capture fails (not a git repo, API unavailable), set `source_commit: null` — this is not an error.
+
+Also store `source_ref` in context (from tag resolution above, or `HEAD` if no tag was resolved, or `"local"` for local sources). This value is persisted to metadata.json and provenance-map.json so downstream workflows (update-skill, audit-skill) can re-access the same source ref.
 
 ---
 
 ## Version Reconciliation (all tiers, source mode only)
+
+**Target version override:** If `brief.target_version` is present, use it as the authoritative version for the skill. Do NOT warn about a brief-vs-source version mismatch — the user intentionally specified this version. Set the working version to `brief.target_version` and skip the rest of this reconciliation section. The `target_version` field indicates deliberate user intent (e.g., targeting an older version, or providing the version for a docs-only skill).
 
 **If `source_type: "docs-only"`:** skip this section — no source files exist to reconcile.
 

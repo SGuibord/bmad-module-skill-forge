@@ -39,6 +39,7 @@ With provenance tracking:
   "skill_name": "express-skill",
   "source_repo": "https://github.com/expressjs/express",
   "source_commit": "abc1234",
+  "source_ref": "v0.5.0",
   "generated_at": "2025-01-15T10:30:00Z",
   "entries": [
     {

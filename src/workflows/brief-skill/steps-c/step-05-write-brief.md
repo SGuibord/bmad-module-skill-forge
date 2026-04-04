@@ -92,6 +92,12 @@ scope:
 
 **Conditional optional field inclusion:**
 
+**If `target_version` was set in step 01:**
+Include the `target_version` field in the generated YAML:
+```yaml
+target_version: "{target_version}"
+```
+
 **If `source_type: "docs-only"` OR supplemental `doc_urls` were collected:**
 Include the `doc_urls` array (uncommented) in the generated YAML:
 ```yaml

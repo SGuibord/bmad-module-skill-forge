@@ -81,6 +81,12 @@ Developer adds [cognee](https://github.com/topoteretes/cognee) to a Python proje
 
 Ferris reads the repository, extracts the public API via source reading, validates against spec. Skill appears in `skills/cognee/0.5.5/cognee/`. Agent stops hallucinating. Forty-seven seconds. Done.
 
+Need a specific version? Append `@version`:
+
+```
+@Ferris QS cognee@0.5.0
+```
+
 ### Brownfield Platform — 8 Minutes
 
 Alex's team adopts BMAD for 10 microservices (TypeScript, Go, Rust).
@@ -176,8 +182,10 @@ No source code available — only documentation.
 ```
 @Ferris BS
 # When asked for target, provide documentation URLs:
-# https://docs.cognee.ai/
+# https://docs.cognee.ai/v2/api/
 # Ferris sets source_type: "docs-only" and collects doc_urls
+# When asked for target version, specify: 2.0.0
+# Ferris confirms your doc URLs match that version
 @Ferris CS
 # step-03 skips (no source), step-03c fetches docs via doc_fetcher
 # All content is T3 [EXT:url] confidence. source_authority: community

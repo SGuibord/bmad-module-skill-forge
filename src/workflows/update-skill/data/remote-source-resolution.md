@@ -6,21 +6,35 @@ If `source_root` (from metadata.json) is a remote URL (GitHub URL or owner/repo 
 
 1. **Check `git` availability:** Verify `git` is functional (`git --version`). If `git` is not available, skip to the fallback warning below.
 
-2. **Ephemeral sparse clone:** Clone only the changed files from the change manifest to a system temp path. Note: at this point in the flow, `{source_root}` is known to be a remote URL (the local-path case was already handled above).
+2. **Resolve source ref:** Read `source_ref` from the existing `metadata.json`. If the user provided a new `target_version`, resolve its tag first (using the Tag Resolution algorithm in `create-skill/data/source-resolution-protocols.md`).
+
+3. **Ephemeral sparse clone:** Clone only the changed files from the change manifest to a system temp path. Note: at this point in the flow, `{source_root}` is known to be a remote URL (the local-path case was already handled above).
 
    ```
    temp_path = {system_temp}/skf-ephemeral-{skill-name}-{timestamp}/
+   ```
+
+   If `source_ref` exists and is not `HEAD`/null/`"local"`:
+   ```
+   git clone --depth 1 --branch {source_ref} --single-branch --filter=blob:none --sparse {source_root} {temp_path}
+   ```
+
+   If `source_ref` is `HEAD`/null/`"local"` (or absent):
+   ```
    git clone --depth 1 --single-branch --filter=blob:none --sparse {source_root} {temp_path}
+   ```
+
+   ```
    git -C {temp_path} sparse-checkout set --skip-checks {changed_files_from_manifest}
    ```
 
    **Note:** `--skip-checks` is required because `changed_files_from_manifest` contains individual file paths (e.g., `src/core/parser.py`), not directories. Without this flag, `git sparse-checkout set` rejects non-directory entries.
 
-   No `--branch` flag is used — the clone targets the remote's default branch, which must match the branch used during the original [CS] Create Skill run. This scopes the clone to only the files identified in step-02's change manifest, avoiding a full repository download.
+   When `source_ref` is a tag (e.g., `v0.5.0`), the clone targets that specific tag to ensure update-skill extracts from the same source version as the original create-skill run. When `source_ref` is `HEAD`, null, or `"local"`, no `--branch` flag is used — the clone targets the remote's default branch. This scopes the clone to only the files identified in step-02's change manifest, avoiding a full repository download.
 
-3. **If clone succeeds:** Update the working source path to `{temp_path}` for all subsequent AST operations in this step. Proceed with the **Forge tier** extraction strategy below. Mark `ephemeral_clone_active = true` for cleanup.
+4. **If clone succeeds:** Update the working source path to `{temp_path}` for all subsequent AST operations in this step. Proceed with the **Forge tier** extraction strategy below. Mark `ephemeral_clone_active = true` for cleanup.
 
-4. **If clone fails (network error, auth failure, timeout):**
+5. **If clone fails (network error, auth failure, timeout):**
 
    Warning message: "Ephemeral clone of `{source_root}` failed: {error}. Degrading to source reading (T1-low) for this run. For T1 (AST-verified) confidence, clone the repository locally and re-run [CS] Create Skill with the local path, then re-run this update."
 

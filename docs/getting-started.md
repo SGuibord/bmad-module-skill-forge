@@ -103,6 +103,11 @@ This detects your tools, sets your capability tier, and initializes the forge en
 
 Ferris reads the repository, extracts the public API, and generates a skill in under a minute.
 
+**Targeting a specific version:** Append `@version` to pin the skill to a library version:
+```
+@Ferris QS cognee@0.5.0
+```
+
 **Full quality path (one workflow per session):**
 ```
 @Ferris BS    # Brief — scope and design the skill

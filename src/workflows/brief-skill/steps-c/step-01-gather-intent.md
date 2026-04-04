@@ -123,6 +123,26 @@ Default to `"community"` if user does not specify or skips. For `docs-only` skil
 
 Confirm the target.
 
+### 3b. Gather Target Version
+
+"**Are you targeting a specific version of this library?**
+(Leave blank to auto-detect from source)"
+
+{If source_type is "docs-only":}
+"Since this is a docs-only skill with no source code, specifying the version is recommended — otherwise it defaults to 1.0.0."
+
+Wait for user response.
+
+**If user provides a version:** Store as `target_version`. Set `version` to this value.
+**If blank:** Proceed without `target_version` — version will be auto-detected in step 02.
+
+{If target_version was set AND doc_urls are being collected (either docs-only primary or supplemental):}
+
+"**You're targeting version {target_version}. Do these documentation URLs correspond to that version?** [Y/N]"
+
+- **If Y:** Proceed.
+- **If N:** "Please provide the correct documentation URLs for version {target_version}." Re-collect doc_urls.
+
 ### 4. Gather User Intent
 
 "**What's your intent for this skill?**
@@ -167,6 +187,8 @@ Wait for confirmation or alternative.
 - **Skill name:** {confirmed name}
 - **Source type:** {source or docs-only}
 - **Source authority:** {official/community/internal}
+{If target_version set:}
+- **Target version:** {target_version} (user-specified)
 {If doc_urls collected:}
 - **Doc URLs:** {count} supplemental documentation URLs
 - **Forge tier:** {tier}
@@ -203,6 +225,7 @@ ONLY WHEN C is selected and target repository is confirmed will you load and rea
 - Skill name derived and confirmed
 - Scope hints noted (if provided)
 - Source type and source authority captured
+- Target version captured (if provided)
 - User ready to proceed to analysis
 
 ### ❌ SYSTEM FAILURE:

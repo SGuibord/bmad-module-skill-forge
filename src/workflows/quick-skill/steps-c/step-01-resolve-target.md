@@ -69,6 +69,16 @@ Provide a **GitHub URL** or **package name** and I'll resolve it to source and c
 
 Wait for user input.
 
+### 1b. Parse Version Targeting
+
+**Version targeting:** If the user input contains `@` followed by a semver-like string (e.g., `cognee@0.5.0`, `https://github.com/org/repo@2.1.0-beta`), parse it as:
+- **Package/URL:** everything before the last `@`
+- **Target version:** everything after the last `@`
+
+Store the target version as `target_version` in the extraction context. When present, this version overrides auto-detection (same behavior as `target_version` in the skill-brief schema).
+
+If no `@version` suffix is present, proceed as today — version will be auto-detected.
+
 ### 2. Classify Input Type
 
 **If input starts with `https://github.com/` or `github.com/`:**
