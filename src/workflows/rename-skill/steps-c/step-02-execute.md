@@ -208,11 +208,20 @@ Report: "**Manifest updated** — re-keyed `exports.{old_name}` → `exports.{ne
 
 ### 7. Rebuild Platform Context Files
 
-Load the IDE list from `config.yaml` (the `ides` key — typically some subset of `claude`, `cursor`, `copilot`).
+Load the `ides` list from `config.yaml`. The installer writes installer-specific IDE identifiers (e.g. `claude-code`, `github-copilot`, `codex`, `cline`, `roo`, `windsurf`, `cursor`, `other`), NOT platform values — these must be mapped to platforms before any target-file lookup.
 
-For each IDE in the list:
+**Resolve `target_platforms`** using the "IDE → Platform Mapping" table in `{managedSectionLogic}`:
 
-1. **Resolve target file:**
+1. For each entry in `config.yaml.ides`, look up its platform value (`claude-code` → `claude`, `github-copilot` → `copilot`, `codex`/`cline`/`roo`/`windsurf`/`other` → `copilot`, `cursor` → `cursor`)
+2. For any entry not found in the table, default to `copilot` and emit a warning: "Unknown IDE '{value}' in config.yaml — defaulting to copilot"
+3. Deduplicate the resulting platform list (e.g. both `codex` and `cline` collapse to a single `copilot` entry)
+4. If `config.yaml.ides` is absent or the mapping yields an empty list, fall back to `["copilot"]` and emit a note: "No IDEs configured in config.yaml — defaulting to copilot (AGENTS.md)"
+
+Store the result as `target_platforms` for this section.
+
+For each platform in `target_platforms`:
+
+1. **Resolve target file** using the "Platform Target Files" table in `{managedSectionLogic}`:
 
    | Platform | Target File |
    |----------|-------------|

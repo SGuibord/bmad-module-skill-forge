@@ -39,17 +39,17 @@ Identify exactly what the user wants to drop — which skill, which version(s), 
 
 ## EXECUTION PROTOCOLS:
 
-- 🎯 Load version-paths knowledge and the export manifest as the sole source of truth
+- 🎯 Load version-paths knowledge and the export manifest (if present) alongside an on-disk skill scan
 - 💾 Gather all selection decisions into context for step-02
 - 📖 Show version lists, statuses, and directory paths clearly so the user understands what will be affected
-- 🚫 Do not proceed if the manifest is empty or missing — halt gracefully
+- 🚫 Halt only if neither the manifest nor an on-disk scan yields any skill — a missing manifest is not fatal for purge mode because draft skills (created but never exported) can still be legitimately hard-dropped from disk
 
 ## CONTEXT BOUNDARIES:
 
 - Available: Export manifest v2, SKF module config variables, on-disk skill directory listing
 - Focus: Selection, validation, and user confirmation
 - Limits: Do not write to the manifest, do not delete any files — execution is deferred to step-02
-- Dependencies: At least one skill must exist in the export manifest; otherwise the workflow halts
+- Dependencies: At least one skill must exist in either the export manifest or on disk under `{skills_output_folder}/`; otherwise the workflow halts. Draft skills (on disk but not in the manifest) are eligible for purge mode only
 
 ## MANDATORY SEQUENCE
 
@@ -67,26 +67,28 @@ You will use these templates and rules to build directory paths and enforce safe
 
 ### 2. Read Export Manifest
 
-Load `{skills_output_folder}/.export-manifest.json`.
+Load `{skills_output_folder}/.export-manifest.json` if it exists.
 
-**If the file is missing, empty, or contains no `exports` entries:**
+**If the file is missing, empty, or contains no `exports` entries:** Treat as an empty manifest — proceed to section 3 and rely on the on-disk directory scan. Draft skills (created by `[CS]`/`[QS]`/`[SS]` but never exported) can still be hard-dropped in purge mode. Store `manifest_exists = false` so section 8 (Ask Mode) can restrict the options to purge only. Soft-deprecate is meaningless without a manifest to record the deprecation against.
 
-"**Drop Skill — nothing to drop.** The export manifest at `{skills_output_folder}/.export-manifest.json` is empty or missing. There are no exported skills on record. Run `[EX] Export Skill` first, then return here when you need to drop a version."
+**If the file exists with entries:** Parse JSON and verify `schema_version` is `"2"`. If the manifest is v1 (no `schema_version` field), note this but continue — treat every entry as having a single active version derived from its current state. Store `manifest_exists = true`.
 
-HALT the workflow. Do not proceed to section 3.
-
-**If the file exists:** Parse JSON and verify `schema_version` is `"2"`. If the manifest is v1 (no `schema_version` field), note this but continue — treat every entry as having a single active version derived from its current state.
+**Hard halt condition:** If the file exists but is malformed (not valid JSON), halt with: "**Export manifest is corrupt** at `{skills_output_folder}/.export-manifest.json` — fix or remove the file before dropping."
 
 ### 3. List Available Skills
 
-Build and display a summary of every skill in the manifest. For each skill:
+Build and display a summary of every skill available to drop. Start with the manifest (if any), then augment with an on-disk scan.
+
+For each skill in the manifest's `exports` (only if `manifest_exists = true` and entries exist):
 
 1. Read `active_version` from the manifest entry
 2. List every entry in the skill's `versions` map with its `status` field
 3. Mark the active version with a trailing `*`
 4. Sort versions in descending order (newest first) where possible
 
-Also scan `{skills_output_folder}/` for any top-level directories that are NOT present in the manifest's `exports` object. Record these as "(not in manifest)" — they represent draft or orphaned skills that the drop workflow can still purge from disk.
+Also scan `{skills_output_folder}/` for any top-level directories that are NOT present in the manifest's `exports` object. Record these as "(not in manifest)" — they represent draft or orphaned skills eligible for purge mode only. When the manifest is missing or empty, every on-disk skill appears in this category.
+
+**If the combined list is empty** (no manifest entries AND no on-disk skill directories): halt with "**Drop Skill — nothing to drop.** No skills found in `{skills_output_folder}/` and no entries in `.export-manifest.json`. Run `[CS] Create Skill` first."
 
 Display the combined list:
 
@@ -100,7 +102,7 @@ Available skills:
    - 0.6.0 (active) *
 2. express
    - 4.18.0 (active) *
-3. legacy-helper (not in manifest)
+3. legacy-helper (not in manifest — purge only)
 ```
 
 ### 4. Ask Which Skill
@@ -112,11 +114,11 @@ Wait for user input. Accept either the numeric index or the skill name (exact ma
 
 **If the user's input does not match any listed skill:** Re-display the list and ask again.
 
-Store the selection as `target_skill`.
+Store the selection as `target_skill`. Also store `target_in_manifest = true` if the selected skill has an entry in the manifest, `false` otherwise — subsequent sections use this flag to restrict the available drop options.
 
 ### 5. Display Version Details
 
-For the selected skill, display every version with its full metadata from the manifest:
+**If `target_in_manifest = true`**, display every version with its full metadata from the manifest:
 
 ```
 **{target_skill} — versions:**
@@ -128,9 +130,21 @@ For the selected skill, display every version with its full metadata from the ma
 | 0.6.0   | active *   | 2026-04-04    | claude, copilot        |
 ```
 
-If the selected skill was flagged "(not in manifest)", note that no versions are tracked and only a skill-level purge is meaningful.
+**If `target_in_manifest = false`** (draft skill discovered only by on-disk scan), display the on-disk version directories instead and note the constraint:
+
+```
+**{target_skill} — on-disk versions (not in manifest):**
+
+  {list version subdirectories found under {skills_output_folder}/{target_skill}/, or "(flat layout)" if no version nesting is present}
+
+**Note:** This skill has no manifest entry, so soft-deprecate is not available. Only a skill-level hard purge can be performed — the drop will delete the entire on-disk skill group and forge group.
+```
 
 ### 6. Ask Scope
+
+**If `target_in_manifest = false`:** Skip this prompt — draft skills can only be dropped as a whole. Set `target_versions = "all"` and `is_skill_level = true`, then proceed to section 7.
+
+**If `target_in_manifest = true`:**
 
 "**Drop which version(s)?**
 
@@ -153,7 +167,9 @@ Set `target_versions = "all"` and `is_skill_level = true`.
 
 ### 7. Active Version Guard
 
-**Applies only when `is_skill_level = false` (specific version selected):**
+**Does not apply when `target_in_manifest = false`:** A draft skill has no manifest-recorded active version, so the guard is a no-op. Proceed to section 8.
+
+**Applies only when `target_in_manifest = true` AND `is_skill_level = false` (specific version selected):**
 
 1. Read the selected version's `status` field from the manifest
 2. If `status != "active"` → skip this guard, the version is safe to drop
@@ -173,6 +189,10 @@ Set `target_versions = "all"` and `is_skill_level = true`.
    c. If the count is `0` → the active version is the ONLY version; allow the drop to continue (it is functionally equivalent to a skill-level drop on a single-version skill)
 
 ### 8. Ask Mode
+
+**If `target_in_manifest = false`:** Skip this prompt — soft-deprecate is meaningless without a manifest entry to mark. Force `drop_mode = "purge"` and inform the user: "**Mode forced to purge** — `{target_skill}` has no manifest entry, so there is nothing to deprecate. The skill's on-disk directories will be deleted."
+
+**If `target_in_manifest = true`:**
 
 "**How should this be dropped?**
 
@@ -235,9 +255,10 @@ Wait for explicit user response.
 Store the following decisions in workflow context for step-02:
 
 - `target_skill` — the skill name
+- `target_in_manifest` — boolean (true if the skill has a manifest entry, false if it was discovered only by on-disk scan)
 - `target_versions` — list of version strings (`[<version>]`) or the literal string `"all"`
-- `drop_mode` — `"deprecate"` or `"purge"`
-- `is_skill_level` — boolean (true if all versions)
+- `drop_mode` — `"deprecate"` or `"purge"` (always `"purge"` when `target_in_manifest = false`)
+- `is_skill_level` — boolean (true if all versions; always true when `target_in_manifest = false`)
 - `affected_directories` — list of absolute directory paths that step-02 will delete in purge mode (or retain in deprecate mode)
 
 ### 12. Load Next Step
@@ -255,18 +276,19 @@ ONLY WHEN the user has confirmed with `Y` at the confirmation gate AND all selec
 ### ✅ SUCCESS:
 
 - Version-paths knowledge loaded and applied via templates (no hardcoded paths)
-- Export manifest read and validated (halt if empty/missing)
-- Complete skill and version list displayed with statuses and active marker
-- Skill, version(s), and mode selected by explicit user input
-- Active version guard enforced — refused to drop an active version with surviving non-deprecated peers
+- Export manifest read if present; on-disk scan augments the list; halt only if both are empty
+- Complete skill and version list displayed with statuses, active marker, and on-disk-only entries flagged "(not in manifest — purge only)"
+- Skill, version(s), and mode selected by explicit user input; mode forced to purge for not-in-manifest skills
+- Active version guard enforced for manifest-tracked skills — refused to drop an active version with surviving non-deprecated peers
 - Affected directories computed from templates
 - Explicit user confirmation (`Y`) received at the confirmation gate
-- All selection decisions stored in context for step-02
+- All selection decisions stored in context for step-02 (including `target_in_manifest`)
 
 ### ❌ SYSTEM FAILURE:
 
 - Proceeding without reading version-paths knowledge
-- Proceeding when the manifest is empty or missing
+- Halting when the manifest is missing but on-disk skills exist — the fallback scan MUST be attempted before any "nothing to drop" halt
+- Offering soft-deprecate for a skill that has no manifest entry
 - Hardcoding directory paths instead of using `{skill_package}`, `{skill_group}`, `{forge_version}`, `{forge_group}` templates
 - Allowing a drop of the active version when other non-deprecated versions exist
 - Modifying the manifest or deleting files in this step (execution belongs to step-02)

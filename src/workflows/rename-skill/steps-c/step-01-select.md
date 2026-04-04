@@ -40,10 +40,10 @@ Identify the skill the user wants to rename, validate the new name against the a
 
 ## EXECUTION PROTOCOLS:
 
-- 🎯 Load version-paths knowledge and the export manifest as the sole source of truth
+- 🎯 Load version-paths knowledge and the export manifest (if present) alongside an on-disk skill scan
 - 💾 Gather all selection decisions into context for step-02
 - 📖 Show the full list of affected versions and the resolved paths clearly
-- 🚫 Do not proceed if the manifest is empty or missing — halt gracefully
+- 🚫 Halt only if neither the manifest nor an on-disk scan yields any skill — rename must still work for draft skills that were never exported, so a missing or empty manifest is not fatal
 
 ## CONTEXT BOUNDARIES:
 
@@ -270,7 +270,7 @@ ONLY WHEN the user has confirmed with `Y` at the confirmation gate AND all selec
 ### ❌ SYSTEM FAILURE:
 
 - Proceeding without reading version-paths knowledge
-- Proceeding when the manifest is empty or missing
+- Halting when the manifest is missing but on-disk skills exist — the fallback on-disk scan MUST be attempted before any "nothing to rename" halt
 - Accepting a new name that fails any of the four validation checks
 - Missing the source_authority warning when `"official"` is present
 - Hardcoding directory paths instead of using `{skill_package}`, `{skill_group}`, `{forge_version}`, `{forge_group}` templates
