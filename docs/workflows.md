@@ -185,7 +185,7 @@ SKF has 14 workflows. You trigger them by typing commands to [Ferris](../agents/
 
 **Purpose:** Validate package structure, generate context snippets, and inject managed sections into CLAUDE.md/AGENTS.md/.cursorrules.
 
-**When to Use:** When a skill is ready for CLAUDE.md/AGENTS.md integration. Also provides distribution instructions for `npx skills publish`.
+**When to Use:** When a skill is ready for CLAUDE.md/AGENTS.md integration. Also provides a local install command (`npx skills add <path>`) and distribution instructions for `npx skills publish`. See [Installation → Source Formats](https://www.npmjs.com/package/skills#installation) for other install methods.
 
 **Key Steps:** Load skill → Validate package → Generate snippet → Update context file (CLAUDE.md/AGENTS.md/.cursorrules) → Token report → Summary
 
