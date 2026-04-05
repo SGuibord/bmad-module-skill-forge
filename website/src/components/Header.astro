@@ -1,6 +1,8 @@
 ---
 import config from 'virtual:starlight/user-config';
 import type { Props } from '@astrojs/starlight/props';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 import LanguageSelect from 'virtual:starlight/components/LanguageSelect';
 import Search from 'virtual:starlight/components/Search';
@@ -9,6 +11,12 @@ import SocialIcons from 'virtual:starlight/components/SocialIcons';
 import ThemeSelect from 'virtual:starlight/components/ThemeSelect';
 
 import Banner from './Banner.astro';
+
+// Read the SKF version from the root package.json at build time.
+// This is the same source of truth `npm version` bumps and `npm publish` uses,
+// so the displayed version matches what's deployed on npm after each release.
+const pkgPath = fileURLToPath(new URL('../../../package.json', import.meta.url));
+const { version } = JSON.parse(readFileSync(pkgPath, 'utf8'));
 
 /**
  * Render the `Search` component if Pagefind is enabled or the default search component has been overridden.
@@ -26,6 +34,13 @@ const shouldRenderSearch =
 		{shouldRenderSearch && <Search {...Astro.props} />}
 	</div>
 	<div class="sl-hidden md:sl-flex print:hidden right-group">
+		<a
+			class="version-badge"
+			href={`https://www.npmjs.com/package/bmad-module-skill-forge/v/${version}`}
+			target="_blank"
+			rel="noopener"
+			aria-label={`Skill Forge ${version} on npm`}
+		>v{version}</a>
 		<div class="sl-flex social-icons">
 			<SocialIcons {...Astro.props} />
 		</div>
@@ -49,6 +64,30 @@ const shouldRenderSearch =
 		padding: 0.25rem;
 		margin: -0.25rem;
 		min-width: 0;
+	}
+
+	.version-badge {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.15rem 0.5rem;
+		border-radius: 999px;
+		font-size: var(--sl-text-xs);
+		font-weight: 500;
+		line-height: 1;
+		white-space: nowrap;
+		color: var(--sl-color-text);
+		background: var(--sl-color-gray-6);
+		border: 1px solid var(--sl-color-gray-5);
+		text-decoration: none;
+		transition:
+			background-color 0.15s ease,
+			border-color 0.15s ease;
+	}
+
+	.version-badge:hover,
+	.version-badge:focus-visible {
+		background: var(--sl-color-gray-5);
+		border-color: var(--sl-color-gray-4);
 	}
 
 	.right-group,

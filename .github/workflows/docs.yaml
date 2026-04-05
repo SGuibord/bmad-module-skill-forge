@@ -10,6 +10,7 @@ on:
       - "website/**"
       - "tools/build-docs.js"
       - ".github/workflows/docs.yaml"
+      - "package.json"
   workflow_dispatch:
 
 permissions:

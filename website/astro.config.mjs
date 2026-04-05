@@ -40,12 +40,12 @@ export default defineConfig({
     mermaid(),
     sitemap(),
     starlight({
-      title: 'Skill Forge (SKF)',
+      title: 'Skill Forge',
       tagline: 'Turn code and docs into instructions AI agents can actually follow.',
 
       logo: {
         src: './public/img/skf-logo.svg',
-        alt: 'Skill Forge (SKF)',
+        alt: 'Skill Forge',
         replacesTitle: false,
       },
       favicon: '/favicon.ico',
@@ -106,6 +106,7 @@ export default defineConfig({
         { label: 'Workflows', slug: 'workflows' },
         { label: 'Agents', slug: 'agents' },
         { label: 'Examples', slug: 'examples' },
+        { label: 'BMAD Synergy', slug: 'bmad-synergy' },
       ],
 
       // Credits in footer
