@@ -161,6 +161,10 @@ If CCC is unavailable or returns no results: skip this subsection silently.
 
 ### 4b. Detect Source Version
 
+**If `target_version` was provided in step 01:**
+- Display: "**Target version:** {target_version} (user-specified)"
+- Still run auto-detection below for informational purposes.
+
 Attempt to auto-detect the source version using the rules from the skill-brief-schema.md Version Detection section:
 
 **For Python:** Check `pyproject.toml` `[project] version` (static) → if `dynamic = ["version"]`, check `__init__.py` for `__version__` → `_version.py` if exists → `setup.py` `version=` → `git describe --tags --abbrev=0`
@@ -172,6 +176,12 @@ Attempt to auto-detect the source version using the rules from the skill-brief-s
 **For local repos:** Read the file directly.
 
 Display: "**Detected version:** {version or 'Not detected — will default to 1.0.0'}"
+
+{If target_version was provided AND auto-detected version differs:}
+"**Note:** Detected version ({detected_version}) differs from your target version ({target_version}). Using target version."
+
+{If target_version was provided:}
+Store `target_version` as the brief's `version` field (overrides auto-detection).
 
 If detection fails or returns a non-semver value: note that version will default to `"1.0.0"` and the user can override in step 04.
 

@@ -79,7 +79,7 @@ Assemble each section in order using the assembly rules data file (`{assemblyRul
 Vercel-aligned indexed format for CLAUDE.md managed section (~80-120 tokens):
 
 ```markdown
-[{skill-name} v{version}]|root: skills/{skill-name}/
+[{skill-name} v{version}]|root: skills/{skill-name}/active/{skill-name}/
 |IMPORTANT: {skill-name} v{version} — read SKILL.md before writing {skill-name} code. Do NOT rely on training data.
 |quick-start:{SKILL.md#quick-start}
 |api: {top exports with () for functions, comma-separated}
@@ -101,6 +101,7 @@ Following the structure from the skill-sections data file:
 - Populate all fields from brief_data, extraction inventory, and tier
 - Set `generation_date` to current ISO-8601 timestamp
 - Set `source_commit` from resolved source (if available)
+- Set `source_ref` from resolved source ref (tag name, branch, or `HEAD`; null if unavailable)
 - Set `stats` from extraction aggregate counts:
   - `exports_documented`: count of exports with documentation in the assembled SKILL.md
   - `exports_public_api`: count of exports from public entry points (`__init__.py`, `index.ts`, `lib.rs`, or equivalent) — derive this from step-03's entry-point validation (section 4b), NOT from the provenance-map entry count (which may be incomplete if extraction patterns missed some export types)

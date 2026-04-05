@@ -47,7 +47,7 @@ To extract all public exports, function signatures, type definitions, and co-imp
 
 ## CONTEXT BOUNDARIES:
 
-- Available: brief_data, tier, source_root, file_tree from step-01; ecosystem check outcome from step-02 (proceed/halt decision — no named variable stored)
+- Available: brief_data, tier, source_root, file_tree from step-01; ecosystem check outcome from step-02; source_ref and source_commit from source resolution (see source-resolution-protocols.md)
 - Focus: Source code extraction and inventory building
 - Limits: Do NOT compile, assemble, or write any output
 - Dependencies: Source code must be accessible (local repos resolved in step-01; remote repos cloned in section 2a)

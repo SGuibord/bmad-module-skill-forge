@@ -126,7 +126,7 @@ When `scope.type: "component-library"`, these section formats replace their stan
 #### context-snippet.md — Component Library Format
 
 ```markdown
-[{name} v{version}]|root: skills/{name}/
+[{name} v{version}]|root: skills/{name}/active/{name}/
 |IMPORTANT: {name} v{version} — read SKILL.md before writing {name} code. Do NOT rely on training data.
 |install: npx {cli} add <component-id>
 |catalog:{SKILL.md#component-catalog} — {N} components: {category(count), ...}
@@ -163,7 +163,7 @@ Place after Quick Start and after API Reference sections.
 Indexed pipe-delimited format for CLAUDE.md managed section (~80-120 tokens per skill). Aligned with Vercel's research finding that retrieval instructions + indexed file maps + inline gotchas dramatically improve agent performance.
 
 ```markdown
-[{skill-name} v{version}]|root: skills/{skill-name}/
+[{skill-name} v{version}]|root: skills/{skill-name}/active/{skill-name}/
 |IMPORTANT: {skill-name} v{version} — read SKILL.md before writing {skill-name} code. Do NOT rely on training data.
 |quick-start:{SKILL.md#quick-start}
 |api: {top exports with () for functions, comma-separated}
@@ -196,6 +196,7 @@ Indexed pipe-delimited format for CLAUDE.md managed section (~80-120 tokens per 
   "source_repo": "{github-url}",
   "source_root": "{resolved-source-path}",
   "source_commit": "{commit-hash}",
+  "source_ref": "{source_ref or null}",
   "confidence_tier": "{Quick|Forge|Forge+|Deep}",
   "spec_version": "1.3",
   "generation_date": "{ISO-8601}",
@@ -264,6 +265,7 @@ Each reference file includes:
   "skill_name": "{name}",
   "source_repo": "{url}",
   "source_commit": "{hash}",
+  "source_ref": "v0.5.0",
   "generated_at": "{ISO-8601}",
   "entries": [
     {

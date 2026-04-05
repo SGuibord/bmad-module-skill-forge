@@ -22,7 +22,9 @@
 | doc_urls | array | `{url, label}` objects | Documentation URLs for T3 content. Required when `source_type: "docs-only"` |
 | `scripts_intent` | string | `detect` / `none` / free-text | Describes whether scripts should be extracted. Values: `detect` (auto-detect from source — default when absent), `none` (skip scripts), or a free-text description of expected scripts (e.g., "CLI validation tools in bin/"). |
 | `assets_intent` | string | `detect` / `none` / free-text | Describes whether assets should be extracted. Values: `detect` (auto-detect from source — default when absent), `none` (skip assets), or a free-text description of expected assets (e.g., "JSON schemas in schemas/"). |
+| `target_version` | string | Semantic version (`X.Y.Z` or `X.Y.Z-prerelease`) | User-specified target version. When present, overrides auto-detection and becomes the skill's version. Recommended for docs-only skills where auto-detection is unavailable. |
 | `source_authority` | string | `official` / `community` / `internal` | Default `community`. Set to `official` only when the skill creator is the library maintainer. Forced to `community` when `source_type: "docs-only"`. |
+| `source_ref` | string | Git ref (tag/branch/HEAD) | Resolved git ref used for source access. Set automatically during tag resolution — do not set manually. |
 
 When `source_type: "docs-only"`:
 - `source_repo` becomes optional (set to doc site URL for reference)
@@ -44,6 +46,8 @@ If the source is a remote GitHub repo, use `gh api repos/{owner}/{repo}/contents
 If detection succeeds, use the detected version. If it fails or returns a non-semver value, fall back to `"1.0.0"`.
 
 The create-skill workflow (step-03-extract) also performs version reconciliation at extraction time — if the source version has changed since the brief was created, the extraction step warns and uses the source version.
+
+**Target version override:** When `target_version` is present in the brief, it takes precedence over auto-detection. Auto-detection still runs for informational purposes (displayed as "Detected version" alongside the user-specified "Target version"), but the `target_version` value is used as the brief's `version` field. This is particularly useful for docs-only skills (where no package manifest exists) and when the user wants to compile a skill for a specific older version.
 
 **Pre-release handling:** If the detected version contains a pre-release tag (e.g., `1.0.0-beta.0`, `2.0.0-rc.1`), preserve it as-is. Pre-release tags are valid semver and must not be stripped. When comparing versions during reconciliation, use semver-aware comparison that respects pre-release ordering.
 
@@ -88,6 +92,8 @@ scope:
   exclude:
     - "{pattern}"
   notes: "{optional-scope-notes}"
+# target_version: "X.Y.Z"       # Optional: overrides auto-detection when specified
+# source_ref: "v0.5.0"          # Auto-resolved — do not set manually
 # Optional: documentation URLs for T3 content (required when source_type: "docs-only")
 # doc_urls:
 #   - url: "https://docs.example.com/api"
@@ -131,7 +137,12 @@ Assets:     {assets_intent}
 
 Source Authority: {source_authority}
 
+{If target_version is set:}
+Target Version:   {target_version} (user-specified)
+Detected Version: {detected_version or "N/A"}
+{Else:}
 Version:    {version}
+{End if}
 Created:    {created}
 Created by: {created_by}
 ```

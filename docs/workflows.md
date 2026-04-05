@@ -71,11 +71,11 @@ SKF has 12 workflows. You trigger them by typing commands to [Ferris](../agents/
 
 ### Quick Skill (QS)
 
-**Command:** `@Ferris QS <package-or-url>`
+**Command:** `@Ferris QS <package-or-url>` or `@Ferris QS <package-or-url>@<version>`
 
 **Purpose:** Brief-less fast skill with package-to-repo resolution.
 
-**When to Use:** When you need a skill quickly — no brief needed. Accepts package names or GitHub URLs.
+**When to Use:** When you need a skill quickly — no brief needed. Accepts package names or GitHub URLs. Append `@version` to target a specific version (e.g., `@Ferris QS cognee@0.5.0`).
 
 **Key Steps:** Resolve target → Ecosystem check → Quick extract → Compile → Validate → Write
 

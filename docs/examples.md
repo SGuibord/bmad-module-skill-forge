@@ -50,19 +50,22 @@ See [How It Works](../how-it-works/) for the full output structure.
 
 ```
 skills/cognee/
-├── SKILL.md              # What your agent reads
-├── context-snippet.md    # Compressed index for platform context files
-├── metadata.json         # Machine-readable provenance
-├── references/           # Progressive disclosure detail
-│   ├── api-core.md
-│   └── graph-types.md
-├── scripts/              # Executable utilities (when detected)
-│   └── setup-graphdb.sh
-└── assets/               # Templates and schemas (when detected)
-    └── config-schema.json
+├── active -> 0.5.5
+└── 0.5.5/
+    └── cognee/
+        ├── SKILL.md              # What your agent reads
+        ├── context-snippet.md    # Compressed index for platform context files
+        ├── metadata.json         # Machine-readable provenance
+        ├── references/           # Progressive disclosure detail
+        │   ├── api-core.md
+        │   └── graph-types.md
+        ├── scripts/              # Executable utilities (when detected)
+        │   └── setup-graphdb.sh
+        └── assets/               # Templates and schemas (when detected)
+            └── config-schema.json
 ```
 
-The `scripts/` and `assets/` directories appear only when the source repository contains them. Each file traces back to its source with provenance citations and SHA-256 hashes.
+Skills are stored per-version — updating cognee to v0.6.0 creates a new version directory without overwriting v0.5.5. The `active` symlink always points to the current version. The `scripts/` and `assets/` directories appear only when the source repository contains them. Each file traces back to its source with provenance citations and SHA-256 hashes.
 
 ---
 
@@ -76,7 +79,13 @@ Developer adds [cognee](https://github.com/topoteretes/cognee) to a Python proje
 @Ferris QS https://github.com/topoteretes/cognee
 ```
 
-Ferris reads the repository, extracts the public API via source reading, validates against spec. Skill appears in `skills/cognee/`. Agent stops hallucinating. Forty-seven seconds. Done.
+Ferris reads the repository, extracts the public API via source reading, validates against spec. Skill appears in `skills/cognee/0.5.5/cognee/`. Agent stops hallucinating. Forty-seven seconds. Done.
+
+Need a specific version? Append `@version`:
+
+```
+@Ferris QS cognee@0.5.0
+```
 
 ### Brownfield Platform — 8 Minutes
 
@@ -173,8 +182,10 @@ No source code available — only documentation.
 ```
 @Ferris BS
 # When asked for target, provide documentation URLs:
-# https://docs.cognee.ai/
+# https://docs.cognee.ai/v2/api/
 # Ferris sets source_type: "docs-only" and collects doc_urls
+# When asked for target version, specify: 2.0.0
+# Ferris confirms your doc URLs match that version
 @Ferris CS
 # step-03 skips (no source), step-03c fetches docs via doc_fetcher
 # All content is T3 [EXT:url] confidence. source_authority: community

@@ -68,6 +68,7 @@ Compile all gathered data from steps 01-03 into the complete brief:
 
 - **name:** {skill name from step 01}
 - **version:** {auto-detected from source, or "1.0.0" if not found — see schema for detection rules}
+- **target_version:** {target_version from step 01, if set}
 - **source_repo:** {target repo from step 01}
 - **language:** {detected/confirmed language from steps 02-03}
 - **description:** {derived from user intent in step 01}
@@ -121,7 +122,12 @@ Assets:     {assets_intent}
 
 Source Authority: {source_authority}
 
+{If target_version is set:}
+Target Version: {target_version} (user-specified)
+Detected Version: {detected_version or "N/A"}
+{Else:}
 Version:    {version}
+
 Created:    {created}
 Created by: {created_by}
 ```
@@ -143,6 +149,9 @@ Flag any fields that may need review:
 
 {If any scope patterns seem broad or narrow:}
 "**Note:** {specific observation about scope breadth}."
+
+{If target_version is set AND detected_version exists AND they differ:}
+"**Note:** Target version ({target_version}) differs from detected source version ({detected_version}). The target version will be used for compilation."
 
 "**This is your last chance to make changes before writing the file.**
 
