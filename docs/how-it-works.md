@@ -185,6 +185,107 @@ Your forge tier limits what authority claims a skill can make:
 
 ---
 
+## Completeness Scoring
+
+The Test Skill workflow (`@Ferris TS`) calculates a **completeness score** — a weighted measure of how thoroughly and accurately a skill documents its target. This score is the quality gate: pass and the skill is ready for export; fail and it routes to update-skill for remediation.
+
+### Categories & Weights
+
+The score is the weighted sum of five categories:
+
+| Category | Weight | What It Measures |
+|----------|--------|------------------|
+| **Export Coverage** | 36% | Percentage of source exports documented in SKILL.md |
+| **Signature Accuracy** | 22% | Documented function signatures match actual source signatures (parameter names, types, order, return types) |
+| **Type Coverage** | 14% | Types and interfaces referenced in exports are fully documented |
+| **Coherence** | 18% | Cross-references resolve, integration patterns are complete (contextual mode only) |
+| **External Validation** | 10% | Average of skill-check quality score (0-100) and tessl content score (0-100%) |
+
+### Formula
+
+```
+total_score = sum(category_weight × category_score)
+```
+
+Each category score is a percentage: `(items_passing / items_total) × 100`.
+
+**Coherence** (contextual mode) combines two sub-scores:
+
+```
+coherence = (reference_validity × 0.6) + (integration_completeness × 0.4)
+```
+
+If no integration patterns exist, coherence equals reference validity alone.
+
+**External validation** averages the two tools when both are available. When only one tool is available, that tool's score is used. When neither is available, the 10% weight is redistributed proportionally to the other active categories.
+
+### Naive vs Contextual Mode
+
+Test Skill runs in one of two modes, detected automatically:
+
+- **Contextual mode** (stack skills) — All five categories scored with the default weights above.
+- **Naive mode** (individual skills) — Coherence is not scored. Its 18% weight is redistributed:
+
+| Category | Naive Weight |
+|----------|-------------|
+| Export Coverage | 45% |
+| Signature Accuracy | 25% |
+| Type Coverage | 20% |
+| External Validation | 10% |
+
+### Tier Adjustments
+
+Your forge tier determines which categories can be scored:
+
+| Tier | Skipped Categories | Reason |
+|------|-------------------|--------|
+| **Quick** | Signature Accuracy, Type Coverage | No AST parsing available |
+| **Docs-only** | Signature Accuracy, Type Coverage | No source code to compare against |
+| **Provenance-map** (State 2) | Signature Accuracy, Type Coverage | String comparison only, no semantic AST verification |
+| **Forge / Forge+ / Deep** | None | Full AST-backed scoring |
+
+When categories are skipped, their combined weight (36%) is redistributed proportionally to the remaining active categories. A Quick-tier skill and a Deep-tier skill both pass at the same 80% threshold — the score reflects what your tier can actually measure.
+
+### Pass/Fail
+
+```
+threshold = custom_threshold OR 80% (default)
+
+score >= threshold  →  PASS  →  Recommend export-skill
+score <  threshold  →  FAIL  →  Recommend update-skill
+```
+
+The default is 80%. You can override it by specifying a custom threshold when invoking the workflow (e.g., "test this skill with a 70% threshold").
+
+### Gap Severities
+
+When the score is calculated, each finding is classified by severity to guide remediation:
+
+| Severity | Examples |
+|----------|----------|
+| **Critical** | Missing exported function/class documentation |
+| **High** | Signature mismatch between source and SKILL.md |
+| **Medium** | Missing type/interface documentation; scripts/assets directory inconsistencies |
+| **Low** | Missing optional metadata or examples; description optimization opportunities |
+| **Info** | Style suggestions; discovery testing recommendations |
+
+### Score Report Output
+
+The test report includes a score breakdown table showing each category's raw score, weight, and weighted contribution:
+
+| Category | Score | Weight | Weighted |
+|----------|-------|--------|----------|
+| Export Coverage | 92% | 36% | 33.1% |
+| Signature Accuracy | 85% | 22% | 18.7% |
+| Type Coverage | 100% | 14% | 14.0% |
+| Coherence | 80% | 18% | 14.4% |
+| External Validation | 78% | 10% | 7.8% |
+| **Total** | | **100%** | **88.0%** |
+
+The report also records `analysisConfidence` (full, provenance-map, metadata-only, remote-only, or docs-only) and includes a degradation notice when source access was limited.
+
+---
+
 ## Output Architecture
 
 ### Per-Skill Output

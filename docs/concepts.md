@@ -71,6 +71,18 @@ SKF detects drift by comparing the skill's recorded provenance against the curre
 
 ---
 
+## Completeness Score
+
+The completeness score is a weighted measure of how thoroughly a skill documents its target. The Test Skill workflow (`@Ferris TS`) calculates it across five categories: **Export Coverage** (are all source exports documented?), **Signature Accuracy** (do documented signatures match the actual code?), **Type Coverage** (are referenced types complete?), **Coherence** (do cross-references and integration patterns resolve?), and **External Validation** (do skill-check and tessl confirm quality?).
+
+The default pass threshold is **80%**, overridable by specifying a custom threshold when invoking `@Ferris TS`. Skills that pass are ready for export (`@Ferris EX`); skills that fail route to update (`@Ferris US`) with a gap report showing what to fix.
+
+**Example:** A skill scores 92% export coverage, 85% signature accuracy, 100% type coverage, 80% coherence, and 78% external validation. With the default weights (36/22/14/18/10), the weighted total is 88.0% — a pass.
+
+Your forge tier determines which categories are scored. Quick-tier skills skip signature accuracy and type coverage (no AST available), and the weights redistribute proportionally. See [How It Works](../how-it-works/#completeness-scoring) for the full formula and tier adjustments.
+
+---
+
 ## Version Pinning
 
 Every skill records the exact version (or commit) of the source code it was built from. This means you always know which version of the library the instructions apply to.
