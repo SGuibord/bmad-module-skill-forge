@@ -72,14 +72,14 @@ For each artifact, estimate tokens using the heuristic: **words * 1.3** (approxi
 | Artifact | Words | Est. Tokens | Notes |
 |----------|-------|-------------|-------|
 | context-snippet.md | {n} | ~{t} | Passive context (always-on) |
-| Managed section (all skills) | {n} | ~{t} | In {target-file}, all {count} skills |
+| Managed section (all skills) | {n} | ~{t} | In {target-file-list}, all {count} skills |
 | SKILL.md | {n} | ~{t} | Active skill (on-trigger) |
 | metadata.json | {n} | ~{t} | Machine-readable |
 | references/ | {n} | ~{t} | {count} files |
 | **Package total** | **{n}** | **~{t}** | **All artifacts combined** |
 
 **Context Budget Impact:**
-- **Always-on cost:** ~{managed-section-tokens} tokens (managed section in {target-file})
+- **Always-on cost:** ~{managed-section-tokens} tokens (managed section in {target-file-list})
 - **On-trigger cost:** ~{skill-tokens} tokens (when SKILL.md is loaded)
 - **Full disclosure cost:** ~{total-tokens} tokens (if references/ also loaded)
 

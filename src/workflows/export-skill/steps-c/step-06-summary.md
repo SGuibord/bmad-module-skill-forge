@@ -55,7 +55,7 @@ To present a complete export summary showing all files written, token counts, an
 
 **Skill:** {skill-name}
 **Type:** {skill_type} | **Authority:** {source_authority} | **Tier:** {confidence_tier}
-**Platform:** {platform} → {target-file}
+**Platform(s):** {platform-list} → {target-file-list}
 
 ---
 
@@ -64,7 +64,8 @@ To present a complete export summary showing all files written, token counts, an
 | File | Status | Tokens |
 |------|--------|--------|
 | context-snippet.md | {✅ written / ⚠️ skipped (passive off) / 👁️ previewed} | ~{t} |
-| {target-file} managed section | {✅ updated (case {n}) / ⚠️ skipped / 👁️ previewed} | ~{t} |
+| {target-file-1} managed section | {✅ updated (case {n}) / ⚠️ skipped / 👁️ previewed} | ~{t} |
+| {target-file-N} managed section | {✅ updated (case {n}) / ⚠️ skipped / 👁️ previewed} | ~{t} |
 | Package structure | ✅ validated | ~{t} total |
 
 **Total context cost:** ~{always-on-tokens} tokens always-on, ~{on-trigger-tokens} tokens on-trigger"
@@ -102,7 +103,7 @@ Your skill is committed to the project's `skills/` directory and ships with your
 
 **Team members** will automatically have access when they pull the latest changes.
 
-**To update team context:** Ensure {target-file} is committed with the managed section update."
+**To update team context:** Ensure all target files ({target-file-list}) are committed with the managed section updates."
 
 **If `community`:**
 

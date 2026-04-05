@@ -66,11 +66,27 @@ Determine the skill to export and any flags:
 - If no skills found, halt: "No skills found in {skills_output_folder}/. Run create-skill first."
 
 **Flag Parsing:**
-- `--platform` flag: Check if provided (claude/cursor/copilot). Default: `claude`
+- `--platform` flag: Check if explicitly provided (claude/cursor/copilot)
 - `--dry-run` flag: Check if provided. Default: `false`
 
+**Platform Resolution:**
+
+If `--platform` is explicitly provided, use that single platform as the sole target. If other IDEs are configured in config.yaml, emit a note: "**Note:** Exporting to {platform} only. config.yaml also lists: {other-ides}. Run without `--platform` to export to all configured IDEs."
+
+If `--platform` is NOT provided, read the `ides` list from config.yaml and map to platforms:
+
+| config.yaml IDE value | Platform |
+|----------------------|----------|
+| `claude-code` | `claude` |
+| `cursor` | `cursor` |
+| `github-copilot` | `copilot` |
+| Other values | Skip with note: "Unrecognized IDE '{value}' in config.yaml — skipping." |
+
+- If mapping produces one or more platforms, store as `target_platforms` list
+- If mapping produces zero platforms (empty ides list or all unrecognized), fall back to `["copilot"]` with note: "No recognized IDEs in config.yaml — defaulting to copilot (.agents/skills/)."
+
 "**Skill:** {skill-name}
-**Platform:** {platform} ({target-file})
+**Platform(s):** {platform-list} ({target-file-list})
 **Dry Run:** {yes/no}"
 
 ### 2. Load and Validate Skill Artifacts
@@ -146,7 +162,8 @@ Continue to step 5 regardless — this is advisory, not blocking.
 **Export Configuration:**
 | Setting | Value |
 |---------|-------|
-| **Platform** | {platform} → {target-file} |
+| **Platform(s)** | {platform-list} → {target-file-list} |
+| **Explicit --platform** | {yes (user-specified) / no (from config.yaml)} |
 | **Dry Run** | {yes/no} |
 | **Passive Context** | {enabled/disabled} |
 
@@ -183,6 +200,7 @@ ONLY WHEN the user confirms the correct skill is loaded by selecting 'C' will yo
 - All required files loaded and validated
 - metadata.json parsed with required fields
 - Export flags parsed (platform, dry-run)
+- config.yaml ides list consumed for multi-platform resolution when --platform not provided
 - Forge config checked for passive_context
 - Clear summary presented to user
 - User confirms correct skill
@@ -193,6 +211,7 @@ ONLY WHEN the user confirms the correct skill is loaded by selecting 'C' will yo
 - Not validating metadata.json fields
 - Not checking preferences.yaml for passive_context opt-out
 - Proceeding without user confirmation
+- Ignoring config.yaml ides list when no --platform flag is provided
 - Modifying any skill files (read-only step)
 
 **Master Rule:** Skipping steps, optimizing sequences, or not following exact instructions is FORBIDDEN and constitutes SYSTEM FAILURE.

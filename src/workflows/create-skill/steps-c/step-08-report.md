@@ -78,7 +78,7 @@ Where `{primary_confidence}` is the predominant confidence tier (T1 if Forge/Dee
 
 **Output Files:**
 - `{skills_output_folder}/{name}/SKILL.md` — Active skill with trigger-based usage
-- `{skills_output_folder}/{name}/context-snippet.md` — Passive context for CLAUDE.md
+- `{skills_output_folder}/{name}/context-snippet.md` — Passive context snippet (used by export-skill)
 - `{skills_output_folder}/{name}/metadata.json` — Machine-readable birth certificate
 - `{skills_output_folder}/{name}/references/` — Progressive disclosure ({ref_count} files)
 - `{forge_data_folder}/{name}/provenance-map.json` — Source map with AST bindings

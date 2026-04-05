@@ -140,7 +140,7 @@ Record missing tier labels as **WARNING** findings.
 ### 8. Validate context-snippet.md
 
 Verify context-snippet.md follows Vercel-aligned indexed format:
-- [ ] First line matches: `[{project}-stack v{version}]|root: skills/{project}-stack/`
+- [ ] First line matches: `[{project}-stack v{version}]|root: {prefix}{project}-stack/` where prefix is `skills/` or a platform root (`.claude/skills/`, `.cursor/skills/`, `.agents/skills/`)
 - [ ] Second line starts with `|IMPORTANT:`
 - [ ] Stack and integrations lines present
 - [ ] Approximate token count is ~80-120 tokens
