@@ -3,6 +3,7 @@ name: 'step-04-report'
 description: 'Display forge status report with positive capability framing'
 
 tierRulesData: '../data/tier-rules.md'
+nextStepFile: '../../shared/health-check.md'
 ---
 
 # Step 4: Forge Status Report
@@ -37,7 +38,7 @@ Display the forge status report with positive capability framing, report tier ch
 - 🎯 Follow the MANDATORY SEQUENCE exactly
 - 💾 Load tier-rules.md for capability descriptions and re-run messages
 - 📖 Use context from step-01 (detected_tools, calculated_tier, previous_tier)
-- 🚫 This is the final step — no next step to load
+- 🚫 After reporting, chains to shared health check — no further steps after that
 
 ## CONTEXT BOUNDARIES:
 
@@ -126,11 +127,13 @@ Load and read {tierRulesData} for the tier capability descriptions and re-run me
 **If `--update-spec` was NOT passed:**
 - Skip silently
 
-### 4. Workflow Complete
+### 4. Workflow Health Check
 
-This is the final step. The setup-forge workflow is now complete.
+Load and execute `{nextStepFile}` for workflow self-improvement check.
 
-No next step to load. The workflow ends here.
+## CRITICAL STEP COMPLETION NOTE
+
+This step chains to the shared health check. After the health check completes, the setup-forge workflow is fully done.
 
 ---
 
@@ -151,6 +154,6 @@ No next step to load. The workflow ends here.
 - Listing tools that are NOT available
 - Not using tier capability descriptions from tier-rules.md
 - Not reporting tier change on re-run
-- Attempting to load a next step (this is the final step)
+- Attempting to load steps beyond the shared health check
 
 **Master Rule:** The report must leave users feeling confident about their forge capabilities, not anxious about what they're missing. Positive framing only.

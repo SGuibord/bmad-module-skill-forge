@@ -1,6 +1,7 @@
 ---
 name: 'step-06-write'
 description: 'Write output files to skills folder and display completion summary'
+nextStepFile: '../../shared/health-check.md'
 ---
 
 # Step 6: Write Output
@@ -37,14 +38,14 @@ To write the compiled SKILL.md, context-snippet.md, and metadata.json to the ski
 - 🎯 Follow the MANDATORY SEQUENCE exactly
 - 💾 Write three files to `{skill_package}` and create the `active` symlink
 - 📖 File I/O required for directory creation and file writing
-- 🚫 This is the final step — no next step to load
+- 🚫 After writing files, chains to shared health check — no further steps after that
 
 ## CONTEXT BOUNDARIES:
 
 - Previous steps provided: skill_content, context_snippet, metadata_json, validation_result
 - Also available: resolved_url, repo_name, language, skills_output_folder
 - Focus: file writing and completion only
-- This is the FINAL step — workflow ends here
+- Chains to shared health check after completion — no further steps after that
 - Path resolution: See `knowledge/version-paths.md` for canonical path templates. Quick-skill uses `{repo_name}` as the skill name and defaults `{version}` to `1.0.0` if not detected from the extraction inventory
 
 ## MANDATORY SEQUENCE
@@ -150,11 +151,9 @@ Please check:
 
 **Note:** This is a best-effort community skill. For deeper analysis with AST-verified exports and provenance tracking, use the full **create-skill** workflow with a skill brief."
 
-### 7. End Workflow
+### 7. Workflow Health Check
 
-This is the final step. The workflow is complete.
-
-No next step to load. Session ends here.
+Load and execute `{nextStepFile}` for workflow self-improvement check.
 
 ---
 
@@ -174,6 +173,6 @@ No next step to load. Session ends here.
 - Modifying content during write (write exactly what was compiled)
 - Not handling write failures with hard halt
 - Not displaying completion summary
-- Attempting to load a next step (this is final)
+- Attempting to load steps beyond the shared health check
 
 **Master Rule:** Skipping steps, optimizing sequences, or not following exact instructions is FORBIDDEN and constitutes SYSTEM FAILURE.

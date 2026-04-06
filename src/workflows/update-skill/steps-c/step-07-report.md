@@ -1,6 +1,7 @@
 ---
 name: 'step-07-report'
 description: 'Display comprehensive change summary with diff visualization and workflow chaining recommendations'
+nextStepFile: '../../shared/health-check.md'
 ---
 
 # Step 7: Report
@@ -36,7 +37,7 @@ Present a comprehensive change summary showing what was updated, [MANUAL] sectio
 
 - 🎯 Follow MANDATORY SEQUENCE exactly
 - 💾 No file writes — display only
-- 📖 This is the final step — workflow completes here
+- 📖 Chains to shared health check via `{nextStepFile}` — no further steps after that
 
 ## CONTEXT BOUNDARIES:
 
@@ -64,7 +65,7 @@ Source code matches provenance map exactly. The skill `{skill_name}` is current 
 
 **Recommendation:** No action required. Run audit-skill periodically to monitor for drift."
 
-→ **Workflow complete.** End here.
+→ Load and execute `{nextStepFile}` for workflow self-improvement check.
 
 ### 2. Present Change Summary
 
@@ -175,7 +176,9 @@ Based on the update results:"
 
 **Update-skill workflow complete for `{skill_name}`.**"
 
-→ **No next step.** Workflow ends here.
+### 7. Workflow Health Check
+
+Load and execute `{nextStepFile}` for workflow self-improvement check.
 
 ---
 
