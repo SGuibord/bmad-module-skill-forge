@@ -2,16 +2,16 @@
 
 ## Supported Ecosystems
 
-| Ecosystem | Manifest File(s) | Dependency Key | Import Pattern |
-|-----------|-----------------|----------------|----------------|
-| JavaScript/TypeScript | package.json | dependencies, devDependencies | `import ... from '...'`, `require('...')` |
-| Python | requirements.txt, setup.py, pyproject.toml, Pipfile | install_requires, [project.dependencies] | `import ...`, `from ... import` |
-| Rust | Cargo.toml | [dependencies] | `use ...`, `extern crate` |
-| Go | go.mod | require | `import "..."` |
-| Java | pom.xml, build.gradle | dependencies | `import ...` |
-| Ruby | Gemfile | gem | `require '...'`, `require_relative` |
-| PHP | composer.json | require, require-dev | `use ...`, `require_once` |
-| .NET | *.csproj | PackageReference | `using ...` |
+| Ecosystem             | Manifest File(s)                                    | Dependency Key                           | Import Pattern                            |
+|-----------------------|-----------------------------------------------------|------------------------------------------|-------------------------------------------|
+| JavaScript/TypeScript | package.json                                        | dependencies, devDependencies            | `import ... from '...'`, `require('...')` |
+| Python                | requirements.txt, setup.py, pyproject.toml, Pipfile | install_requires, [project.dependencies] | `import ...`, `from ... import`           |
+| Rust                  | Cargo.toml                                          | [dependencies]                           | `use ...`, `extern crate`                 |
+| Go                    | go.mod                                              | require                                  | `import "..."`                            |
+| Java                  | pom.xml, build.gradle                               | dependencies                             | `import ...`                              |
+| Ruby                  | Gemfile                                             | gem                                      | `require '...'`, `require_relative`       |
+| PHP                   | composer.json                                       | require, require-dev                     | `use ...`, `require_once`                 |
+| .NET                  | *.csproj                                            | PackageReference                         | `using ...`                               |
 
 ## Detection Priority
 

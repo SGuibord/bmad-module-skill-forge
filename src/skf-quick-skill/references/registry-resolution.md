@@ -83,9 +83,9 @@ After resolving to a GitHub repo, detect primary language from:
 
 For each language, the primary manifest to read:
 
-| Language | Manifest | Key Fields |
-|----------|----------|------------|
-| JS/TS | package.json | name, version, description, main, exports, dependencies |
-| Python | pyproject.toml | project.name, project.version, project.description, project.dependencies |
-| Rust | Cargo.toml | package.name, package.version, package.description, dependencies |
-| Go | go.mod | module path, require list |
+| Language | Manifest       | Key Fields                                                               |
+|----------|----------------|--------------------------------------------------------------------------|
+| JS/TS    | package.json   | name, version, description, main, exports, dependencies                  |
+| Python   | pyproject.toml | project.name, project.version, project.description, project.dependencies |
+| Rust     | Cargo.toml     | package.name, package.version, package.description, dependencies         |
+| Go       | go.mod         | module path, require list                                                |

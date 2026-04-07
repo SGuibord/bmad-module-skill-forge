@@ -28,18 +28,18 @@ SKILL.md uses a two-tier structure to ensure actionable content survives `split-
 
 #### Tier 1 — Always Inline (survives split-body, target <300 lines)
 
-| # | Section | Budget | Purpose |
-|---|---------|--------|---------|
-| 1 | **Overview** | ~10 lines | What the library does, source repo, version, tier, export count |
-| 2 | **Quick Start** | ~30 lines | 3-5 core functions with one runnable end-to-end example |
-| 3 | **Common Workflows** | ~30 lines | 4-5 typical function call sequences for common tasks |
-| 4 | **Key API Summary** | ~20 lines | Table of top 10-15 functions (name, purpose, key params) |
-| 4b | **Migration & Deprecation Warnings** | ~10 lines | T2-future warnings inline (Deep tier only, skip if none) |
-| 5 | **Key Types** | ~20 lines | Most important enum/type values inline |
-| 6 | **Architecture at a Glance** | ~10 lines | Bullet list of subsystem categories |
-| 7 | **CLI** | ~10 lines | Basic CLI commands (skip if no CLI) |
-| 7b | **Scripts & Assets** | ~10 lines | Manifest of included scripts and assets (skip if none detected) |
-| 8 | **Manual Sections** | ~5 lines | `<!-- [MANUAL] -->` markers for update-skill |
+| #  | Section                              | Budget    | Purpose                                                         |
+|----|--------------------------------------|-----------|-----------------------------------------------------------------|
+| 1  | **Overview**                         | ~10 lines | What the library does, source repo, version, tier, export count |
+| 2  | **Quick Start**                      | ~30 lines | 3-5 core functions with one runnable end-to-end example         |
+| 3  | **Common Workflows**                 | ~30 lines | 4-5 typical function call sequences for common tasks            |
+| 4  | **Key API Summary**                  | ~20 lines | Table of top 10-15 functions (name, purpose, key params)        |
+| 4b | **Migration & Deprecation Warnings** | ~10 lines | T2-future warnings inline (Deep tier only, skip if none)        |
+| 5  | **Key Types**                        | ~20 lines | Most important enum/type values inline                          |
+| 6  | **Architecture at a Glance**         | ~10 lines | Bullet list of subsystem categories                             |
+| 7  | **CLI**                              | ~10 lines | Basic CLI commands (skip if no CLI)                             |
+| 7b | **Scripts & Assets**                 | ~10 lines | Manifest of included scripts and assets (skip if none detected) |
+| 8  | **Manual Sections**                  | ~5 lines  | `<!-- [MANUAL] -->` markers for update-skill                    |
 
 #### Tier 2 — Reference-Eligible (extracted by split-body into references/)
 
@@ -137,12 +137,12 @@ When `scope.type: "component-library"`, these section formats replace their stan
 
 ### Provenance Citation Format
 
-| Tier | Format | Example |
-|------|--------|---------|
-| T1 (AST) | `[AST:{file}:L{line}]` | `[AST:src/auth/index.ts:L42]` |
-| T1-low (Source) | `[SRC:{file}:L{line}]` | `[SRC:src/auth/index.ts:L42]` |
-| T2 (QMD) | `[QMD:{collection}:{doc}]` | `[QMD:project:CHANGELOG.md]` |
-| T3 (External) | `[EXT:{url}]` | `[EXT:docs.example.com/api]` |
+| Tier            | Format                     | Example                       |
+|-----------------|----------------------------|-------------------------------|
+| T1 (AST)        | `[AST:{file}:L{line}]`     | `[AST:src/auth/index.ts:L42]` |
+| T1-low (Source) | `[SRC:{file}:L{line}]`     | `[SRC:src/auth/index.ts:L42]` |
+| T2 (QMD)        | `[QMD:{collection}:{doc}]` | `[QMD:project:CHANGELOG.md]`  |
+| T3 (External)   | `[EXT:{url}]`              | `[EXT:docs.example.com/api]`  |
 
 ### [MANUAL] Section Markers
 

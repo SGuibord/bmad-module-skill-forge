@@ -6,14 +6,14 @@
 
 ## Category Weights
 
-| Category | Weight | Description |
-|----------|--------|-------------|
-| Export Coverage | 36% | Percentage of source exports documented in SKILL.md |
-| Signature Accuracy | 22% | Documented signatures match actual source signatures |
-| Type Coverage | 14% | Types and interfaces referenced are complete |
-| Coherence (contextual) | 18% | Cross-references valid, integration patterns complete |
-| Coherence (naive) | 0% | Not applicable — weight redistributed to other categories |
-| External Validation | 10% | Average of skill-check quality score + tessl average score (redistributed if unavailable) |
+| Category               | Weight | Description                                                                               |
+|------------------------|--------|-------------------------------------------------------------------------------------------|
+| Export Coverage        | 36%    | Percentage of source exports documented in SKILL.md                                       |
+| Signature Accuracy     | 22%    | Documented signatures match actual source signatures                                      |
+| Type Coverage          | 14%    | Types and interfaces referenced are complete                                              |
+| Coherence (contextual) | 18%    | Cross-references valid, integration patterns complete                                     |
+| Coherence (naive)      | 0%     | Not applicable — weight redistributed to other categories                                 |
+| External Validation    | 10%    | Average of skill-check quality score + tessl average score (redistributed if unavailable) |
 
 ## Naive Mode Weight Redistribution
 
@@ -108,16 +108,16 @@ If no integration patterns exist, combined coherence equals reference validity.
 
 ## Gap Severity
 
-| Severity | Criteria |
-|----------|----------|
-| Critical | Missing exported function/class documentation |
-| High | Signature mismatch between source and SKILL.md |
-| Medium | Missing type or interface documentation |
-| Medium | Migration section present/absent mismatch with T2-future annotation data (Deep tier) |
-| Medium | Script/asset directory exists but no Scripts & Assets section in SKILL.md |
-| Medium | Scripts & Assets section references file not found in scripts/ or assets/ directory |
-| Low | Script/asset file present without provenance entry in provenance-map.json file_entries |
-| Low | Missing optional metadata or examples |
-| Low | Description trigger optimization recommended (third-person voice, negative triggers, or keyword coverage gaps) |
-| Info | Style suggestions, non-blocking observations |
-| Info | Discovery testing not performed — realistic prompt testing recommended before export |
+| Severity | Criteria                                                                                                       |
+|----------|----------------------------------------------------------------------------------------------------------------|
+| Critical | Missing exported function/class documentation                                                                  |
+| High     | Signature mismatch between source and SKILL.md                                                                 |
+| Medium   | Missing type or interface documentation                                                                        |
+| Medium   | Migration section present/absent mismatch with T2-future annotation data (Deep tier)                           |
+| Medium   | Script/asset directory exists but no Scripts & Assets section in SKILL.md                                      |
+| Medium   | Scripts & Assets section references file not found in scripts/ or assets/ directory                            |
+| Low      | Script/asset file present without provenance entry in provenance-map.json file_entries                         |
+| Low      | Missing optional metadata or examples                                                                          |
+| Low      | Description trigger optimization recommended (third-person voice, negative triggers, or keyword coverage gaps) |
+| Info     | Style suggestions, non-blocking observations                                                                   |
+| Info     | Discovery testing not performed — realistic prompt testing recommended before export                           |

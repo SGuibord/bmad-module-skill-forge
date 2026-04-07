@@ -55,8 +55,8 @@ For stack skills with multi-file outputs:
 
 ## Conflict Resolution Strategies
 
-| Strategy | When | Action |
-|----------|------|--------|
-| Auto-resolve | No [MANUAL] conflicts, clean merge | Proceed without user input |
-| User-resolve | [MANUAL] conflicts detected | Halt, present conflicts, require decision |
-| Abort | Critical structural incompatibility | Stop workflow, recommend full re-creation |
+| Strategy     | When                                | Action                                    |
+|--------------|-------------------------------------|-------------------------------------------|
+| Auto-resolve | No [MANUAL] conflicts, clean merge  | Proceed without user input                |
+| User-resolve | [MANUAL] conflicts detected         | Halt, present conflicts, require decision |
+| Abort        | Critical structural incompatibility | Stop workflow, recommend full re-creation |

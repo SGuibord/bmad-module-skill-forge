@@ -19,11 +19,11 @@ Gaps are undocumented integration paths — library pairs that have compatible A
 
 ### Gap Classification
 
-| Gap Type | Description | Example |
-|----------|-------------|---------|
-| **Missing Integration Path** | Two libraries can connect but the architecture never describes how | Skill A exports JSON producer, Skill B accepts JSON input, no mention of A-to-B flow |
-| **Undocumented Data Flow** | Data moves between libraries but the flow is not described | Architecture mentions both libraries but not their data exchange mechanism |
-| **Absent Bridge Layer** | Cross-language or cross-protocol libraries need a bridge not mentioned | Rust library and TypeScript library with no IPC/FFI description |
+| Gap Type                     | Description                                                            | Example                                                                              |
+|------------------------------|------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| **Missing Integration Path** | Two libraries can connect but the architecture never describes how     | Skill A exports JSON producer, Skill B accepts JSON input, no mention of A-to-B flow |
+| **Undocumented Data Flow**   | Data moves between libraries but the flow is not described             | Architecture mentions both libraries but not their data exchange mechanism           |
+| **Absent Bridge Layer**      | Cross-language or cross-protocol libraries need a bridge not mentioned | Rust library and TypeScript library with no IPC/FFI description                      |
 
 ---
 
@@ -39,12 +39,12 @@ Issues are contradictions between architecture claims and verified API reality f
 
 ### Issue Classification
 
-| Issue Type | Description | Example |
-|------------|-------------|---------|
-| **API Mismatch** | Architecture describes an API that does not exist in the skill | "Library X exposes a streaming API" but skill shows only batch APIs |
-| **Protocol Contradiction** | Architecture assumes a protocol the library does not support | "Communicates via gRPC" but skill shows HTTP-only exports |
-| **Language Boundary Ignored** | Architecture assumes direct calls across language boundaries | "Calls Rust functions from TypeScript" with no FFI/IPC mechanism described |
-| **Type Incompatibility** | Architecture assumes type compatibility that does not hold | "Passes CRDT documents directly" but types are incompatible across libraries |
+| Issue Type                    | Description                                                    | Example                                                                      |
+|-------------------------------|----------------------------------------------------------------|------------------------------------------------------------------------------|
+| **API Mismatch**              | Architecture describes an API that does not exist in the skill | "Library X exposes a streaming API" but skill shows only batch APIs          |
+| **Protocol Contradiction**    | Architecture assumes a protocol the library does not support   | "Communicates via gRPC" but skill shows HTTP-only exports                    |
+| **Language Boundary Ignored** | Architecture assumes direct calls across language boundaries   | "Calls Rust functions from TypeScript" with no FFI/IPC mechanism described   |
+| **Type Incompatibility**      | Architecture assumes type compatibility that does not hold     | "Passes CRDT documents directly" but types are incompatible across libraries |
 
 ### VS Report Integration
 
@@ -67,11 +67,11 @@ Improvements are capability expansions — library features documented in skills
 
 ### Improvement Classification
 
-| Improvement Type | Description | Example |
-|------------------|-------------|---------|
-| **Unused Capability** | Library has a feature the architecture does not mention | "Loro supports document CRDTs but architecture only uses data sync" |
-| **Cross-Library Synergy** | Two libraries have complementary features not combined in architecture | "Library A's event system could feed Library B's stream processor" |
-| **Alternative Pattern** | Skill documents a better pattern than the one described in architecture | "Skill shows batch API is more efficient than the per-item approach described" |
+| Improvement Type          | Description                                                             | Example                                                                        |
+|---------------------------|-------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| **Unused Capability**     | Library has a feature the architecture does not mention                 | "Loro supports document CRDTs but architecture only uses data sync"            |
+| **Cross-Library Synergy** | Two libraries have complementary features not combined in architecture  | "Library A's event system could feed Library B's stream processor"             |
+| **Alternative Pattern**   | Skill documents a better pattern than the one described in architecture | "Skill shows batch API is more efficient than the per-item approach described" |
 
 ---
 

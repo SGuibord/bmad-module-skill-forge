@@ -35,18 +35,18 @@
 
 ## Overall Drift Score
 
-| Score | Criteria |
-|-------|----------|
-| CLEAN | 0 findings at any level |
-| MINOR | LOW findings only, no MEDIUM+ |
+| Score       | Criteria                                 |
+|-------------|------------------------------------------|
+| CLEAN       | 0 findings at any level                  |
+| MINOR       | LOW findings only, no MEDIUM+            |
 | SIGNIFICANT | Any MEDIUM or HIGH findings, no CRITICAL |
-| CRITICAL | Any CRITICAL findings present |
+| CRITICAL    | Any CRITICAL findings present            |
 
 ## Confidence Tier Labels
 
-| Label | Source | Reliability |
-|-------|--------|-------------|
-| T1 | AST extraction (ast-grep) | High — structural truth |
-| T1-low | Text pattern matching (no AST) | Moderate — pattern-based |
-| T2 | QMD semantic context | High — evidence-backed temporal context |
-| T3 | External documentation reference | Variable — secondary source |
+| Label  | Source                           | Reliability                             |
+|--------|----------------------------------|-----------------------------------------|
+| T1     | AST extraction (ast-grep)        | High — structural truth                 |
+| T1-low | Text pattern matching (no AST)   | Moderate — pattern-based                |
+| T2     | QMD semantic context             | High — evidence-backed temporal context |
+| T3     | External documentation reference | Variable — secondary source             |

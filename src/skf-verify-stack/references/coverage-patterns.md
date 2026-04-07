@@ -26,11 +26,11 @@ Parse document section headers for technology groupings:
 
 ### Coverage Verdict
 
-| Verdict | Meaning |
-|---------|---------|
-| **Covered** | A generated skill exists in `skills/` for this technology |
-| **Missing** | Technology is referenced in architecture doc but no skill exists |
-| **Extra** | A skill exists but the technology is not referenced in the architecture doc (informational, not an error) |
+| Verdict     | Meaning                                                                                                   |
+|-------------|-----------------------------------------------------------------------------------------------------------|
+| **Covered** | A generated skill exists in `skills/` for this technology                                                 |
+| **Missing** | Technology is referenced in architecture doc but no skill exists                                          |
+| **Extra**   | A skill exists but the technology is not referenced in the architecture doc (informational, not an error) |
 
 ## Output Format
 

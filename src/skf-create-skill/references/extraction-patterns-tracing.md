@@ -57,23 +57,23 @@ Scripts and assets are file-level artifacts, not code exports. They follow the *
 
 **Script file signals:**
 
-| Signal | Strength | Pattern |
-|--------|----------|---------|
-| Entry point declaration | Strong | `package.json` `bin` field, Cargo.toml `[[bin]]`, pyproject.toml `[project.scripts]` |
-| Shebang + executable | Strong | `#!/bin/bash`, `#!/usr/bin/env python`, `#!/usr/bin/env node` |
-| CLI argument parser | Moderate | `argparse`, `yargs`, `commander`, `cobra`, `clap` imports in file |
-| Directory convention | Moderate | File in `scripts/`, `bin/`, `tools/` directory |
-| CI/CD reference | Moderate | Script referenced in `.github/workflows/*.yml` |
+| Signal                  | Strength | Pattern                                                                              |
+|-------------------------|----------|--------------------------------------------------------------------------------------|
+| Entry point declaration | Strong   | `package.json` `bin` field, Cargo.toml `[[bin]]`, pyproject.toml `[project.scripts]` |
+| Shebang + executable    | Strong   | `#!/bin/bash`, `#!/usr/bin/env python`, `#!/usr/bin/env node`                        |
+| CLI argument parser     | Moderate | `argparse`, `yargs`, `commander`, `cobra`, `clap` imports in file                    |
+| Directory convention    | Moderate | File in `scripts/`, `bin/`, `tools/` directory                                       |
+| CI/CD reference         | Moderate | Script referenced in `.github/workflows/*.yml`                                       |
 
 **Asset file signals:**
 
-| Signal | Strength | Pattern |
-|--------|----------|---------|
-| JSON Schema | Strong | `*.schema.json`, file contains `"$schema"` key |
-| Config template | Strong | `*.example`, `*.template.*`, `*.sample` extension |
+| Signal           | Strength | Pattern                                             |
+|------------------|----------|-----------------------------------------------------|
+| JSON Schema      | Strong   | `*.schema.json`, file contains `"$schema"` key      |
+| Config template  | Strong   | `*.example`, `*.template.*`, `*.sample` extension   |
 | Official example | Moderate | File in `examples/` directory, referenced in README |
-| OpenAPI/GraphQL | Moderate | `openapi.json`, `*.graphql`, `swagger.yaml` |
-| Design tokens | Weak | `tokens.json`, `theme.json` in `assets/` |
+| OpenAPI/GraphQL  | Moderate | `openapi.json`, `*.graphql`, `swagger.yaml`         |
+| Design tokens    | Weak     | `tokens.json`, `theme.json` in `assets/`            |
 
 ### Inclusion Rules
 

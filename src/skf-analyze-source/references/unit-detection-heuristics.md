@@ -8,31 +8,31 @@ Rules for identifying discrete skillable units within a project. A "skillable un
 
 ### Strong Signals (High Confidence)
 
-| Signal | Description | Example |
-|--------|-------------|---------|
-| Independent package.json / Cargo.toml / go.mod | Unit has its own dependency manifest | `packages/auth/package.json` |
-| Separate entry point | Unit has a main/index file | `services/api/src/index.ts` |
-| Docker/service definition | Unit runs as an independent service | `docker-compose.yml` service entry |
-| Distinct export surface | Unit exports a public API consumed by others | `src/lib/index.ts` with re-exports |
-| Workspace member | Listed in root workspace configuration | `pnpm-workspace.yaml` packages |
+| Signal                                         | Description                                  | Example                            |
+|------------------------------------------------|----------------------------------------------|------------------------------------|
+| Independent package.json / Cargo.toml / go.mod | Unit has its own dependency manifest         | `packages/auth/package.json`       |
+| Separate entry point                           | Unit has a main/index file                   | `services/api/src/index.ts`        |
+| Docker/service definition                      | Unit runs as an independent service          | `docker-compose.yml` service entry |
+| Distinct export surface                        | Unit exports a public API consumed by others | `src/lib/index.ts` with re-exports |
+| Workspace member                               | Listed in root workspace configuration       | `pnpm-workspace.yaml` packages     |
 
 ### Moderate Signals (Medium Confidence)
 
-| Signal | Description | Example |
-|--------|-------------|---------|
-| Directory depth boundary | Top-level directory with self-contained structure | `src/modules/payments/` |
-| Naming convention | Follows organizational naming pattern | `@org/package-name` |
-| Separate test suite | Has its own test directory or config | `packages/auth/__tests__/` |
-| README.md presence | Has documentation at directory level | `libs/utils/README.md` |
-| CI/CD pipeline reference | Referenced in build/deploy configuration | `.github/workflows/deploy-auth.yml` |
+| Signal                   | Description                                       | Example                             |
+|--------------------------|---------------------------------------------------|-------------------------------------|
+| Directory depth boundary | Top-level directory with self-contained structure | `src/modules/payments/`             |
+| Naming convention        | Follows organizational naming pattern             | `@org/package-name`                 |
+| Separate test suite      | Has its own test directory or config              | `packages/auth/__tests__/`          |
+| README.md presence       | Has documentation at directory level              | `libs/utils/README.md`              |
+| CI/CD pipeline reference | Referenced in build/deploy configuration          | `.github/workflows/deploy-auth.yml` |
 
 ### Weak Signals (Low Confidence — Require Corroboration)
 
-| Signal | Description | Example |
-|--------|-------------|---------|
-| Large directory | Many files in a subtree | 50+ files under one directory |
-| Comment boundaries | Code comments marking sections | `// --- Auth Module ---` |
-| Import clustering | Files that import primarily from each other | Tight import graph cluster |
+| Signal             | Description                                 | Example                       |
+|--------------------|---------------------------------------------|-------------------------------|
+| Large directory    | Many files in a subtree                     | 50+ files under one directory |
+| Comment boundaries | Code comments marking sections              | `// --- Auth Module ---`      |
+| Import clustering  | Files that import primarily from each other | Tight import graph cluster    |
 
 ## Boundary Classification
 
@@ -85,21 +85,21 @@ During per-unit analysis, check for scripts and assets alongside code exports.
 
 **Script signals:**
 
-| Strength | Signal | Example |
-|----------|--------|---------|
-| Strong | Entry point in `package.json` `bin`, Cargo.toml `[[bin]]`, pyproject.toml `[project.scripts]` | `"bin": { "migrate": "scripts/migrate.js" }` |
-| Strong | Shebang + executable file | `#!/usr/bin/env python` in `scripts/setup.py` |
-| Moderate | File in `scripts/`, `bin/`, `tools/`, `cli/` directory | `scripts/validate.sh` |
-| Moderate | CI/CD reference to script | `.github/workflows/test.yml` runs `scripts/test.sh` |
+| Strength | Signal                                                                                        | Example                                             |
+|----------|-----------------------------------------------------------------------------------------------|-----------------------------------------------------|
+| Strong   | Entry point in `package.json` `bin`, Cargo.toml `[[bin]]`, pyproject.toml `[project.scripts]` | `"bin": { "migrate": "scripts/migrate.js" }`        |
+| Strong   | Shebang + executable file                                                                     | `#!/usr/bin/env python` in `scripts/setup.py`       |
+| Moderate | File in `scripts/`, `bin/`, `tools/`, `cli/` directory                                        | `scripts/validate.sh`                               |
+| Moderate | CI/CD reference to script                                                                     | `.github/workflows/test.yml` runs `scripts/test.sh` |
 
 **Asset signals:**
 
-| Strength | Signal | Example |
-|----------|--------|---------|
-| Strong | JSON Schema file with `$schema` key | `schemas/config.schema.json` |
-| Strong | Config template with `.example` or `.template` extension | `config.yaml.example` |
-| Moderate | File in `assets/`, `templates/`, `schemas/`, `configs/`, `examples/` directory | `templates/report.hbs` |
-| Moderate | OpenAPI/GraphQL definition | `openapi.json`, `schema.graphql` |
+| Strength | Signal                                                                         | Example                          |
+|----------|--------------------------------------------------------------------------------|----------------------------------|
+| Strong   | JSON Schema file with `$schema` key                                            | `schemas/config.schema.json`     |
+| Strong   | Config template with `.example` or `.template` extension                       | `config.yaml.example`            |
+| Moderate | File in `assets/`, `templates/`, `schemas/`, `configs/`, `examples/` directory | `templates/report.hbs`           |
+| Moderate | OpenAPI/GraphQL definition                                                     | `openapi.json`, `schema.graphql` |
 
 **Per-unit output:** Record `has_scripts: boolean`, `has_assets: boolean`, `script_files: string[]`, `asset_files: string[]`.
 
@@ -116,9 +116,9 @@ Flag units as stack skill candidates when:
 
 ## Tier-Aware Scanning Depth
 
-| Forge Tier | Scanning Approach |
-|------------|-------------------|
-| Quick | File structure analysis: directory trees, manifest files, entry points, naming conventions |
-| Forge | AST analysis: export surfaces, import graphs, dependency trees, type hierarchies |
-| Forge+ | AST + CCC: semantic file pre-ranking before structural analysis, CCC signals for relevance scoring |
-| Deep | AST + QMD: temporal evolution, refactoring patterns, semantic relationships, architectural drift |
+| Forge Tier | Scanning Approach                                                                                  |
+|------------|----------------------------------------------------------------------------------------------------|
+| Quick      | File structure analysis: directory trees, manifest files, entry points, naming conventions         |
+| Forge      | AST analysis: export surfaces, import graphs, dependency trees, type hierarchies                   |
+| Forge+     | AST + CCC: semantic file pre-ranking before structural analysis, CCC signals for relevance scoring |
+| Deep       | AST + QMD: temporal evolution, refactoring patterns, semantic relationships, architectural drift   |

@@ -8,12 +8,12 @@ Rules for cross-referencing API surfaces between two skills to determine integra
 
 ## Verdict Definitions
 
-| Verdict | Meaning | Required Evidence |
-|---------|---------|-------------------|
-| **Verified** | APIs demonstrably connect — matching types, documented bridge, or shared protocol | At least one export from Skill A is consumable by an API in Skill B (or vice versa) with compatible types |
-| **Plausible** | Compatible types or protocols but no documented integration path | Both libraries operate in compatible domains with compatible data formats, but no direct API bridge is evident |
-| **Risky** | Type mismatch, protocol gap, or language boundary requiring a bridge | A clear gap exists (e.g., TypeScript↔Rust FFI needed) but a workaround is architecturally feasible |
-| **Blocked** | Fundamental incompatibility — no feasible integration path even with a bridge or adapter layer | The two libraries cannot exchange data in any documented way; requires replacing one of the libraries |
+| Verdict       | Meaning                                                                                        | Required Evidence                                                                                              |
+|---------------|------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
+| **Verified**  | APIs demonstrably connect — matching types, documented bridge, or shared protocol              | At least one export from Skill A is consumable by an API in Skill B (or vice versa) with compatible types      |
+| **Plausible** | Compatible types or protocols but no documented integration path                               | Both libraries operate in compatible domains with compatible data formats, but no direct API bridge is evident |
+| **Risky**     | Type mismatch, protocol gap, or language boundary requiring a bridge                           | A clear gap exists (e.g., TypeScript↔Rust FFI needed) but a workaround is architecturally feasible             |
+| **Blocked**   | Fundamental incompatibility — no feasible integration path even with a bridge or adapter layer | The two libraries cannot exchange data in any documented way; requires replacing one of the libraries          |
 
 ---
 
@@ -23,22 +23,22 @@ For each integration pair (Library A ↔ Library B):
 
 ### 1. Language Boundary Check
 
-| A Language | B Language | Assessment |
-|-----------|-----------|------------|
-| Same language | Same language | No boundary — direct API calls possible |
-| TypeScript ↔ Rust | Requires FFI, IPC, or WebSocket bridge | Check if a bridge library exists in the stack (e.g., Tauri provides JS↔Rust IPC) |
-| TypeScript ↔ Python | Requires REST/gRPC/WebSocket bridge | Typically not direct |
-| Any ↔ C/C++ | FFI available in most languages | Check for bindings |
+| A Language          | B Language                             | Assessment                                                                       |
+|---------------------|----------------------------------------|----------------------------------------------------------------------------------|
+| Same language       | Same language                          | No boundary — direct API calls possible                                          |
+| TypeScript ↔ Rust   | Requires FFI, IPC, or WebSocket bridge | Check if a bridge library exists in the stack (e.g., Tauri provides JS↔Rust IPC) |
+| TypeScript ↔ Python | Requires REST/gRPC/WebSocket bridge    | Typically not direct                                                             |
+| Any ↔ C/C++         | FFI available in most languages        | Check for bindings                                                               |
 
 ### 2. Protocol Compatibility Check
 
-| A Protocol | B Protocol | Assessment |
-|-----------|-----------|------------|
-| In-process (same runtime) | In-process | Direct — function calls |
-| HTTP/REST | HTTP/REST | Network bridge — compatible if API endpoints match |
-| WebSocket | WebSocket | Real-time bridge — check message format compatibility |
-| Shared filesystem | Shared filesystem | Async — check format compatibility |
-| Embedded database | Embedded database | May conflict on lock files — check for multi-writer support |
+| A Protocol                | B Protocol        | Assessment                                                  |
+|---------------------------|-------------------|-------------------------------------------------------------|
+| In-process (same runtime) | In-process        | Direct — function calls                                     |
+| HTTP/REST                 | HTTP/REST         | Network bridge — compatible if API endpoints match          |
+| WebSocket                 | WebSocket         | Real-time bridge — check message format compatibility       |
+| Shared filesystem         | Shared filesystem | Async — check format compatibility                          |
+| Embedded database         | Embedded database | May conflict on lock files — check for multi-writer support |
 
 ### 3. Type Compatibility Check
 

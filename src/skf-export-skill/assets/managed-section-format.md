@@ -16,27 +16,27 @@
 
 ## Platform Target Files
 
-| Platform | Flag Value | Target File |
-|----------|-----------|-------------|
-| Copilot | `copilot` (default) | AGENTS.md |
-| Claude | `claude` | CLAUDE.md |
-| Cursor | `cursor` | .cursorrules |
+| Platform | Flag Value          | Target File  |
+|----------|---------------------|--------------|
+| Copilot  | `copilot` (default) | AGENTS.md    |
+| Claude   | `claude`            | CLAUDE.md    |
+| Cursor   | `cursor`            | .cursorrules |
 
 ## IDE → Platform Mapping (config.yaml `ides` list)
 
 The installer writes installer-specific IDE identifiers to `config.yaml` under the `ides` key (not platform values). Any workflow that rebuilds platform context files from `config.yaml` MUST map each entry to a platform before looking up its target file.
 
-| config.yaml IDE value | Platform | Target File | Rationale |
-|----------------------|----------|-------------|-----------|
-| `claude-code` | `claude` | CLAUDE.md | native — reads `CLAUDE.md` and `.claude/skills/` |
-| `cursor` | `cursor` | .cursorrules | native — reads `.cursorrules` and `.cursor/skills/` |
-| `github-copilot` | `copilot` | AGENTS.md | native — reads `AGENTS.md` and `.agents/skills/` |
-| `codex` | `copilot` | AGENTS.md | OpenAI Codex reads `AGENTS.md` (same convention as copilot) |
-| `cline` | `copilot` | AGENTS.md | uses `AGENTS.md` as fallback context file |
-| `roo` | `copilot` | AGENTS.md | uses `AGENTS.md` as fallback context file |
-| `windsurf` | `copilot` | AGENTS.md | uses `AGENTS.md` as fallback context file |
-| `other` | `copilot` | AGENTS.md | generic AGENTS.md fallback |
-| _(any unknown value)_ | `copilot` | AGENTS.md | warn: "Unknown IDE '{value}' in config.yaml — defaulting to copilot" |
+| config.yaml IDE value | Platform  | Target File  | Rationale                                                            |
+|-----------------------|-----------|--------------|----------------------------------------------------------------------|
+| `claude-code`         | `claude`  | CLAUDE.md    | native — reads `CLAUDE.md` and `.claude/skills/`                     |
+| `cursor`              | `cursor`  | .cursorrules | native — reads `.cursorrules` and `.cursor/skills/`                  |
+| `github-copilot`      | `copilot` | AGENTS.md    | native — reads `AGENTS.md` and `.agents/skills/`                     |
+| `codex`               | `copilot` | AGENTS.md    | OpenAI Codex reads `AGENTS.md` (same convention as copilot)          |
+| `cline`               | `copilot` | AGENTS.md    | uses `AGENTS.md` as fallback context file                            |
+| `roo`                 | `copilot` | AGENTS.md    | uses `AGENTS.md` as fallback context file                            |
+| `windsurf`            | `copilot` | AGENTS.md    | uses `AGENTS.md` as fallback context file                            |
+| `other`               | `copilot` | AGENTS.md    | generic AGENTS.md fallback                                           |
+| _(any unknown value)_ | `copilot` | AGENTS.md    | warn: "Unknown IDE '{value}' in config.yaml — defaulting to copilot" |
 
 **Deduplication:** When multiple IDE entries map to the same platform (e.g. `codex` and `cline` both → `copilot`), deduplicate so each platform is processed exactly once. Report the deduplication to the user.
 

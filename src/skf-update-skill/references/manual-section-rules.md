@@ -27,12 +27,12 @@ It must be preserved during any update operation.
 
 ### Conflict Types
 
-| Conflict | Severity | Resolution |
-|----------|----------|------------|
-| Regenerated content overlaps [MANUAL] position | HIGH | Present both versions, user chooses |
-| Parent section deleted | WARNING | Flag orphaned [MANUAL], user decides keep/remove |
-| [MANUAL] references deleted export | MEDIUM | Flag stale reference, suggest update |
-| New export inserted adjacent to [MANUAL] | LOW | Auto-resolve: place new content before [MANUAL] block |
+| Conflict                                       | Severity | Resolution                                            |
+|------------------------------------------------|----------|-------------------------------------------------------|
+| Regenerated content overlaps [MANUAL] position | HIGH     | Present both versions, user chooses                   |
+| Parent section deleted                         | WARNING  | Flag orphaned [MANUAL], user decides keep/remove      |
+| [MANUAL] references deleted export             | MEDIUM   | Flag stale reference, suggest update                  |
+| New export inserted adjacent to [MANUAL]       | LOW      | Auto-resolve: place new content before [MANUAL] block |
 
 ### Preservation Algorithm
 

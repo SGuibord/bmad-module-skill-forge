@@ -2,29 +2,29 @@
 
 ## Required Fields
 
-| Field | Type | Constraint | Description |
-|-------|------|------------|-------------|
-| name | string | kebab-case `[a-z0-9-]+` | Unique skill identifier |
-| version | string | Semantic version (`X.Y.Z` or `X.Y.Z-prerelease`) | Auto-detect from source (see Version Detection below), fall back to `1.0.0` |
-| source_repo | string | GitHub URL or local path | Repository or project root (optional when `source_type: "docs-only"`) |
-| language | string | Recognized language | Primary programming language |
-| scope | object | See Scope Object below | Boundary definition |
-| description | string | 1-3 sentences | What the skill covers |
-| forge_tier | string | `Quick` / `Forge` / `Forge+` / `Deep` | Inherited from forge-tier.yaml (Title Case) |
-| created | string | ISO date `YYYY-MM-DD` | Generation date |
-| created_by | string | user_name from config | Who generated the brief |
+| Field       | Type   | Constraint                                       | Description                                                                 |
+|-------------|--------|--------------------------------------------------|-----------------------------------------------------------------------------|
+| name        | string | kebab-case `[a-z0-9-]+`                          | Unique skill identifier                                                     |
+| version     | string | Semantic version (`X.Y.Z` or `X.Y.Z-prerelease`) | Auto-detect from source (see Version Detection below), fall back to `1.0.0` |
+| source_repo | string | GitHub URL or local path                         | Repository or project root (optional when `source_type: "docs-only"`)       |
+| language    | string | Recognized language                              | Primary programming language                                                |
+| scope       | object | See Scope Object below                           | Boundary definition                                                         |
+| description | string | 1-3 sentences                                    | What the skill covers                                                       |
+| forge_tier  | string | `Quick` / `Forge` / `Forge+` / `Deep`            | Inherited from forge-tier.yaml (Title Case)                                 |
+| created     | string | ISO date `YYYY-MM-DD`                            | Generation date                                                             |
+| created_by  | string | user_name from config                            | Who generated the brief                                                     |
 
 ## Optional Fields
 
-| Field | Type | Constraint | Description |
-|-------|------|------------|-------------|
-| source_type | string | `source` or `docs-only` | Default `source`. When `docs-only`: `source_repo` optional, `doc_urls` required |
-| doc_urls | array | `{url, label}` objects | Documentation URLs for T3 content. Required when `source_type: "docs-only"` |
-| `scripts_intent` | string | `detect` / `none` / free-text | Describes whether scripts should be extracted. Values: `detect` (auto-detect from source — default when absent), `none` (skip scripts), or a free-text description of expected scripts (e.g., "CLI validation tools in bin/"). |
-| `assets_intent` | string | `detect` / `none` / free-text | Describes whether assets should be extracted. Values: `detect` (auto-detect from source — default when absent), `none` (skip assets), or a free-text description of expected assets (e.g., "JSON schemas in schemas/"). |
-| `target_version` | string | Semantic version (`X.Y.Z` or `X.Y.Z-prerelease`) | User-specified target version. When present, overrides auto-detection and becomes the skill's version. Recommended for docs-only skills where auto-detection is unavailable. |
-| `source_authority` | string | `official` / `community` / `internal` | Default `community`. Set to `official` only when the skill creator is the library maintainer. Forced to `community` when `source_type: "docs-only"`. |
-| `source_ref` | string | Git ref (tag/branch/HEAD) | Resolved git ref used for source access. Set automatically during tag resolution — do not set manually. |
+| Field              | Type   | Constraint                                       | Description                                                                                                                                                                                                                    |
+|--------------------|--------|--------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| source_type        | string | `source` or `docs-only`                          | Default `source`. When `docs-only`: `source_repo` optional, `doc_urls` required                                                                                                                                                |
+| doc_urls           | array  | `{url, label}` objects                           | Documentation URLs for T3 content. Required when `source_type: "docs-only"`                                                                                                                                                    |
+| `scripts_intent`   | string | `detect` / `none` / free-text                    | Describes whether scripts should be extracted. Values: `detect` (auto-detect from source — default when absent), `none` (skip scripts), or a free-text description of expected scripts (e.g., "CLI validation tools in bin/"). |
+| `assets_intent`    | string | `detect` / `none` / free-text                    | Describes whether assets should be extracted. Values: `detect` (auto-detect from source — default when absent), `none` (skip assets), or a free-text description of expected assets (e.g., "JSON schemas in schemas/").        |
+| `target_version`   | string | Semantic version (`X.Y.Z` or `X.Y.Z-prerelease`) | User-specified target version. When present, overrides auto-detection and becomes the skill's version. Recommended for docs-only skills where auto-detection is unavailable.                                                   |
+| `source_authority` | string | `official` / `community` / `internal`            | Default `community`. Set to `official` only when the skill creator is the library maintainer. Forced to `community` when `source_type: "docs-only"`.                                                                           |
+| `source_ref`       | string | Git ref (tag/branch/HEAD)                        | Resolved git ref used for source access. Set automatically during tag resolution — do not set manually.                                                                                                                        |
 
 When `source_type: "docs-only"`:
 - `source_repo` becomes optional (set to doc site URL for reference)

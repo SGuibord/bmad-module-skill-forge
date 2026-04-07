@@ -23,13 +23,13 @@ previousWorkflow: 'create-skill'
 **Date:** {date}
 **Overall Drift Score:** {drift_score}
 
-| Category | Count |
-|----------|-------|
-| CRITICAL | |
-| HIGH | |
-| MEDIUM | |
-| LOW | |
-| **Total** | |
+| Category  | Count |
+|-----------|-------|
+| CRITICAL  |       |
+| HIGH      |       |
+| MEDIUM    |       |
+| LOW       |       |
+| **Total** |       |
 
 ---
 
