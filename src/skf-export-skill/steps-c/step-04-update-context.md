@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-05-token-report.md'
-managedSectionData: '../data/managed-section-format.md'
+managedSectionData: '../assets/managed-section-format.md'
 ---
 
 # Step 4: Update Context

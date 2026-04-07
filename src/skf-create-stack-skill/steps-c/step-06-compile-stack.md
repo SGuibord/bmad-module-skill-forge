@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-07-generate-output.md'
-stackSkillTemplate: '../data/stack-skill-template.md'
+stackSkillTemplate: '../assets/stack-skill-template.md'
 ---
 
 # Step 6: Compile Stack Skill

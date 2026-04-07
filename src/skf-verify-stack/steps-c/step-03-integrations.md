@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-04-requirements.md'
-integrationRulesData: '../data/integration-verification-rules.md'
+integrationRulesData: '../references/integration-verification-rules.md'
 outputFile: '{forge_data_folder}/feasibility-report-{project_name}.md'
 ---
 

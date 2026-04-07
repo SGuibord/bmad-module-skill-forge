@@ -1,6 +1,6 @@
 ---
 returnToStep: './step-03-extract.md'
-extractionPatternsData: '../data/extraction-patterns.md'
+extractionPatternsData: '../references/extraction-patterns.md'
 ---
 
 # Step 3d: Component Library Extraction

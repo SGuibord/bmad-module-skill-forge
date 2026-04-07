@@ -1,7 +1,7 @@
 ---
 nextStepFile: './step-02-re-index.md'
 outputFile: '{forge_version}/drift-report-{timestamp}.md'
-templateFile: '../data/drift-report-template.md'
+templateFile: '../assets/drift-report-template.md'
 ---
 
 # Step 1: Initialize Audit

@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-04-improvements.md'
-refinementRulesData: '../data/refinement-rules.md'
+refinementRulesData: '../references/refinement-rules.md'
 ---
 
 # Step 3: Issue Detection

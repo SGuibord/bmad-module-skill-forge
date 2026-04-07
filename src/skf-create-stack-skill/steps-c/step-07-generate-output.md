@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-08-validate.md'
-stackSkillTemplate: '../data/stack-skill-template.md'
+stackSkillTemplate: '../assets/stack-skill-template.md'
 ---
 
 # Step 7: Generate Output Files

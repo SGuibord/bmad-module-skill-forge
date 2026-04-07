@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-02-gap-analysis.md'
-refinementRulesData: '../data/refinement-rules.md'
+refinementRulesData: '../references/refinement-rules.md'
 ---
 
 # Step 1: Initialize Refinement

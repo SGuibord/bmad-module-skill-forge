@@ -2,8 +2,8 @@
 nextStepFile: '../../shared/health-check.md'
 
 outputFile: '{forge_data_folder}/{skill_name}/test-report-{skill_name}.md'
-scoringRulesFile: '../data/scoring-rules.md'
-outputFormatsFile: '../data/output-section-formats.md'
+scoringRulesFile: '../references/scoring-rules.md'
+outputFormatsFile: '../assets/output-section-formats.md'
 ---
 
 # Step 6: Gap Report

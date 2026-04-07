@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-05-validate.md'
-skillTemplateData: '../data/skill-template.md'
+skillTemplateData: '../assets/skill-template.md'
 ---
 
 # Step 4: Compile

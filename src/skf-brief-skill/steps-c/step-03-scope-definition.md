@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-04-confirm-brief.md'
-scopeTemplatesFile: '../data/scope-templates.md'
+scopeTemplatesFile: '../assets/scope-templates.md'
 advancedElicitationSkill: '/bmad-advanced-elicitation'
 partyModeSkill: '/bmad-party-mode'
 ---

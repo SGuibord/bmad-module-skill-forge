@@ -1,8 +1,8 @@
 ---
 nextStepFile: './step-04-coherence-check.md'
 outputFile: '{forge_data_folder}/{skill_name}/test-report-{skill_name}.md'
-scoringRulesFile: '../data/scoring-rules.md'
-sourceAccessProtocol: '../data/source-access-protocol.md'
+scoringRulesFile: '../references/scoring-rules.md'
+sourceAccessProtocol: '../references/source-access-protocol.md'
 ---
 
 # Step 3: Coverage Check

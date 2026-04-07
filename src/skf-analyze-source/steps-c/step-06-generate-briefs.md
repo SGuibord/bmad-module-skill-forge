@@ -1,6 +1,6 @@
 ---
 outputFile: '{forge_data_folder}/analyze-source-report-{project_name}.md'
-schemaFile: '../data/skill-brief-schema.md'
+schemaFile: '../assets/skill-brief-schema.md'
 nextStepFile: '../../shared/health-check.md'
 ---
 

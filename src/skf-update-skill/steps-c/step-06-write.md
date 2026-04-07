@@ -161,8 +161,8 @@ Per `knowledge/version-paths.md` "Writing Workflows (CS, QS, SS, US)", update-sk
 
 Regenerate the snippet using the format from the matching template file:
 
-- For single skills: `create-skill/data/skill-sections.md` (pipe-delimited indexed format)
-- For stack skills: `create-stack-skill/data/stack-skill-template.md`
+- For single skills: `create-skill/assets/skill-sections.md` (pipe-delimited indexed format)
+- For stack skills: `create-stack-skill/assets/stack-skill-template.md`
 
 Use the **flat legacy form** for the `root:` path in the draft snippet: `root: skills/{skill-name}/`. The platform-specific prefix (`.claude/skills/`, `.cursor/skills/`, `.agents/skills/`) is applied later by `export-skill` step-03 when the skill is exported. Do not choose a platform prefix in update-skill — that is an export-time decision that depends on config.yaml.
 

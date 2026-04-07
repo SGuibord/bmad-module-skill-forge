@@ -56,7 +56,7 @@ async function runTests() {
   // ============================================================
   console.log(`${colors.yellow}Test Suite 1: VS Frontmatter Field Consistency${colors.reset}\n`);
 
-  const vsTemplate = await readFile(path.join(srcDir, 'skf-verify-stack/data/feasibility-report-template.md'));
+  const vsTemplate = await readFile(path.join(srcDir, 'skf-verify-stack/assets/feasibility-report-template.md'));
   const vsStep06 = await readFile(path.join(srcDir, 'skf-verify-stack/steps-c/step-06-report.md'));
   const vsStep05 = await readFile(path.join(srcDir, 'skf-verify-stack/steps-c/step-05-synthesize.md'));
 
@@ -167,7 +167,7 @@ async function runTests() {
   // ============================================================
   console.log(`${colors.yellow}Test Suite 3: Compose-Mode Confidence Tier Consistency${colors.reset}\n`);
 
-  const composeModeRules = await readFile(path.join(srcDir, 'skf-create-stack-skill/data/compose-mode-rules.md'));
+  const composeModeRules = await readFile(path.join(srcDir, 'skf-create-stack-skill/references/compose-mode-rules.md'));
   const cssStep05 = await readFile(path.join(srcDir, 'skf-create-stack-skill/steps-c/step-05-detect-integrations.md'));
 
   // Compose-mode-rules must cover all pairwise cases

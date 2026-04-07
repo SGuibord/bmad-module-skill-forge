@@ -1,5 +1,5 @@
 ---
-tierRulesData: '../data/tier-rules.md'
+tierRulesData: '../references/tier-rules.md'
 nextStepFile: '../../shared/health-check.md'
 ---
 

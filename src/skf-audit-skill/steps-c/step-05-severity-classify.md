@@ -1,7 +1,7 @@
 ---
 nextStepFile: './step-06-report.md'
 outputFile: '{forge_version}/drift-report-{timestamp}.md'
-severityRulesFile: '../data/severity-rules.md'
+severityRulesFile: '../references/severity-rules.md'
 ---
 
 # Step 5: Severity Classification

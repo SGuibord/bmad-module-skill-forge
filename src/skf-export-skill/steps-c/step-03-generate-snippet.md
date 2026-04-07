@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-04-update-context.md'
-snippetFormatData: '../data/snippet-format.md'
+snippetFormatData: '../assets/snippet-format.md'
 ---
 
 # Step 3: Generate Snippet

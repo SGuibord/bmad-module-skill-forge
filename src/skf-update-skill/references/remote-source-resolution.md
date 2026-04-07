@@ -6,7 +6,7 @@ If `source_root` (from metadata.json) is a remote URL (GitHub URL or owner/repo 
 
 1. **Check `git` availability:** Verify `git` is functional (`git --version`). If `git` is not available, skip to the fallback warning below.
 
-2. **Resolve source ref:** Read `source_ref` from the existing `metadata.json`. If the user provided a new `target_version`, resolve its tag first (using the Tag Resolution algorithm in `create-skill/data/source-resolution-protocols.md`).
+2. **Resolve source ref:** Read `source_ref` from the existing `metadata.json`. If the user provided a new `target_version`, resolve its tag first (using the Tag Resolution algorithm in `create-skill/references/source-resolution-protocols.md`).
 
 3. **Ephemeral sparse clone:** Clone only the changed files from the change manifest to a system temp path. Note: at this point in the flow, `{source_root}` is known to be a remote URL (the local-path case was already handled above).
 

@@ -1,9 +1,9 @@
 ---
 nextStepFile: './step-04-merge.md'
-extractionPatternsData: '../../skf-create-skill/data/extraction-patterns.md'
-extractionPatternsTracingData: '../../skf-create-skill/data/extraction-patterns-tracing.md'
-remoteSourceResolutionData: '../data/remote-source-resolution.md'
-tierDegradationRulesData: '../../skf-create-skill/data/tier-degradation-rules.md'
+extractionPatternsData: '../../skf-create-skill/references/extraction-patterns.md'
+extractionPatternsTracingData: '../../skf-create-skill/references/extraction-patterns-tracing.md'
+remoteSourceResolutionData: '../references/remote-source-resolution.md'
+tierDegradationRulesData: '../../skf-create-skill/references/tier-degradation-rules.md'
 ---
 
 # Step 3: Re-Extract Changed Exports

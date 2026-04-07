@@ -1,7 +1,7 @@
 ---
 nextStepFile: './step-03-report.md'
 versionPathsKnowledge: '../../knowledge/version-paths.md'
-managedSectionLogic: '../../skf-export-skill/data/managed-section-format.md'
+managedSectionLogic: '../../skf-export-skill/assets/managed-section-format.md'
 ---
 
 # Step 2: Execute Drop

@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-09-report.md'
-stackSkillTemplate: '../data/stack-skill-template.md'
+stackSkillTemplate: '../assets/stack-skill-template.md'
 ---
 
 # Step 8: Validate Output

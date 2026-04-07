@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-01b-ccc-index.md'
-tierRulesData: '../data/tier-rules.md'
+tierRulesData: '../references/tier-rules.md'
 ---
 
 # Step 1: Detect Tools and Determine Tier

@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-05-compile.md'
-refinementRulesData: '../data/refinement-rules.md'
+refinementRulesData: '../references/refinement-rules.md'
 ---
 
 # Step 4: Improvement Detection

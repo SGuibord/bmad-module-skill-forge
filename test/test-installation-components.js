@@ -187,9 +187,9 @@ async function runTests() {
   console.log('');
 
   // ============================================================
-  // Test 5: Step-File Chain and Data File Validation
+  // Test 5: Step-File Chain and Resource File Validation
   // ============================================================
-  console.log(`${colors.yellow}Test Suite 5: Step-File and Data File Validation${colors.reset}\n`);
+  console.log(`${colors.yellow}Test Suite 5: Step-File and Resource File Validation${colors.reset}\n`);
 
   const stepFileChains = {
     'setup-forge': {
@@ -200,7 +200,7 @@ async function runTests() {
         'step-03-auto-index.md',
         'step-04-report.md',
       ],
-      data: ['tier-rules.md'],
+      references: ['tier-rules.md'],
     },
     'analyze-source': {
       steps: [
@@ -212,7 +212,8 @@ async function runTests() {
         'step-05-recommend.md',
         'step-06-generate-briefs.md',
       ],
-      data: ['skill-brief-schema.md', 'unit-detection-heuristics.md'],
+      assets: ['skill-brief-schema.md'],
+      references: ['unit-detection-heuristics.md'],
     },
     'brief-skill': {
       steps: [
@@ -222,7 +223,7 @@ async function runTests() {
         'step-04-confirm-brief.md',
         'step-05-write-brief.md',
       ],
-      data: ['scope-templates.md', 'skill-brief-schema.md'],
+      assets: ['scope-templates.md', 'skill-brief-schema.md'],
     },
     'create-skill': {
       steps: [
@@ -238,11 +239,10 @@ async function runTests() {
         'step-07-generate-artifacts.md',
         'step-08-report.md',
       ],
-      data: [
-        'compile-assembly-rules.md',
+      assets: ['compile-assembly-rules.md', 'skill-sections.md'],
+      references: [
         'extraction-patterns.md',
         'extraction-patterns-tracing.md',
-        'skill-sections.md',
         'source-resolution-protocols.md',
         'tier-degradation-rules.md',
       ],
@@ -256,7 +256,8 @@ async function runTests() {
         'step-05-validate.md',
         'step-06-write.md',
       ],
-      data: ['registry-resolution.md', 'skill-template.md'],
+      assets: ['skill-template.md'],
+      references: ['registry-resolution.md'],
     },
     'create-stack-skill': {
       steps: [
@@ -270,7 +271,8 @@ async function runTests() {
         'step-08-validate.md',
         'step-09-report.md',
       ],
-      data: ['integration-patterns.md', 'manifest-patterns.md', 'stack-skill-template.md', 'compose-mode-rules.md'],
+      assets: ['stack-skill-template.md'],
+      references: ['integration-patterns.md', 'manifest-patterns.md', 'compose-mode-rules.md'],
     },
     'update-skill': {
       steps: [
@@ -282,7 +284,7 @@ async function runTests() {
         'step-06-write.md',
         'step-07-report.md',
       ],
-      data: ['manual-section-rules.md', 'merge-conflict-rules.md', 'remote-source-resolution.md'],
+      references: ['manual-section-rules.md', 'merge-conflict-rules.md', 'remote-source-resolution.md'],
     },
     'audit-skill': {
       steps: [
@@ -293,7 +295,8 @@ async function runTests() {
         'step-05-severity-classify.md',
         'step-06-report.md',
       ],
-      data: ['drift-report-template.md', 'severity-rules.md'],
+      assets: ['drift-report-template.md'],
+      references: ['severity-rules.md'],
     },
     'test-skill': {
       steps: [
@@ -305,7 +308,8 @@ async function runTests() {
         'step-05-score.md',
         'step-06-report.md',
       ],
-      data: ['output-section-formats.md', 'scoring-rules.md', 'source-access-protocol.md'],
+      assets: ['output-section-formats.md'],
+      references: ['scoring-rules.md', 'source-access-protocol.md'],
     },
     'verify-stack': {
       steps: [
@@ -316,7 +320,8 @@ async function runTests() {
         'step-05-synthesize.md',
         'step-06-report.md',
       ],
-      data: ['coverage-patterns.md', 'feasibility-report-template.md', 'integration-verification-rules.md'],
+      assets: ['feasibility-report-template.md'],
+      references: ['coverage-patterns.md', 'integration-verification-rules.md'],
     },
     'refine-architecture': {
       steps: [
@@ -327,7 +332,7 @@ async function runTests() {
         'step-05-compile.md',
         'step-06-report.md',
       ],
-      data: ['refinement-rules.md'],
+      references: ['refinement-rules.md'],
     },
     'export-skill': {
       steps: [
@@ -338,15 +343,13 @@ async function runTests() {
         'step-05-token-report.md',
         'step-06-summary.md',
       ],
-      data: ['managed-section-format.md', 'snippet-format.md'],
+      assets: ['managed-section-format.md', 'snippet-format.md'],
     },
     'rename-skill': {
       steps: ['step-01-select.md', 'step-02-execute.md', 'step-03-report.md'],
-      data: [],
     },
     'drop-skill': {
       steps: ['step-01-select.md', 'step-02-execute.md', 'step-03-report.md'],
-      data: [],
     },
   };
 
@@ -356,10 +359,15 @@ async function runTests() {
       const exists = await pathExists(stepPath);
       assert(exists, `${workflow}/steps-c/${step} exists`, `Missing step file: ${stepPath}`);
     }
-    for (const dataFile of files.data) {
-      const dataPath = path.join(projectRoot, `src/skf-${workflow}/data/${dataFile}`);
-      const exists = await pathExists(dataPath);
-      assert(exists, `${workflow}/data/${dataFile} exists`, `Missing data file: ${dataPath}`);
+    for (const refFile of files.references || []) {
+      const refPath = path.join(projectRoot, `src/skf-${workflow}/references/${refFile}`);
+      const exists = await pathExists(refPath);
+      assert(exists, `${workflow}/references/${refFile} exists`, `Missing reference file: ${refPath}`);
+    }
+    for (const assetFile of files.assets || []) {
+      const assetPath = path.join(projectRoot, `src/skf-${workflow}/assets/${assetFile}`);
+      const exists = await pathExists(assetPath);
+      assert(exists, `${workflow}/assets/${assetFile} exists`, `Missing asset file: ${assetPath}`);
     }
   }
 

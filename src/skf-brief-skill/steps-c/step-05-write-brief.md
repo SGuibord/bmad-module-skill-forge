@@ -1,5 +1,5 @@
 ---
-briefSchemaFile: '../data/skill-brief-schema.md'
+briefSchemaFile: '../assets/skill-brief-schema.md'
 nextStepFile: '../../shared/health-check.md'
 ---
 

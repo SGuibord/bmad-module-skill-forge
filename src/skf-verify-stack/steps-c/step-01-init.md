@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-02-coverage.md'
-reportTemplate: '../data/feasibility-report-template.md'
+reportTemplate: '../assets/feasibility-report-template.md'
 outputFile: '{forge_data_folder}/feasibility-report-{project_name}.md'
 ---
 

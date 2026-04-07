@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-02-detect-changes.md'
-manualSectionRulesFile: '../data/manual-section-rules.md'
+manualSectionRulesFile: '../references/manual-section-rules.md'
 ---
 
 # Step 1: Initialize Update

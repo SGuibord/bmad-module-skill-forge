@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-03-integrations.md'
-coveragePatternsData: '../data/coverage-patterns.md'
+coveragePatternsData: '../references/coverage-patterns.md'
 outputFile: '{forge_data_folder}/feasibility-report-{project_name}.md'
 ---
 

@@ -1,10 +1,10 @@
 ---
 nextStepFile: './step-03b-fetch-temporal.md'
 componentExtractionStepFile: './step-03d-component-extraction.md'
-extractionPatternsData: '../data/extraction-patterns.md'
-extractionPatternsTracingData: '../data/extraction-patterns-tracing.md'
-tierDegradationRulesData: '../data/tier-degradation-rules.md'
-sourceResolutionData: '../data/source-resolution-protocols.md'
+extractionPatternsData: '../references/extraction-patterns.md'
+extractionPatternsTracingData: '../references/extraction-patterns-tracing.md'
+tierDegradationRulesData: '../references/tier-degradation-rules.md'
+sourceResolutionData: '../references/source-resolution-protocols.md'
 ---
 
 # Step 3: Extract

@@ -1,7 +1,7 @@
 ---
 nextStepFile: './step-06-compile-stack.md'
-integrationPatterns: '../data/integration-patterns.md'
-composeModeRules: '../data/compose-mode-rules.md'
+integrationPatterns: '../references/integration-patterns.md'
+composeModeRules: '../references/compose-mode-rules.md'
 ---
 
 # Step 5: Detect Integrations

@@ -1,7 +1,7 @@
 ---
 nextStepFile: './step-05-validate.md'
-manualSectionRulesFile: '../data/manual-section-rules.md'
-mergeConflictRulesFile: '../data/merge-conflict-rules.md'
+manualSectionRulesFile: '../references/manual-section-rules.md'
+mergeConflictRulesFile: '../references/merge-conflict-rules.md'
 ---
 
 # Step 4: Merge

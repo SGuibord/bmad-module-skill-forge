@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-02-ecosystem-check.md'
-registryResolutionData: '../data/registry-resolution.md'
+registryResolutionData: '../references/registry-resolution.md'
 ---
 
 # Step 1: Resolve Target

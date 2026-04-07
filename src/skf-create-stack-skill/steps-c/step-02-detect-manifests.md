@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-03-rank-and-confirm.md'
-manifestPatterns: '../data/manifest-patterns.md'
+manifestPatterns: '../references/manifest-patterns.md'
 ---
 
 # Step 2: Detect Manifests

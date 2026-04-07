@@ -1,7 +1,7 @@
 ---
 nextStepFile: './step-06-validate.md'
-skillSectionsData: '../data/skill-sections.md'
-assemblyRulesData: '../data/compile-assembly-rules.md'
+skillSectionsData: '../assets/skill-sections.md'
+assemblyRulesData: '../assets/compile-assembly-rules.md'
 ---
 
 # Step 5: Compile

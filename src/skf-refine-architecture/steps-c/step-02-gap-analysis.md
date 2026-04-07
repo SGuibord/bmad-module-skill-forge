@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-03-issue-detection.md'
-refinementRulesData: '../data/refinement-rules.md'
+refinementRulesData: '../references/refinement-rules.md'
 ---
 
 # Step 2: Gap Analysis

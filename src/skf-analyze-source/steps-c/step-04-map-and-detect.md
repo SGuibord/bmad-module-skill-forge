@@ -1,7 +1,7 @@
 ---
 nextStepFile: './step-05-recommend.md'
 outputFile: '{forge_data_folder}/analyze-source-report-{project_name}.md'
-heuristicsFile: '../data/unit-detection-heuristics.md'
+heuristicsFile: '../references/unit-detection-heuristics.md'
 ---
 
 # Step 4: Map Exports and Detect Integrations

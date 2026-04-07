@@ -1,7 +1,7 @@
 ---
 nextStepFile: './step-03-identify-units.md'
 outputFile: '{forge_data_folder}/analyze-source-report-{project_name}.md'
-heuristicsFile: '../data/unit-detection-heuristics.md'
+heuristicsFile: '../references/unit-detection-heuristics.md'
 ---
 
 # Step 2: Scan Project
