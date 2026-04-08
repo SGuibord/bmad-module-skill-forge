@@ -8,40 +8,11 @@ nextStepFile: './step-05-detect-integrations.md'
 
 For each confirmed dependency, extract key exports, usage patterns, and API surface documentation using tier-dependent tools in parallel.
 
-## MANDATORY EXECUTION RULES (READ FIRST):
+## Rules
 
-### Universal Rules:
-
-- 📖 CRITICAL: Read the complete step file before taking any action
-- ⚙️ TOOL/SUBPROCESS FALLBACK: If any instruction references a subprocess, subagent, or tool you do not have access to, you MUST still achieve the outcome in your main context thread
-- ✅ YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `{communication_language}`
-
-### Role Reinforcement:
-
-- ✅ You are a dependency analyst operating in Ferris Architect mode
-- ✅ Zero hallucination — only extract what exists in actual source code
-- ✅ Every export and pattern must cite actual file:line references
-
-### Step-Specific Rules:
-
-- 🎯 Extract per-library using Pattern 4 (parallel): In Claude Code, use multiple parallel Agent tool calls or `run_in_background: true`. In Cursor, use parallel requests (IDE-dependent). In CLI, use `xargs -P` or background processes. See [knowledge/tool-resolution.md](../../knowledge/tool-resolution.md)
-- 💬 Each subprocess returns structured extraction, not raw file contents
-- 🚫 FORBIDDEN to analyze cross-library integrations — that is step 05
-- ⚙️ If parallel subprocess unavailable, extract libraries sequentially in main thread
-
-## EXECUTION PROTOCOLS:
-
-- 🎯 Launch parallel extraction per confirmed library
-- 💾 Store per_library_extractions with confidence tier labels
-- 📖 Report extraction summary before auto-proceeding
-- 🚫 FORBIDDEN to proceed if zero libraries successfully extracted
-
-## CONTEXT BOUNDARIES:
-
-- From step 03: confirmed_dependencies[] (user-approved scope)
-- From step 01: forge_tier, available_tools
-- This step produces: per_library_extractions[] per library
-- Each extraction includes: exports, patterns, confidence tier
+- Extract per-library using subprocess Pattern 4 (parallel) when available; if unavailable, extract sequentially
+- Each subprocess returns structured extraction, not raw file contents
+- Do not analyze cross-library integrations (Step 05)
 
 ## MANDATORY SEQUENCE
 
@@ -185,25 +156,3 @@ For each library extraction:
 
 Load, read the full file and then execute `{nextStepFile}`.
 
----
-
-## 🚨 SYSTEM SUCCESS/FAILURE METRICS
-
-### ✅ SUCCESS:
-
-- All confirmed libraries have extraction attempted
-- Extractions cite actual file:line references
-- Confidence tiers correctly assigned per extraction method
-- Partial failures handled gracefully (skip library, continue)
-- Extraction summary displayed with accurate counts
-- Auto-proceeded to step 05
-
-### ❌ SYSTEM FAILURE:
-
-- Fabricating exports not found in source code
-- Not assigning confidence tiers to extractions
-- Halting on single library failure (should degrade gracefully)
-- Analyzing cross-library integrations (step 05's job)
-- Returning raw file contents instead of structured extractions
-
-**Master Rule:** Extract per-library only. Every export must trace to actual code. Degrade gracefully on individual failures.

@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-03-issue-detection.md'
-refinementRulesData: '../references/refinement-rules.md'
+refinementRulesData: 'references/refinement-rules.md'
 ---
 
 # Step 2: Gap Analysis
@@ -9,42 +9,10 @@ refinementRulesData: '../references/refinement-rules.md'
 
 Find undocumented integration paths — library pairs that have compatible APIs (from the generated skills) but are not described in the architecture document. For each gap, document what APIs connect and propose an architecture section describing the integration.
 
-## MANDATORY EXECUTION RULES (READ FIRST):
+## Rules
 
-### Universal Rules:
-
-- 📖 CRITICAL: Read the complete step file before taking any action
-- 🔄 CRITICAL: When loading next step with 'C', ensure entire file is read
-- ⚙️ TOOL/SUBPROCESS FALLBACK: If any instruction references a subprocess, subagent, or tool you do not have access to, you MUST still achieve the outcome in your main context thread
-- ✅ YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `{communication_language}`
-
-### Role Reinforcement:
-
-- ✅ You are an architecture refinement analyst performing gap detection
-- ✅ Every gap must cite specific APIs from the generated skills — no speculation
-- ✅ Apply the gap detection rules from {refinementRulesData} strictly
-
-### Step-Specific Rules:
-
-- 🎯 Focus ONLY on undocumented integration paths (gaps)
-- 🚫 FORBIDDEN to detect contradictions or issues — that is Step 03
-- 🚫 FORBIDDEN to suggest capability expansions or improvements — that is Step 04
-- 💬 Every gap MUST include evidence citations from actual skill content
-
-## EXECUTION PROTOCOLS:
-
-- Load refinement rules for gap detection criteria
-- Extract integration claims from architecture document using prose co-mention analysis
-- Generate all possible library pairs and cross-reference against architecture
-- Append gap analysis findings as workflow state for Step 05
-- Only gap detection — no issue detection, no improvement suggestions
-
-## CONTEXT BOUNDARIES:
-
-- Available: Architecture document content, skill inventory from Step 01, SKILL.md and metadata.json files, refinement rules
-- Focus: Finding library pairs with compatible APIs that the architecture does not describe
-- Limits: Only detect gaps — do not flag issues or suggest improvements
-- Dependencies: Step 01 must have loaded skill inventory and validated architecture document
+- Focus only on undocumented integration paths (gaps) — do not detect contradictions (Step 03) or suggest expansions (Step 04)
+- Every gap must include evidence citations from actual skill content
 
 ## MANDATORY SEQUENCE
 
@@ -149,28 +117,3 @@ Store all gap findings as workflow state for Step 05. To ensure durability acros
 
 Load, read the full file and then execute `{nextStepFile}`.
 
----
-
-## 🚨 SYSTEM SUCCESS/FAILURE METRICS
-
-### ✅ SUCCESS:
-
-- Refinement rules loaded from {refinementRulesData}
-- Integration claims extracted from architecture document using prose co-mention analysis
-- All possible library pairs generated from skill inventory
-- Skill API surfaces loaded for cross-reference
-- Each gap includes evidence citations from actual skill content
-- Gap analysis results displayed with count and details
-- Gap findings stored as workflow state for Step 05
-- Auto-proceeded to step 03
-
-### ❌ SYSTEM FAILURE:
-
-- Inventing APIs not present in the actual skills
-- Flagging contradictions or issues (that is Step 03)
-- Suggesting capability improvements (that is Step 04)
-- Gaps without evidence citations from generated skills
-- Parsing Mermaid diagrams instead of using prose-based co-mention analysis
-- Hardcoded paths instead of frontmatter variables
-
-**Master Rule:** Skipping steps, optimizing sequences, or not following exact instructions is FORBIDDEN and constitutes SYSTEM FAILURE.

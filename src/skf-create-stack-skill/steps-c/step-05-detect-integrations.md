@@ -1,7 +1,7 @@
 ---
 nextStepFile: './step-06-compile-stack.md'
-integrationPatterns: '../references/integration-patterns.md'
-composeModeRules: '../references/compose-mode-rules.md'
+integrationPatterns: 'references/integration-patterns.md'
+composeModeRules: 'references/compose-mode-rules.md'
 ---
 
 # Step 5: Detect Integrations
@@ -10,40 +10,11 @@ composeModeRules: '../references/compose-mode-rules.md'
 
 Analyze co-import patterns between confirmed libraries to identify integration points — where and how libraries connect in this specific codebase.
 
-## MANDATORY EXECUTION RULES (READ FIRST):
+## Rules
 
-### Universal Rules:
-
-- 📖 CRITICAL: Read the complete step file before taking any action
-- ⚙️ TOOL/SUBPROCESS FALLBACK: If any instruction references a subprocess, subagent, or tool you do not have access to, you MUST still achieve the outcome in your main context thread
-- ✅ YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `{communication_language}`
-
-### Role Reinforcement:
-
-- ✅ You are an integration architect operating in Ferris Architect mode
-- ✅ Zero hallucination — only document integrations evidenced in actual code
-- ✅ Every integration pattern must cite co-import files with file:line references
-
-### Step-Specific Rules:
-
-- 🎯 Focus on detecting cross-library patterns using Pattern 1 (grep/search): In Claude Code, use the Grep tool or Bash with `rg`. In Cursor, use built-in search. In CLI, use `grep`/`rg` directly. See [knowledge/tool-resolution.md](../../knowledge/tool-resolution.md)
-- 🚫 FORBIDDEN to compile SKILL.md — that is step 06
-- 💬 Integration detection is the core differentiator of stack skills vs individual skills
-- ⚙️ If subprocess unavailable, perform grep operations in main thread
-
-## EXECUTION PROTOCOLS:
-
-- 🎯 Load integration-patterns.md for detection rules
-- 💾 Store integration_graph as workflow state
-- 📖 Auto-proceed to step 06 after detection complete
-- 🚫 Graceful handling if no integrations detected
-
-## CONTEXT BOUNDARIES:
-
-- From step 03: confirmed_dependencies[] — in code-mode, includes file lists per library; in compose-mode, file lists are not present (use per_library_extractions[] from step 04 for skill content)
-- From step 04: per_library_extractions[] with exports and patterns
-- This step produces: integration_graph {pairs[], types[], files[]}
-- This is the VALUE-ADD step — what makes stack skills different from individual skills
+- Focus on detecting cross-library patterns using subprocess Pattern 1 (grep/search)
+- Do not compile SKILL.md (Step 06)
+- Integration detection is the core differentiator of stack skills vs individual skills
 
 ## MANDATORY SEQUENCE
 
@@ -170,24 +141,3 @@ The libraries in this project appear to operate independently. The stack skill w
 
 Load, read the full file and then execute `{nextStepFile}`.
 
----
-
-## 🚨 SYSTEM SUCCESS/FAILURE METRICS
-
-### ✅ SUCCESS:
-
-- All library pairs analyzed for co-imports
-- Integration types classified using pattern rules
-- Hub libraries and cross-cutting patterns identified
-- Integration graph built with confidence labels
-- Graceful handling of zero integrations (not a failure)
-- Auto-proceeded to step 06
-
-### ❌ SYSTEM FAILURE:
-
-- Fabricating integrations not evidenced in code
-- Not applying the 2+ file threshold for pairs
-- Starting to compile SKILL.md (step 06's job)
-- Treating zero integrations as a workflow failure (it's valid)
-
-**Master Rule:** Only document integrations that exist in actual code. Zero integrations is a valid result.

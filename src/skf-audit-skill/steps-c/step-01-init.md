@@ -1,7 +1,7 @@
 ---
 nextStepFile: './step-02-re-index.md'
 outputFile: '{forge_version}/drift-report-{timestamp}.md'
-templateFile: '../assets/drift-report-template.md'
+templateFile: 'assets/drift-report-template.md'
 ---
 
 # Step 1: Initialize Audit
@@ -10,45 +10,12 @@ templateFile: '../assets/drift-report-template.md'
 
 Load the existing skill artifacts, provenance map, and forge tier configuration to establish the baseline for drift detection. Create the drift report document and present a baseline summary for user confirmation before proceeding with analysis.
 
-## MANDATORY EXECUTION RULES (READ FIRST):
+## Rules
 
-### Universal Rules:
-
-- 🛑 NEVER generate content without user input
-- 📖 CRITICAL: Read the complete step file before taking any action
-- 🔄 CRITICAL: When loading next step with 'C', ensure entire file is read
-- 📋 YOU ARE A FACILITATOR, not a content generator
-- ⚙️ TOOL/SUBPROCESS FALLBACK: If any instruction references a subprocess, subagent, or tool you do not have access to, you MUST still achieve the outcome in your main context thread
-- ✅ YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `{communication_language}`
-
-### Role Reinforcement:
-
-- ✅ You are a skill auditor operating in Ferris Audit mode
-- ✅ Every finding must trace to actual code with file:line citations
-- ✅ You enforce the zero-hallucination principle: structural truth over semantic guessing
-- ✅ You bring AST analysis expertise, the source code provides ground truth
-
-### Step-Specific Rules:
-
-- 🎯 Focus only on loading skill artifacts and establishing the baseline
-- 🚫 FORBIDDEN to perform any diff or analysis — that happens in later steps
-- 🚫 FORBIDDEN to proceed if skill path is invalid or SKILL.md not found
-- 💬 Present baseline summary clearly so user can confirm before analysis begins
-
-## EXECUTION PROTOCOLS:
-
-- 🎯 Discover and load all required input artifacts
-- 💾 Create drift report from {templateFile} with populated frontmatter
-- 📖 Track loaded artifacts in report frontmatter
-- 🚫 Do not proceed to analysis without user confirmation at the gate
-
-## CONTEXT BOUNDARIES:
-
-- Available: User-provided skill path, SKF module config variables
-- Focus: Loading and validating all inputs needed for drift analysis
-- Limits: Do not analyze or compare — only load and baseline
-- Dependencies: setup must be completed (forge-tier.yaml exists), skill must have been created by create-skill (provenance-map.json exists for source-based skills)
-- Docs-only limitation: If `metadata.json` indicates `source_type: "docs-only"` or `confidence_tier: "Quick"` with all T3 citations, inform user: "**This is a docs-only skill.** Drift detection compares against upstream documentation, not source code. Re-run `@Ferris US` to re-fetch documentation URLs and detect content changes." Audit-skill's structural diff is not applicable to docs-only skills — recommend update-skill instead.
+- Focus only on loading skill artifacts and establishing the baseline — do not perform any diff or analysis
+- Do not proceed if skill path is invalid or SKILL.md not found
+- Present baseline summary clearly so user can confirm before analysis begins
+- Docs-only limitation: If `metadata.json` indicates `source_type: "docs-only"` or `confidence_tier: "Quick"` with all T3 citations, inform user: "**This is a docs-only skill.** Drift detection compares against upstream documentation, not source code. Re-run `@Ferris US` to re-fetch documentation URLs and detect content changes." Recommend update-skill instead.
 
 ## MANDATORY SEQUENCE
 
@@ -170,33 +137,10 @@ Display: "**Select:** [C] Continue to Analysis"
 #### EXECUTION RULES:
 
 - ALWAYS halt and wait for user input after presenting menu
+- **GATE [default: C]** — If `{headless_mode}`: auto-proceed with [C] Continue, log: "headless: auto-continue past baseline confirmation"
 - ONLY proceed to next step when user selects 'C'
 
 ## CRITICAL STEP COMPLETION NOTE
 
 ONLY WHEN C is selected and the drift report has been created with baseline data populated, will you then load and read fully `{nextStepFile}` to execute and begin source re-indexing.
 
----
-
-## 🚨 SYSTEM SUCCESS/FAILURE METRICS
-
-### ✅ SUCCESS:
-
-- Skill artifacts loaded (SKILL.md, metadata.json)
-- Forge tier detected from sidecar (and override applied if set in preferences.yaml)
-- Provenance map loaded (or degraded mode confirmed)
-- Source path resolved and validated
-- Drift report created from template with populated frontmatter
-- Baseline summary presented to user
-- User confirmed via [C] Continue
-
-### ❌ SYSTEM FAILURE:
-
-- Proceeding without valid skill path
-- Not loading provenance map or offering degraded mode
-- Not detecting forge tier
-- Performing analysis in this step (analysis is Steps 02-05)
-- Proceeding without user confirmation at the gate
-- Hardcoded paths instead of frontmatter variables
-
-**Master Rule:** Skipping steps, optimizing sequences, or not following exact instructions is FORBIDDEN and constitutes SYSTEM FAILURE.

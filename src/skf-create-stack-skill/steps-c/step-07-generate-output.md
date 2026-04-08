@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-08-validate.md'
-stackSkillTemplate: '../assets/stack-skill-template.md'
+stackSkillTemplate: 'assets/stack-skill-template.md'
 ---
 
 # Step 7: Generate Output Files
@@ -9,42 +9,11 @@ stackSkillTemplate: '../assets/stack-skill-template.md'
 
 Write all deliverable and workspace artifact files to their target directories.
 
-## MANDATORY EXECUTION RULES (READ FIRST):
+## Rules
 
-### Universal Rules:
-
-- 📖 CRITICAL: Read the complete step file before taking any action
-- ⚙️ TOOL/SUBPROCESS FALLBACK: If any instruction references a subprocess, subagent, or tool you do not have access to, you MUST still achieve the outcome in your main context thread
-- ✅ YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `{communication_language}`
-
-### Role Reinforcement:
-
-- ✅ You are a skill packager operating in Ferris Architect mode
-- ✅ Precise file writing — every file matches its template structure
-- ✅ Hard halt on any write failure — partial output is worse than no output
-
-### Step-Specific Rules:
-
-- 🎯 Write ALL output files in correct directory structure
-- 🚫 FORBIDDEN to modify compiled content — step 06 produced the approved version
-- 💬 Report each file written with path and size
-- 🎯 Create directory structure before writing files
-
-## EXECUTION PROTOCOLS:
-
-- 🎯 Create output directories, write all files
-- 💾 Store written_files list as workflow state
-- 📖 Auto-proceed to validation after all files written
-- 🚫 HARD HALT on any individual file write failure
-
-## CONTEXT BOUNDARIES:
-
-- From step 06: skill_content (approved compiled SKILL.md)
-- From step 04: per_library_extractions[] for reference files
-- From step 05: integration_graph for integration pair references
-- From step 01: forge_tier, project info for metadata
-- This step produces: written_files[] (all output artifacts)
-- Path resolution: See `knowledge/version-paths.md` for canonical path templates. Stack skills use `{project_name}-stack` as the skill name
+- Write all output files in correct directory structure — do not modify compiled content from Step 06
+- Create directory structure before writing files
+- Report each file written with path and size
 
 ## MANDATORY SEQUENCE
 
@@ -244,24 +213,3 @@ If the symlink already exists, remove it first and recreate. This ensures `{skil
 
 Load, read the full file and then execute `{nextStepFile}`.
 
----
-
-## 🚨 SYSTEM SUCCESS/FAILURE METRICS
-
-### ✅ SUCCESS:
-
-- All deliverable files written to {skill_package}
-- All workspace artifacts written to {forge_version}
-- Directory structure created correctly with version nesting
-- Active symlink created at {skill_group}/active -> {version}
-- Each file matches its template structure
-- Write summary displayed with accurate counts
-
-### ❌ SYSTEM FAILURE:
-
-- Any file write failure not caught (hard halt required)
-- Modifying approved skill_content during writing
-- Missing files from the expected output set
-- Wrong directory paths for output
-
-**Master Rule:** Write everything, modify nothing. Hard halt on any write failure.

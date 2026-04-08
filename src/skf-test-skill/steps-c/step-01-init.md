@@ -1,7 +1,7 @@
 ---
 nextStepFile: './step-02-detect-mode.md'
-outputFile: '{forge_version}/test-report-{skill_name}.md'
-templateFile: '../templates/test-report-template.md'
+outputFile: '{forge_data_folder}/{skill_name}/test-report-{skill_name}.md'
+templateFile: 'templates/test-report-template.md'
 sidecarFile: '{sidecar_path}/forge-tier.yaml'
 skillsOutputFolder: '{skills_output_folder}'
 ---
@@ -12,43 +12,10 @@ skillsOutputFolder: '{skills_output_folder}'
 
 Discover and validate the target skill, load forge tier state to determine analysis depth, and create the test report document from template.
 
-## MANDATORY EXECUTION RULES (READ FIRST):
+## Rules
 
-### Universal Rules:
-
-- 🛑 NEVER proceed if required inputs are missing — halt with clear error
-- 📖 CRITICAL: Read the complete step file before taking any action
-- 🔄 CRITICAL: When loading next step, ensure entire file is read
-- ⚙️ TOOL/SUBPROCESS FALLBACK: If any instruction references a subprocess, subagent, or tool you do not have access to, you MUST still achieve the outcome in your main context thread
-- ✅ YOU MUST ALWAYS SPEAK OUTPUT In your Agent communication style with the config `{communication_language}`
-
-### Role Reinforcement:
-
-- ✅ You are a skill auditor operating in Ferris's Audit mode
-- ✅ If you already have been given a name, communication_style and identity, continue to use those while playing this new role
-- ✅ Methodical, precise, evidence-based — zero hallucination
-- ✅ Every finding must trace to actual artifacts
-
-### Step-Specific Rules:
-
-- 🎯 Focus only on input discovery and validation — do NOT begin analysis
-- 🚫 FORBIDDEN to start coverage or coherence checks in this step
-- 💬 Report what was found clearly and concisely
-- 📋 Validate all required files exist before proceeding
-
-## EXECUTION PROTOCOLS:
-
-- 🎯 Discover skill path from user input or batch list
-- 💾 Create output document from {templateFile}
-- 📖 Load forge tier state from {sidecarFile}
-- 🚫 FORBIDDEN to proceed if SKILL.md is missing
-
-## CONTEXT BOUNDARIES:
-
-- Available: User-provided skill path, SKF module config
-- Focus: Input validation and tier detection only
-- Limits: Do not analyze skill content — just confirm it exists and is loadable
-- Dependencies: setup must have run (forge-tier.yaml must exist)
+- Focus only on input discovery and validation — do not begin analysis
+- Validate all required files exist before proceeding
 
 ## MANDATORY SEQUENCE
 
@@ -190,25 +157,3 @@ Display: "**Proceeding to mode detection...**"
 
 ONLY WHEN all required files are validated, forge tier is loaded, output document is created, and initialization status is reported, will you then load and read fully `{nextStepFile}` to execute mode detection.
 
----
-
-## 🚨 SYSTEM SUCCESS/FAILURE METRICS
-
-### ✅ SUCCESS:
-
-- Skill path validated (SKILL.md exists)
-- Forge tier state loaded (HALT if missing), override applied if set in preferences.yaml
-- Skill metadata extracted
-- Output document created from template with initial frontmatter
-- Initialization status reported clearly
-- Auto-proceeded to step 02
-
-### ❌ SYSTEM FAILURE:
-
-- Proceeding without validating SKILL.md exists
-- Not loading forge tier state
-- Not creating output document before proceeding
-- Starting analysis in this step (coverage/coherence belongs to later steps)
-- Hardcoding paths instead of using frontmatter variables
-
-**Master Rule:** Skipping steps, optimizing sequences, or not following exact instructions is FORBIDDEN and constitutes SYSTEM FAILURE.

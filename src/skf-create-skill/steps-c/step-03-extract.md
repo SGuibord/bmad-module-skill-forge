@@ -1,10 +1,10 @@
 ---
 nextStepFile: './step-03b-fetch-temporal.md'
 componentExtractionStepFile: './step-03d-component-extraction.md'
-extractionPatternsData: '../references/extraction-patterns.md'
-extractionPatternsTracingData: '../references/extraction-patterns-tracing.md'
-tierDegradationRulesData: '../references/tier-degradation-rules.md'
-sourceResolutionData: '../references/source-resolution-protocols.md'
+extractionPatternsData: 'references/extraction-patterns.md'
+extractionPatternsTracingData: 'references/extraction-patterns-tracing.md'
+tierDegradationRulesData: 'references/tier-degradation-rules.md'
+sourceResolutionData: 'references/source-resolution-protocols.md'
 ---
 
 # Step 3: Extract
@@ -13,42 +13,11 @@ sourceResolutionData: '../references/source-resolution-protocols.md'
 
 To extract all public exports, function signatures, type definitions, and co-import patterns from the source code using tier-appropriate tools, building a complete extraction inventory with confidence-tiered provenance citations.
 
-## MANDATORY EXECUTION RULES (READ FIRST):
+## Rules
 
-### Universal Rules:
-
-- 📖 CRITICAL: Read the complete step file before taking any action
-- 🎯 ALWAYS follow the exact instructions in the step file
-- ⚙️ TOOL/SUBPROCESS FALLBACK: If any instruction references a tool you do not have access to, you MUST still achieve the outcome in your main context thread
-- ✅ YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `{communication_language}`
-
-### Role Reinforcement:
-
-- ✅ You are a skill compilation engine performing structural extraction
-- ✅ Zero hallucination tolerance — every extracted item must trace to source code
-- ✅ Confidence tier labeling is mandatory for every extraction result
-
-### Step-Specific Rules:
-
-- 🎯 Focus ONLY on extracting exports, signatures, types from source code
-- 🚫 FORBIDDEN to compile SKILL.md content — that's step-05
-- 🚫 FORBIDDEN to write any output files — extraction stays in context
-- 🚫 FORBIDDEN to include content that cannot be cited to a source location
-- ⚒️ Every extracted item MUST have a provenance citation: `[AST:{file}:L{line}]` or `[SRC:{file}:L{line}]`
-
-## EXECUTION PROTOCOLS:
-
-- 🎯 Follow MANDATORY SEQUENCE exactly
-- 💾 Build extraction inventory in context — do not write files
-- 📖 Load extraction patterns data file for tier-specific strategy
-- 🚫 If an export cannot be verified, exclude it — do not guess
-
-## CONTEXT BOUNDARIES:
-
-- Available: brief_data, tier, source_root, file_tree from step-01; ecosystem check outcome from step-02; source_ref and source_commit from source resolution (see source-resolution-protocols.md)
-- Focus: Source code extraction and inventory building
-- Limits: Do NOT compile, assemble, or write any output
-- Dependencies: Source code must be accessible (local repos resolved in step-01; remote repos cloned in section 2a)
+- Focus only on extracting exports, signatures, types from source code — do not compile SKILL.md
+- Do not write any output files — extraction stays in context
+- Every extracted item must have a provenance citation: `[AST:{file}:L{line}]` or `[SRC:{file}:L{line}]`
 
 ## MANDATORY SEQUENCE
 
@@ -259,6 +228,7 @@ Display: "**Extraction Summary — Select an Option:** [C] Continue to compilati
 
 - IF docs-only mode (`extraction_mode: "docs-only"`): Auto-proceed immediately to `{nextStepFile}` — no user interaction required
 - OTHERWISE: ALWAYS halt and wait for user input after presenting the extraction summary
+- **GATE [default: C]** — If `{headless_mode}`: auto-proceed with [C] Continue, log: "headless: auto-approve extraction summary"
 - This is Gate 2 — user must confirm before compilation proceeds (except docs-only mode)
 - User may ask questions about the extraction results before continuing
 
@@ -271,29 +241,3 @@ Display: "**Extraction Summary — Select an Option:** [C] Continue to compilati
 
 ONLY WHEN the extraction inventory is built with provenance citations and the user has confirmed the extraction summary will you proceed to load `{nextStepFile}` for temporal context fetching.
 
----
-
-## 🚨 SYSTEM SUCCESS/FAILURE METRICS
-
-### ✅ SUCCESS:
-
-- Extraction patterns loaded and tier-appropriate strategy applied
-- Scope filters applied from brief
-- All accessible source files in scope scanned
-- Every extracted item has a provenance citation with confidence tier
-- Extraction inventory built with aggregate counts
-- Graceful degradation if AST tools unavailable
-- Gate 2 summary presented with export counts and confidence breakdown
-- User confirmed before proceeding
-
-### ❌ SYSTEM FAILURE:
-
-- Including exports without provenance citations
-- Guessing or hallucinating function signatures not in source
-- Not applying scope/include/exclude filters from the brief
-- Halting on individual file read failures instead of skipping
-- Not presenting Gate 2 summary for user confirmation
-- Beginning compilation or SKILL.md assembly in this step
-- Not reporting confidence tier breakdown
-
-**Master Rule:** Zero hallucination — every extraction must trace to source code. Uncitable content is excluded, not guessed.

@@ -1,8 +1,8 @@
 ---
 nextStepFile: './step-04-coherence-check.md'
 outputFile: '{forge_data_folder}/{skill_name}/test-report-{skill_name}.md'
-scoringRulesFile: '../references/scoring-rules.md'
-sourceAccessProtocol: '../references/source-access-protocol.md'
+scoringRulesFile: 'references/scoring-rules.md'
+sourceAccessProtocol: 'references/source-access-protocol.md'
 ---
 
 # Step 3: Coverage Check
@@ -11,44 +11,11 @@ sourceAccessProtocol: '../references/source-access-protocol.md'
 
 Compare the exports, functions, classes, types, and interfaces documented in SKILL.md against the actual source code API surface. Identify missing documentation, undocumented exports, and signature mismatches. Analysis depth scales with forge tier.
 
-## MANDATORY EXECUTION RULES (READ FIRST):
+## Rules
 
-### Universal Rules:
-
-- 🛑 NEVER fabricate findings — every coverage result must trace to actual source code or SKILL.md content
-- 📖 CRITICAL: Read the complete step file before taking any action
-- 🔄 CRITICAL: When loading next step, ensure entire file is read
-- ⚙️ TOOL/SUBPROCESS FALLBACK: If any instruction references a subprocess, subagent, or tool you do not have access to, you MUST still achieve the outcome in your main context thread
-- ✅ YOU MUST ALWAYS SPEAK OUTPUT In your Agent communication style with the config `{communication_language}`
-
-### Role Reinforcement:
-
-- ✅ You are a skill auditor in Ferris's Audit mode — zero hallucination
-- ✅ If you already have been given a name, communication_style and identity, continue to use those while playing this new role
-- ✅ Every finding must include file:line citations from source code
-- ✅ Report what IS documented vs what SHOULD BE documented — facts only
-
-### Step-Specific Rules:
-
-- 🎯 Use subprocess optimization for per-file AST analysis when available
-- 💬 Subprocess returns structured findings only, not full file contents
-- 🚫 DO NOT BE LAZY — For EACH source file, launch a subprocess for deep analysis
-- ⚙️ If subprocess unavailable, perform analysis in main thread sequentially
-- 📋 Coverage depth must match the detected forge tier
-
-## EXECUTION PROTOCOLS:
-
-- 🎯 Load SKILL.md exports section and source files
-- 💾 Append Coverage Analysis section to {outputFile}
-- 📖 Update stepsCompleted in {outputFile}
-- 🚫 FORBIDDEN to proceed without completing all source file analysis
-
-## CONTEXT BOUNDARIES:
-
-- Available: SKILL.md, source files, forge tier, test mode from step 02
-- Focus: Export coverage comparison only — coherence is step 04
-- Limits: Do NOT validate cross-references or integration patterns (that's coherence)
-- Dependencies: step-02 must have set testMode and reported forge tier
+- Use subprocess optimization for per-file AST analysis when available; if unavailable, analyze sequentially
+- For each source file, launch a subprocess for deep analysis — do not shortcut
+- Coverage depth must match the detected forge tier
 
 ## MANDATORY SEQUENCE
 
@@ -252,26 +219,3 @@ Display: "**Proceeding to coherence check...**"
 
 ONLY WHEN all source files have been analyzed, the Coverage Analysis section has been appended to {outputFile}, and category scores have been calculated, will you then load and read fully `{nextStepFile}` to execute coherence check.
 
----
-
-## 🚨 SYSTEM SUCCESS/FAILURE METRICS
-
-### ✅ SUCCESS:
-
-- All source files analyzed at appropriate tier depth; split-body references/ traversed when present
-- Every finding has file:line citation (Forge/Deep) or file-level reference (Quick)
-- Per-export status table complete
-- Category scores calculated per scoring rules
-- Coverage Analysis section appended to output document
-- Zero fabricated findings — all traceable to source
-
-### ❌ SYSTEM FAILURE:
-
-- Fabricating export names or signatures not in source code
-- Skipping source files (DO NOT BE LAZY)
-- Not scaling analysis depth to forge tier
-- Not calculating category scores
-- Reporting coverage without per-export evidence
-- Hardcoding paths instead of using frontmatter variables
-
-**Master Rule:** Skipping steps, optimizing sequences, or not following exact instructions is FORBIDDEN and constitutes SYSTEM FAILURE. Zero hallucination — every finding traces to code.
