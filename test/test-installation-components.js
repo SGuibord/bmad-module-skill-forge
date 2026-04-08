@@ -69,7 +69,7 @@ async function runTests() {
   console.log(`${colors.yellow}Test Suite 1: Module Configuration${colors.reset}\n`);
 
   try {
-    const moduleYamlPath = path.join(projectRoot, 'src/skf-setup/assets/module.yaml');
+    const moduleYamlPath = path.join(projectRoot, 'src/module.yaml');
     const moduleYaml = yaml.load(await fs.readFile(moduleYamlPath, 'utf8'));
 
     assert(moduleYaml.code === 'skf', 'module.yaml has correct code: skf');

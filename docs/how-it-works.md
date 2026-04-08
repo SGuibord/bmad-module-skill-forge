@@ -528,7 +528,7 @@ Workflows load only the fragments required for the current task to stay focused 
 ```
 src/
 ├── skf-forger/               # Agent skill (SKILL.md + manifest)
-├── skf-setup/                # Setup skill (SKILL.md + assets/module.yaml + assets/module-help.csv)
+├── skf-setup/                # Setup skill (forge initialization)
 ├── skf-analyze-source/
 ├── skf-brief-skill/
 ├── skf-create-skill/
@@ -549,7 +549,9 @@ src/
 ├── knowledge/
 │   ├── skf-knowledge-index.csv
 │   └── *.md (14 knowledge fragments + overview.md index)
-└── shared/                   # Cross-workflow resources
+├── shared/                   # Cross-workflow resources
+├── module.yaml               # Module metadata (code, name, config vars)
+└── module-help.csv           # Skill menu for bmad-help integration
 ```
 
 ---

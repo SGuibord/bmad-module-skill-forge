@@ -11,9 +11,8 @@ src/
 ├── skf-forger/               # Agent skill — Ferris persona
 │   ├── SKILL.md              # Agent identity, principles, menu of triggers
 │   └── bmad-skill-manifest.yaml
-├── skf-setup/                # Setup skill (module metadata + forge initialization)
+├── skf-setup/                # Setup skill (forge initialization)
 │   ├── SKILL.md
-│   ├── assets/               # module.yaml, module-help.csv
 │   └── ...
 ├── skf-{name}/               # 13 workflow skills (one directory each)
 │   ├── SKILL.md              # Skill entry point
@@ -25,7 +24,9 @@ src/
 ├── knowledge/                # Cross-cutting knowledge fragments (JiT loaded)
 │   └── skf-knowledge-index.csv
 ├── forger/                   # Sidecar seed files (preferences, forge tier)
-└── shared/                   # Cross-workflow resources
+├── shared/                   # Cross-workflow resources
+├── module.yaml               # Module metadata (code, name, config vars)
+└── module-help.csv           # Skill menu for bmad-help integration
 ```
 
 **Workflow skills:** setup, analyze-source, brief-skill, create-skill, quick-skill, create-stack-skill, verify-stack, refine-architecture, update-skill, audit-skill, test-skill, export-skill, rename-skill, drop-skill.
