@@ -37,7 +37,7 @@ To update the managed `<!-- SKF:BEGIN/END -->` section in the platform-appropria
 ## EXECUTION PROTOCOLS:
 
 - 🎯 Follow the MANDATORY SEQUENCE exactly
-- 💾 Load {managedSectionData} for format template and three-case logic
+- 💾 Load {managedSectionData} for format template and four-case logic
 - 📖 Rebuild the COMPLETE skill index — not just the current skill
 - 🚫 ZERO data loss — verify preserved content before and after write
 
@@ -64,7 +64,7 @@ Auto-proceed immediately to {nextStepFile}.
 
 ### 2. Load Managed Section Format
 
-Load {managedSectionData} and read the complete format template and three-case logic.
+Load {managedSectionData} and read the complete format template and four-case logic.
 
 ### 3. Determine Target File(s)
 
