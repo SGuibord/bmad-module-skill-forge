@@ -114,13 +114,10 @@ For each version `v` in `affected_versions`, operate on the files inside `{new_s
 
 - Path: `{new_skill_group}/{v}/{new_name}/context-snippet.md`
 - Replace the display name header `[{old_name} v...]` → `[{new_name} v...]` (preserving the version suffix)
-- Rewrite every `root:` path that references the old name to use the new name. This must handle both platform paths and draft paths:
-  - `root: .claude/skills/{old_name}/` → `root: .claude/skills/{new_name}/`
-  - `root: .cursor/skills/{old_name}/` → `root: .cursor/skills/{new_name}/`
-  - `root: .agents/skills/{old_name}/` → `root: .agents/skills/{new_name}/`
-  - `root: skills/{old_name}/` → `root: skills/{new_name}/` (draft form written by create-skill/quick-skill/create-stack-skill before first export)
-  - Legacy pre-fix form `root: skills/{old_name}/active/{old_name}/` (from older skills created before the create-skill template was corrected) → `root: skills/{new_name}/` (also normalize to flat form during rename)
-  - Any other `root:` prefix ending in `{old_name}/` → replace the `{old_name}/` segment with `{new_name}/`
+- Rewrite every `root:` path that references the old name to use the new name. Parse the `root:` line as `root: {prefix}{old_name}/`, preserve the prefix as-is, and replace `{old_name}` with `{new_name}`. This generically handles any IDE's skill root path (e.g., `.claude/skills/`, `.windsurf/skills/`, `.github/skills/`) as well as the draft `skills/` prefix and legacy forms — no enumeration of known prefixes needed.
+  - Example: `root: .windsurf/skills/{old_name}/` → `root: .windsurf/skills/{new_name}/`
+  - Example: `root: skills/{old_name}/` → `root: skills/{new_name}/`
+  - Legacy pre-fix form `root: skills/{old_name}/active/{old_name}/` → `root: skills/{new_name}/` (normalize to flat form during rename)
 - If the file is missing, record it in `section3_warnings` and continue
 
 **3d. provenance-map.json:**
@@ -204,33 +201,27 @@ Set context flag `manifest_updated = true`.
 
 Report: "**Manifest updated** — re-keyed `exports.{old_name}` → `exports.{new_name}`."
 
-### 7. Rebuild Platform Context Files
+### 7. Rebuild Context Files
 
-Load the `ides` list from `config.yaml`. The installer writes installer-specific IDE identifiers (e.g. `claude-code`, `github-copilot`, `codex`, `cline`, `roo`, `windsurf`, `cursor`, `other`), NOT platform values — these must be mapped to platforms before any target-file lookup.
+Load the `ides` list from `config.yaml`. The installer writes IDE identifiers — these must be mapped to context files and skill roots using the "IDE → Context File Mapping" table in `{managedSectionLogic}`.
 
-**Resolve `target_platforms`** using the "IDE → Platform Mapping" table in `{managedSectionLogic}`:
+**Resolve `target_context_files`** using the canonical mapping table in `{managedSectionLogic}`:
 
-1. For each entry in `config.yaml.ides`, look up its platform value (`claude-code` → `claude`, `github-copilot` → `copilot`, `codex`/`cline`/`roo`/`windsurf`/`other` → `copilot`, `cursor` → `cursor`)
-2. For any entry not found in the table, default to `copilot` and emit a warning: "Unknown IDE '{value}' in config.yaml — defaulting to copilot"
-3. Deduplicate the resulting platform list (e.g. both `codex` and `cline` collapse to a single `copilot` entry)
-4. If `config.yaml.ides` is absent or the mapping yields an empty list, fall back to `["copilot"]` and emit a note: "No IDEs configured in config.yaml — defaulting to copilot (AGENTS.md)"
+1. For each entry in `config.yaml.ides`, look up its `context_file` and `skill_root` from the mapping table
+2. For any entry not found in the table, default to AGENTS.md / `.agents/skills/` and emit a warning: "Unknown IDE '{value}' in config.yaml — defaulting to AGENTS.md"
+3. Deduplicate by `context_file` — when multiple IDEs map to the same context file, use the first configured IDE's `skill_root`
+4. If `config.yaml.ides` is absent or the mapping yields an empty list, fall back to `[{context_file: "AGENTS.md", skill_root: ".agents/skills/"}]` and emit a note: "No IDEs configured in config.yaml — defaulting to AGENTS.md"
 
-Store the result as `target_platforms` for this section.
+Store the result as `target_context_files` for this section.
 
-For each platform in `target_platforms`:
+For each entry in `target_context_files`:
 
-1. **Resolve target file** using the "Platform Target Files" table in `{managedSectionLogic}`:
-
-   | Platform | Target File |
-   |----------|-------------|
-   | `claude` | `{project-root}/CLAUDE.md` |
-   | `cursor` | `{project-root}/.cursorrules` |
-   | `copilot` | `{project-root}/AGENTS.md` |
+1. **Resolve target file** at `{project-root}/{context_file}`.
 
 2. **Read the current file.**
-   - If the file does not exist, skip this platform (nothing to rebuild — the file will be re-created next time export-skill runs)
-   - If the file exists but contains no `<!-- SKF:BEGIN -->` marker, skip this platform (no managed section to rewrite)
-   - If the file contains `<!-- SKF:BEGIN -->` but no matching `<!-- SKF:END -->`, record the error against that platform and continue to the next IDE — do not halt the entire rename on a malformed context file
+   - If the file does not exist, skip this context file (nothing to rebuild — the file will be re-created next time export-skill runs)
+   - If the file exists but contains no `<!-- SKF:BEGIN -->` marker, skip this context file (no managed section to rewrite)
+   - If the file contains `<!-- SKF:BEGIN -->` but no matching `<!-- SKF:END -->`, record the error against that context file and continue to the next entry — do not halt the entire rename on a malformed context file
 
 3. **Build the exported skill set (version-aware, deprecated-excluded)** using the same logic as export-skill step-04 section 4b and the snippet resolution logic from section 4c:
    - Read the manifest's `exports` object (already updated in section 6, so `{new_name}` is present and `{old_name}` is absent)
@@ -239,15 +230,9 @@ For each platform in `target_platforms`:
    - For each remaining `{skill-name, active_version}` pair, read `{skills_output_folder}/{skill-name}/{active_version}/{skill-name}/context-snippet.md`
    - If missing, fall back to the `active` symlink path; if still missing, skip with a warning
 
-4. **Rewrite root paths for the current platform** using export-skill step-04 section 4d logic:
+4. **Rewrite root paths for the current context file** using the generic rewrite algorithm from export-skill step-04 section 4d:
 
-   | Platform | Root Path Prefix |
-   |----------|-----------------|
-   | `claude` | `.claude/skills/` |
-   | `cursor` | `.cursor/skills/` |
-   | `copilot` | `.agents/skills/` |
-
-   For each snippet, detect its current `root:` prefix and rewrite it to the current platform's prefix if different.
+   For each snippet, parse the `root:` line (`root: {prefix}{skill-name}/`), strip the trailing `{skill-name}/` to extract the current prefix, and replace it with the current entry's `skill_root` if different.
 
 5. **Sort skills alphabetically by name.** Count totals (skills, stack skills).
 
@@ -280,7 +265,7 @@ For each platform in `target_platforms`:
    - Confirm `{new_name}` appears between the markers (if this skill's active version is not deprecated)
    - Confirm content outside the markers is byte-identical to what was preserved
 
-9. **On per-file failure:** record the error against that platform and continue to the next IDE. Do not halt the rename on a recoverable per-platform error — the manifest and filesystem are already consistent; platform context files can be re-rebuilt later via `[EX] Export Skill`.
+9. **On per-file failure:** record the error against that context file and continue to the next entry. Do not halt the rename on a recoverable per-context-file error — the manifest and filesystem are already consistent; context files can be re-rebuilt later via `[EX] Export Skill`.
 
 **After the loop:**
 

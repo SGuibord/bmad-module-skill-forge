@@ -14,35 +14,63 @@
 <!-- SKF:END -->
 ```
 
-## Platform Target Files
+## IDE → Context File Mapping (config.yaml `ides` list)
 
-| Platform | Flag Value          | Target File  |
-|----------|---------------------|--------------|
-| Copilot  | `copilot` (default) | AGENTS.md    |
-| Claude   | `claude`            | CLAUDE.md    |
-| Cursor   | `cursor`            | .cursorrules |
+The installer writes IDE identifiers to `config.yaml` under the `ides` key. Any workflow that rebuilds context files from `config.yaml` MUST map each entry to its context file and skill root using this table — it is the **single source of truth**.
 
-## IDE → Platform Mapping (config.yaml `ides` list)
+Each IDE has two independent properties:
 
-The installer writes installer-specific IDE identifiers to `config.yaml` under the `ides` key (not platform values). Any workflow that rebuilds platform context files from `config.yaml` MUST map each entry to a platform before looking up its target file.
+- **Context File** — the file the IDE reads for passive skill context
+- **Skill Root** — the directory where the installer places skill files (matches `target_dir` in `platform-codes.yaml`)
 
-| config.yaml IDE value | Platform  | Target File  | Rationale                                                            |
-|-----------------------|-----------|--------------|----------------------------------------------------------------------|
-| `claude-code`         | `claude`  | CLAUDE.md    | native — reads `CLAUDE.md` and `.claude/skills/`                     |
-| `cursor`              | `cursor`  | .cursorrules | native — reads `.cursorrules` and `.cursor/skills/`                  |
-| `github-copilot`      | `copilot` | AGENTS.md    | native — reads `AGENTS.md` and `.agents/skills/`                     |
-| `codex`               | `copilot` | AGENTS.md    | OpenAI Codex reads `AGENTS.md` (same convention as copilot)          |
-| `cline`               | `copilot` | AGENTS.md    | uses `AGENTS.md` as fallback context file                            |
-| `roo`                 | `copilot` | AGENTS.md    | uses `AGENTS.md` as fallback context file                            |
-| `windsurf`            | `copilot` | AGENTS.md    | uses `AGENTS.md` as fallback context file                            |
-| `other`               | `copilot` | AGENTS.md    | generic AGENTS.md fallback                                           |
-| _(any unknown value)_ | `copilot` | AGENTS.md    | warn: "Unknown IDE '{value}' in config.yaml — defaulting to copilot" |
+### Dedicated context file IDEs
 
-**Deduplication:** When multiple IDE entries map to the same platform (e.g. `codex` and `cline` both → `copilot`), deduplicate so each platform is processed exactly once. Report the deduplication to the user.
+| config.yaml IDE value | Context File | Skill Root         |
+|-----------------------|--------------|--------------------|
+| `claude-code`         | CLAUDE.md    | `.claude/skills/`  |
+| `cursor`              | .cursorrules | `.cursor/skills/`  |
 
-**Missing `ides` key:** If the `ides` key is absent from `config.yaml`, treat it as an empty list. If the resulting platform set is empty (no recognized entries), fall back to `["copilot"]`.
+### AGENTS.md context file IDEs
 
-This mapping is the single source of truth. Workflows that need it: `export-skill/step-01` (resolves `target_platforms` for the export), `drop-skill/step-02` and `rename-skill/step-02` (rebuild platform context files after a management operation).
+All other IDEs use AGENTS.md as the context file, each with its own skill directory:
+
+| config.yaml IDE value | Context File | Skill Root           |
+|-----------------------|--------------|----------------------|
+| `github-copilot`      | AGENTS.md    | `.github/skills/`    |
+| `codex`               | AGENTS.md    | `.agents/skills/`    |
+| `windsurf`            | AGENTS.md    | `.windsurf/skills/`  |
+| `cline`               | AGENTS.md    | `.cline/skills/`     |
+| `roo`                 | AGENTS.md    | `.roo/skills/`       |
+| `auggie`              | AGENTS.md    | `.augment/skills/`   |
+| `antigravity`         | AGENTS.md    | `.agent/skills/`     |
+| `codebuddy`           | AGENTS.md    | `.codebuddy/skills/` |
+| `crush`               | AGENTS.md    | `.crush/skills/`     |
+| `gemini`              | AGENTS.md    | `.gemini/skills/`    |
+| `iflow`               | AGENTS.md    | `.iflow/skills/`     |
+| `junie`               | AGENTS.md    | `.junie/skills/`     |
+| `kilo`                | AGENTS.md    | `.kilocode/skills/`  |
+| `kiro`                | AGENTS.md    | `.kiro/skills/`      |
+| `ona`                 | AGENTS.md    | `.ona/skills/`       |
+| `opencode`            | AGENTS.md    | `.opencode/skills/`  |
+| `pi`                  | AGENTS.md    | `.pi/skills/`        |
+| `qoder`               | AGENTS.md    | `.qoder/skills/`     |
+| `qwen`                | AGENTS.md    | `.qwen/skills/`      |
+| `rovo-dev`            | AGENTS.md    | `.rovodev/skills/`   |
+| `trae`                | AGENTS.md    | `.trae/skills/`      |
+| `other`               | AGENTS.md    | `.agents/skills/`    |
+| _(any unknown value)_ | AGENTS.md    | `.agents/skills/`    |
+
+### Resolution rules
+
+**Deduplication:** When multiple IDE entries map to the same context file, deduplicate so each context file is processed exactly once. Use the **first configured IDE's** skill root for that context file's snippet root paths. Report the deduplication to the user: "Multiple IDEs target AGENTS.md — using {first IDE}'s skill root (`{skill_root}`). Each IDE's skills are installed to its own directory."
+
+**Missing `ides` key:** If the `ides` key is absent from `config.yaml`, treat it as an empty list. If the resulting set is empty (no recognized entries), fall back to AGENTS.md with `.agents/skills/` as the skill root.
+
+**Unknown IDE values:** Warn: "Unknown IDE '{value}' in config.yaml — defaulting to AGENTS.md with `.agents/skills/`"
+
+### Consumers
+
+This mapping is the single source of truth. Workflows that need it: `export-skill/step-01` (resolves `target_context_files` for the export), `drop-skill/step-02` and `rename-skill/step-02` (rebuild context files after a management operation).
 
 ## Four-Case Logic
 

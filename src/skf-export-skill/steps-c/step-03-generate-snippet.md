@@ -75,17 +75,11 @@ Before generating new snippet content, check for a prior snippet:
 
 These values will be used as a fallback in section 3 if new gotchas cannot be derived. The `[CARRIED]` marker provides a **hard one-cycle expiry**: gotchas that were already carried once will be dropped on the next carry-forward attempt rather than preserved indefinitely.
 
-### 2.7. Resolve Platform Root Path
+### 2.7. Resolve Skill Root Path
 
-Using the first platform in `target_platforms` (resolved in step-01), resolve the root path prefix:
+Using the first entry in `target_context_files` (resolved in step-01), take its `skill_root` value. This is the IDE's actual skill directory (e.g., `.claude/skills/`, `.windsurf/skills/`, `.github/skills/`).
 
-| Platform | `{platform_root}` |
-|----------|-------------------|
-| `claude` | `.claude/skills/` |
-| `cursor` | `.cursor/skills/` |
-| `copilot` | `.agents/skills/` |
-
-Store `{platform_root}` for use in snippet generation. The context-snippet.md written to disk uses this platform's root path.
+Store `{skill_root}` for use in snippet generation. The context-snippet.md written to disk uses this IDE's skill root path.
 
 ### 3. Generate Snippet Content
 
@@ -103,7 +97,7 @@ Store `{platform_root}` for use in snippet generation. The context-snippet.md wr
 
 Generate:
 ```
-[{skill-name} v{version}]|root: {platform_root}{skill-name}/
+[{skill-name} v{version}]|root: {skill_root}{skill-name}/
 |IMPORTANT: {skill-name} v{version} — read SKILL.md before writing {skill-name} code. Do NOT rely on training data.
 |quick-start:{SKILL.md#quick-start}
 |api: {export-1}(), {export-2}(), {export-3}, {export-4}(), {export-5}
@@ -119,7 +113,7 @@ Generate:
 
 Generate:
 ```
-[{project}-stack v{version}]|root: {platform_root}{project}-stack/
+[{project}-stack v{version}]|root: {skill_root}{project}-stack/
 |IMPORTANT: {project}-stack — read SKILL.md before writing integration code. Do NOT rely on training data.
 |stack: {dep-1}@{v1}, {dep-2}@{v2}, {dep-3}@{v3}
 |integrations: {pattern-1}, {pattern-2}

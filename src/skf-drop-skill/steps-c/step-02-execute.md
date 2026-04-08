@@ -93,33 +93,27 @@ Set context flag `manifest_updated = true`.
 - Report: "**Manifest update failed:** {error}. No files were deleted and platform context files were not rebuilt. The manifest is in its pre-drop state — rerun the workflow once the underlying issue is resolved."
 - Store `manifest_updated = false` and jump to section 6
 
-### 3. Rebuild Platform Context Files
+### 3. Rebuild Context Files
 
-Load the `ides` list from `config.yaml`. The installer writes installer-specific IDE identifiers (e.g. `claude-code`, `github-copilot`, `codex`, `cline`, `roo`, `windsurf`, `cursor`, `other`), NOT platform values — these must be mapped to platforms before any target-file lookup.
+Load the `ides` list from `config.yaml`. The installer writes IDE identifiers — these must be mapped to context files and skill roots using the "IDE → Context File Mapping" table in `{managedSectionLogic}`.
 
-**Resolve `target_platforms`** using the "IDE → Platform Mapping" table in `{managedSectionLogic}`:
+**Resolve `target_context_files`** using the canonical mapping table in `{managedSectionLogic}`:
 
-1. For each entry in `config.yaml.ides`, look up its platform value (`claude-code` → `claude`, `github-copilot` → `copilot`, `codex`/`cline`/`roo`/`windsurf`/`other` → `copilot`, `cursor` → `cursor`)
-2. For any entry not found in the table, default to `copilot` and emit a warning: "Unknown IDE '{value}' in config.yaml — defaulting to copilot"
-3. Deduplicate the resulting platform list (e.g. both `codex` and `cline` collapse to a single `copilot` entry)
-4. If `config.yaml.ides` is absent or the mapping yields an empty list, fall back to `["copilot"]` and emit a note: "No IDEs configured in config.yaml — defaulting to copilot (AGENTS.md)"
+1. For each entry in `config.yaml.ides`, look up its `context_file` and `skill_root` from the mapping table
+2. For any entry not found in the table, default to AGENTS.md / `.agents/skills/` and emit a warning: "Unknown IDE '{value}' in config.yaml — defaulting to AGENTS.md"
+3. Deduplicate by `context_file` — when multiple IDEs map to the same context file, use the first configured IDE's `skill_root`
+4. If `config.yaml.ides` is absent or the mapping yields an empty list, fall back to `[{context_file: "AGENTS.md", skill_root: ".agents/skills/"}]` and emit a note: "No IDEs configured in config.yaml — defaulting to AGENTS.md"
 
-Store the result as `target_platforms` for this section.
+Store the result as `target_context_files` for this section.
 
-For each platform in `target_platforms`:
+For each entry in `target_context_files`:
 
-1. **Resolve target file** using the "Platform Target Files" table in `{managedSectionLogic}`:
-
-   | Platform | Target File |
-   |----------|-------------|
-   | `claude` | `{project-root}/CLAUDE.md` |
-   | `cursor` | `{project-root}/.cursorrules` |
-   | `copilot` | `{project-root}/AGENTS.md` |
+1. **Resolve target file** at `{project-root}/{context_file}`.
 
 2. **Read the current file.**
-   - If the file does not exist, skip this platform (nothing to rebuild — the file will be re-created next time export-skill runs)
-   - If the file exists but contains no `<!-- SKF:BEGIN -->` marker, skip this platform (no managed section to rewrite)
-   - If the file contains `<!-- SKF:BEGIN -->` but no matching `<!-- SKF:END -->`, record the error against that platform and continue to the next IDE — do not halt the entire drop on a malformed context file. The manifest has already been updated in section 2 and is canonical state; the platform file can be repaired manually and rebuilt on the next `[EX] Export Skill` run.
+   - If the file does not exist, skip this context file (nothing to rebuild — the file will be re-created next time export-skill runs)
+   - If the file exists but contains no `<!-- SKF:BEGIN -->` marker, skip this context file (no managed section to rewrite)
+   - If the file contains `<!-- SKF:BEGIN -->` but no matching `<!-- SKF:END -->`, record the error against that context file and continue to the next entry — do not halt the entire drop on a malformed context file. The manifest has already been updated in section 2 and is canonical state; the context file can be repaired manually and rebuilt on the next `[EX] Export Skill` run.
 
 3. **Build the exported skill set (version-aware, deprecated-excluded)** using the same logic as export-skill step-04 section 4b:
    - Read the manifest's `exports` object (already updated in section 2)
@@ -132,15 +126,9 @@ For each platform in `target_platforms`:
    - If the file is missing, fall back to the `active` symlink path, then skip with a warning if still not found
    - Collect successful snippets into the skill index
 
-5. **Rewrite root paths for the current platform** using export-skill step-04 section 4d logic:
+5. **Rewrite root paths for the current context file** using the generic rewrite algorithm from export-skill step-04 section 4d:
 
-   | Platform | Root Path Prefix |
-   |----------|-----------------|
-   | `claude` | `.claude/skills/` |
-   | `cursor` | `.cursor/skills/` |
-   | `copilot` | `.agents/skills/` |
-
-   For each snippet, detect its current `root:` prefix and rewrite it to the current platform's prefix if different.
+   For each snippet, parse the `root:` line (`root: {prefix}{skill-name}/`), strip the trailing `{skill-name}/` to extract the current prefix, and replace it with the current entry's `skill_root` if different.
 
 6. **Sort skills alphabetically by name.** Count totals (skills, stack skills).
 
@@ -174,7 +162,7 @@ For each platform in `target_platforms`:
    - Confirm `{target_skill}` (at the dropped version, or at all versions if skill-level) no longer appears between the markers
    - Confirm content outside the markers is byte-identical to what was preserved
 
-10. **On per-file failure:** record the error against that platform and continue to the next IDE. Do not halt — other platforms should still be rebuilt.
+10. **On per-file failure:** record the error against that context file and continue to the next entry. Do not halt — other context files should still be rebuilt.
 
 **After the loop,** record `platform_files_updated` as the list of files that were successfully rewritten, and `platform_files_failed` as the list of any that failed.
 

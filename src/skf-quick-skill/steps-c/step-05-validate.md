@@ -102,7 +102,7 @@ Check that SKILL.md has these required sections populated:
 Check context-snippet.md format compliance:
 
 - [ ] **Vercel-aligned indexed format** — pipe-delimited with version, retrieval instruction, section anchors
-- [ ] **First line** matches pattern: `[{name} v{version}]|root: {prefix}{name}/` where prefix is `skills/` or a platform root (`.claude/skills/`, `.cursor/skills/`, `.agents/skills/`)
+- [ ] **First line** matches pattern: `[{name} v{version}]|root: {prefix}{name}/` where prefix is `skills/` (draft form) or any IDE skill root (`.{dir}/skills/`)
 - [ ] **Second line** starts with: `|IMPORTANT:`
 - [ ] **Approximate token count** is ~80-120 tokens
 

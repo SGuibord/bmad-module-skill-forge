@@ -35,16 +35,21 @@ All workflows MUST use these templates when constructing paths. Never hardcode p
 | `{forge_version}` | `{forge_data_folder}/{skill-name}/{version}/` | Version-specific workspace artifacts — provenance-map.json, evidence-report.md, extraction-rules.yaml, test-report |
 | `{forge_group}` | `{forge_data_folder}/{skill-name}/` | Parent directory — contains skill-brief.yaml (version-independent) and version subdirectories |
 
-### Platform Paths (Unchanged — Flat)
+### IDE Skill Root Paths (Unchanged — Flat)
 
-| Platform | Root Path |
-|----------|-----------|
-| `claude` | `.claude/skills/{skill-name}/` |
+Each IDE has its own skill root path derived from its `target_dir` in `platform-codes.yaml`. The snippet `root:` line uses this path. Examples:
+
+| IDE | Root Path |
+|-----|-----------|
+| `claude-code` | `.claude/skills/{skill-name}/` |
 | `cursor` | `.cursor/skills/{skill-name}/` |
-| `copilot` | `.agents/skills/{skill-name}/` |
-| _(legacy)_ | `skills/{skill-name}/` |
+| `github-copilot` | `.github/skills/{skill-name}/` |
+| `windsurf` | `.windsurf/skills/{skill-name}/` |
+| _(draft/legacy)_ | `skills/{skill-name}/` |
 
-Platform paths are **not versioned**. The export workflow resolves the active version from the manifest and references its `{skill_package}` when building the managed section. The snippet `root:` always uses the flat platform path.
+See `skf-export-skill/assets/managed-section-format.md` for the complete IDE → Context File Mapping table with all 23 IDE root paths.
+
+IDE skill root paths are **not versioned**. The export workflow resolves the active version from the manifest and references its `{skill_package}` when building the managed section. The snippet `root:` always uses the flat IDE skill root path.
 
 ## Directory Structure
 

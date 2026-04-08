@@ -164,7 +164,7 @@ Regenerate the snippet using the format from the matching template file:
 - For single skills: `skf-create-skill/assets/skill-sections.md` (pipe-delimited indexed format)
 - For stack skills: `skf-create-stack-skill/assets/stack-skill-template.md`
 
-Use the **flat legacy form** for the `root:` path in the draft snippet: `root: skills/{skill-name}/`. The platform-specific prefix (`.claude/skills/`, `.cursor/skills/`, `.agents/skills/`) is applied later by `export-skill` step-03 when the skill is exported. Do not choose a platform prefix in update-skill — that is an export-time decision that depends on config.yaml.
+Use the **flat draft form** for the `root:` path in the draft snippet: `root: skills/{skill-name}/`. The per-IDE skill root (e.g., `.claude/skills/`, `.windsurf/skills/`, `.github/skills/` — see `skf-export-skill/assets/managed-section-format.md`) is applied later by `export-skill` step-03 when the skill is exported. Do not choose an IDE-specific prefix in update-skill — that is an export-time decision that depends on config.yaml.
 
 Pull values for the regenerated snippet from the updated metadata.json (version, top exports), the merged SKILL.md (section anchors, inline summaries), and the evidence report (new gotchas). If gotchas cannot be derived from the updated evidence but the prior snippet has a `|gotchas:` line, carry forward the prior line with the `[CARRIED]` marker — see `skf-export-skill/steps-c/step-03-generate-snippet.md` for the carry-forward protocol (one-cycle limit).
 

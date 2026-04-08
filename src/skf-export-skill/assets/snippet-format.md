@@ -1,16 +1,10 @@
 # Context Snippet Format (Vercel-Aligned Indexed Format)
 
-## Platform Root Path Mapping
+## Skill Root Path
 
-The snippet `root:` path must reflect the platform-specific skills directory:
+The snippet `root:` path must reflect the IDE's actual skill directory — its `skill_root` from the IDE → Context File Mapping table in `managed-section-format.md`. Each IDE has its own skill directory (e.g., `.claude/skills/`, `.windsurf/skills/`, `.github/skills/`).
 
-| Platform | Root Path Prefix |
-|----------|-----------------|
-| `claude` | `.claude/skills/` |
-| `cursor` | `.cursor/skills/` |
-| `copilot` | `.agents/skills/` |
-
-The root path in context-snippet.md on disk uses the **first platform in `target_platforms`** (the first entry from config.yaml IDE mapping, or the explicit `--platform` flag value if provided). When assembling managed sections for other platforms, step-04 rewrites root paths to match the target platform.
+The root path in context-snippet.md on disk uses the **`skill_root` of the first entry in `target_context_files`** (resolved in step-01 from config.yaml IDE mapping). When assembling managed sections for other context files, step-04 rewrites root paths to match the target context file's skill root.
 
 ## Format Rules
 
@@ -25,7 +19,7 @@ The root path in context-snippet.md on disk uses the **first platform in `target
 ## Single Skill Snippet Template
 
 ```markdown
-[{skill-name} v{version}]|root: {platform_root}{skill-name}/
+[{skill-name} v{version}]|root: {skill_root}{skill-name}/
 |IMPORTANT: {skill-name} v{version} — read SKILL.md before writing {skill-name} code. Do NOT rely on training data.
 |quick-start:{SKILL.md#quick-start}
 |api: {top exports with () for functions, comma-separated}
@@ -43,7 +37,7 @@ The root path in context-snippet.md on disk uses the **first platform in `target
 ## Stack Skill Snippet Template
 
 ```markdown
-[{project}-stack v{version}]|root: {platform_root}{project}-stack/
+[{project}-stack v{version}]|root: {skill_root}{project}-stack/
 |IMPORTANT: {project}-stack — read SKILL.md before writing integration code. Do NOT rely on training data.
 |stack: {dep-1}@{v1}, {dep-2}@{v2}, {dep-3}@{v3}
 |integrations: {pattern-1}, {pattern-2}

@@ -66,36 +66,29 @@ Determine the skill to export and any flags:
 - If no skills found, halt: "No skills found in {skills_output_folder}/. Run create-skill first."
 
 **Flag Parsing:**
-- `--platform` flag: Check if explicitly provided (claude/cursor/copilot)
+- `--context-file` flag: Check if explicitly provided (CLAUDE.md, .cursorrules, or AGENTS.md). Replaces the old `--platform` flag.
 - `--dry-run` flag: Check if provided. Default: `false`
 
-**Platform Resolution:**
+**Context File Resolution:**
 
-If `--platform` is explicitly provided, use that single platform as the sole target. If other IDEs are configured in config.yaml, emit a note: "**Note:** Exporting to {platform} only. config.yaml also lists: {other-ides}. Run without `--platform` to export to all configured IDEs."
+If `--context-file` is explicitly provided, use that single context file as the sole target. Determine the skill root from the first configured IDE that maps to that context file (or `.agents/skills/` for AGENTS.md if no matching IDE is configured). If other IDEs are configured in config.yaml, emit a note: "**Note:** Exporting to {context-file} only. config.yaml also lists: {other-ides}. Run without `--context-file` to export to all configured IDEs."
 
-If `--platform` is NOT provided, read the `ides` list from config.yaml and map each IDE to a target platform. Every IDE the installer offers has an explicit mapping — no silent skips.
+If `--context-file` is NOT provided, read the `ides` list from config.yaml and map each IDE to its context file and skill root using the "IDE → Context File Mapping" table in `skf-export-skill/assets/managed-section-format.md`. Every IDE the installer offers has an explicit mapping — no silent skips.
 
-| config.yaml IDE value | Platform | Rationale |
-|----------------------|----------|-----------|
-| `claude-code` | `claude` | native — reads `CLAUDE.md` and `.claude/skills/` |
-| `cursor` | `cursor` | native — reads `.cursorrules` and `.cursor/skills/` |
-| `github-copilot` | `copilot` | native — reads `AGENTS.md` and `.agents/skills/` |
-| `codex` | `copilot` | OpenAI Codex reads `AGENTS.md` (same convention as copilot) |
-| `cline` | `copilot` | uses `AGENTS.md` as a fallback context file |
-| `roo` | `copilot` | uses `AGENTS.md` as a fallback context file |
-| `windsurf` | `copilot` | uses `AGENTS.md` as a fallback context file |
-| `other` | `copilot` | generic AGENTS.md fallback |
-| Any other value | `copilot` | warn: "Unknown IDE '{value}' in config.yaml — defaulting to copilot (AGENTS.md)" |
+For each IDE in `config.yaml.ides`:
 
-When the same platform is produced by multiple IDE entries (e.g. both `codex` and `cline` map to `copilot`), deduplicate so each platform appears in `target_platforms` only once. Report the deduplication: "Multiple IDEs target the same platform — exporting to {platform} once."
+1. Look up its `context_file` and `skill_root` from the canonical mapping table
+2. If the IDE is not in the table, default to AGENTS.md / `.agents/skills/` and warn: "Unknown IDE '{value}' in config.yaml — defaulting to AGENTS.md with `.agents/skills/`"
+
+**Deduplication:** Group by `context_file`. When multiple IDE entries map to the same context file (e.g. both `codex` and `cline` map to AGENTS.md), deduplicate so each context file appears in `target_context_files` only once. Use the **first configured IDE's** `skill_root` for that context file. Report the deduplication: "Multiple IDEs target AGENTS.md — using {first-ide}'s skill root (`{skill_root}`). Each IDE's skills are installed to its own directory."
 
 **Missing-key handling:** If the `ides` key is absent from config.yaml (older installation or manually edited file), treat it as an empty list.
 
-- If mapping produces one or more platforms (after dedup), store as `target_platforms` list
-- If mapping produces zero platforms (empty ides list and no recognized entries), fall back to `["copilot"]` with note: "No IDEs configured in config.yaml — defaulting to copilot (AGENTS.md / .agents/skills/)."
+- If mapping produces one or more context files (after dedup), store as `target_context_files` list — each entry has `{context_file, skill_root}`
+- If mapping produces zero entries (empty ides list and no recognized entries), fall back to `[{context_file: "AGENTS.md", skill_root: ".agents/skills/"}]` with note: "No IDEs configured in config.yaml — defaulting to AGENTS.md with `.agents/skills/`."
 
 "**Skill:** {skill-name}
-**Platform(s):** {platform-list} ({target-file-list})
+**Context file(s):** {context-file-list} (skill root: {skill-root-list})
 **Dry Run:** {yes/no}"
 
 ### 2. Load and Validate Skill Artifacts

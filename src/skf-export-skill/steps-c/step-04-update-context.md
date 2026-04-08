@@ -68,51 +68,45 @@ Load {managedSectionData} and read the complete format template and three-case l
 
 ### 3. Determine Target File(s)
 
-Using the `target_platforms` list resolved in step-01, determine all target files:
+Using the `target_context_files` list resolved in step-01, determine all target files. Each entry has `{context_file, skill_root}` — the context file to write and the IDE's skill directory for root path resolution.
 
-| Platform | Target File |
-|----------|-------------|
-| `claude` | CLAUDE.md |
-| `cursor` | .cursorrules |
-| `copilot` | AGENTS.md |
+For each entry in `target_context_files`, resolve target file path: `{project-root}/{context_file}`
 
-For each platform in `target_platforms`, resolve target file path: `{project-root}/{target-file}`
+**If multiple context files:** Sections 4-9a execute as a loop — one full pass per target context file. Each iteration uses the same skill index but rewrites root paths per context file's `skill_root` (section 4d) and writes to the target context file. Section 9b executes once after all iterations complete.
 
-**If multiple platforms:** Sections 4-9a execute as a loop — one full pass per target platform. Each iteration uses the same skill index but rewrites root paths per platform (section 4d) and writes to the platform-specific target file. Section 9b executes once after all iterations complete.
-
-**Processing order:** Process platforms in the order listed in `target_platforms`.
+**Processing order:** Process context files in the order listed in `target_context_files`.
 
 #### 3b. Detect Orphaned Platform Files (Stale Managed Sections)
 
-A platform file becomes orphaned when its IDE is removed from `config.yaml` after a prior export. The file still contains an SKF managed section pointing to stale skill versions, but no future export will rewrite it.
+A context file becomes orphaned when its IDE is removed from `config.yaml` after a prior export. The file still contains an SKF managed section pointing to stale skill versions, but no future export will rewrite it.
 
-Build `orphaned_platform_files` — the set of platform context files that exist on disk with an `<!-- SKF:BEGIN -->` marker but whose platform is NOT in the current `target_platforms` list:
+Build `orphaned_context_files` — the set of context files that exist on disk with an `<!-- SKF:BEGIN -->` marker but whose context file is NOT in the current `target_context_files` list:
 
-1. For each platform in the full set `{claude, cursor, copilot}`:
-   - If the platform is in `target_platforms`, skip (it will be rewritten in the main loop)
-   - Otherwise, check whether its target file exists (`CLAUDE.md`, `.cursorrules`, or `AGENTS.md`)
+1. For each known context file in `{CLAUDE.md, .cursorrules, AGENTS.md}`:
+   - If the context file is in `target_context_files`, skip (it will be rewritten in the main loop)
+   - Otherwise, check whether the file exists at `{project-root}/{context_file}`
    - If the file exists, read it and check for the `<!-- SKF:BEGIN -->` marker
-   - If the marker is present, add the file path to `orphaned_platform_files` along with the platform name
+   - If the marker is present, add the file path to `orphaned_context_files` along with the context file name
 
-2. If `orphaned_platform_files` is non-empty, emit a warning:
+2. If `orphaned_context_files` is non-empty, emit a warning:
 
-   "**Orphaned platform files detected.** The following files contain SKF managed sections but their platforms are no longer in `config.yaml` `ides`:
-   {list: platform → file path}
+   "**Orphaned context files detected.** The following files contain SKF managed sections but no configured IDEs target them:
+   {list: context file → file path}
 
    The managed sections in these files are stale. Options:
    - **(a) clear** — remove the SKF managed section from each orphaned file (surgical marker replacement, leaves user content intact)
-   - **(b) keep** — leave them untouched (they will remain stale until you re-add the IDE or delete the file)
+   - **(b) keep** — leave them untouched (they will remain stale until you re-add an IDE that targets this file or delete the file)
    - **(c) rewrite** — also rewrite the orphaned files with the current skill index (use this if the IDE was removed by mistake)"
 
 3. Wait for user choice. In non-interactive mode (dry-run or unattended), default to **(b) keep** and print the warning only.
 
 4. If the user chose **(a) clear**: for each orphaned file, replace everything between `<!-- SKF:BEGIN` and `<!-- SKF:END -->` (inclusive) with an empty string, preserving surrounding content byte-exactly. Record the cleared files in `orphans_cleared`.
 
-5. If the user chose **(c) rewrite**: add each orphaned platform to a separate `rewrite_platforms` list (kept distinct from `target_platforms` so the user's intent to only export to configured IDEs is preserved in the manifest's `platforms` field). Sections 4–9a will loop over `target_platforms + rewrite_platforms` for this run only. Record the rewritten files in `orphans_rewritten`.
+5. If the user chose **(c) rewrite**: add each orphaned context file to a separate `rewrite_context_files` list (kept distinct from `target_context_files` so the user's intent to only export to configured IDEs is preserved in the manifest). Use `.agents/skills/` as the default skill root for rewritten orphans. Sections 4–9a will loop over `target_context_files + rewrite_context_files` for this run only. Record the rewritten files in `orphans_rewritten`.
 
 6. If the user chose **(b) keep**: record nothing and proceed.
 
-This cleanup only runs during interactive export. Drop-skill and rename-skill operate on the manifest's declared platforms and are not responsible for orphan detection.
+This cleanup only runs during interactive export. Drop-skill and rename-skill operate on the manifest's declared context files and are not responsible for orphan detection.
 
 ### 4. Rebuild Complete Skill Index
 
@@ -191,30 +185,22 @@ Instead of globbing `{skills_output_folder}/*/context-snippet.md`, resolve snipp
 
 **If no snippets pass the filter:** Generate managed section with zero skills — header only, no skill entries.
 
-#### 4d. Rewrite Root Paths for Target Platform
+#### 4d. Rewrite Root Paths for Target Context File
 
-The context-snippet.md files on disk contain root paths for the platform they were originally exported to. When assembling the managed section for the current target platform, rewrite root paths if they differ:
+The context-snippet.md files on disk contain root paths for the IDE they were originally exported to. When assembling the managed section for the current target context file, rewrite root paths if they differ from the target's `skill_root`.
 
-**Platform root path mapping:**
-
-| Platform | Root Path Prefix |
-|----------|-----------------|
-| `claude` | `.claude/skills/` |
-| `cursor` | `.cursor/skills/` |
-| `copilot` | `.agents/skills/` |
-| _(legacy)_ | `skills/` |
-
-The legacy `skills/` prefix may appear in snippets exported before platform-aware root paths were introduced, or in draft snippets generated by create-skill/quick-skill.
+**Generic root path rewrite algorithm** (no hardcoded prefix list):
 
 For each snippet being included in the managed section:
 
-1. Read the `root:` value from the snippet's first line
-2. Detect the current root prefix by matching against the known prefixes above (check platform-specific prefixes first, then fall back to legacy `skills/`)
-3. If the detected prefix does not match the current target platform's prefix, rewrite it
-4. Example: if snippet has `root: .claude/skills/my-lib/` but target is `cursor`, rewrite to `root: .cursor/skills/my-lib/`
-5. Example: if snippet has legacy `root: skills/my-lib/` and target is `copilot`, rewrite to `root: .agents/skills/my-lib/`
+1. Read the `root:` value from the snippet's first line — it has the form `root: {prefix}{skill-name}/`
+2. Extract the current prefix by stripping the trailing `{skill-name}/` from the root value
+3. Compare the extracted prefix against the current target's `skill_root`
+4. If they differ, replace the prefix with the target's `skill_root`, preserving the skill name
+5. Example: if snippet has `root: .claude/skills/my-lib/` but target skill_root is `.windsurf/skills/`, rewrite to `root: .windsurf/skills/my-lib/`
+6. Example: if snippet has legacy `root: skills/my-lib/` and target skill_root is `.github/skills/`, rewrite to `root: .github/skills/my-lib/`
 
-This ensures each platform's managed section points to the correct platform-specific skill directory, including during migration from pre-platform-aware exports.
+This algorithm handles any IDE's skill root path — including future IDEs — without enumerating known prefixes. The legacy `skills/` prefix (no leading dot) may appear in draft snippets generated by create-skill/quick-skill before export.
 
 **Sort skills alphabetically by name.**
 
@@ -370,8 +356,8 @@ ONLY WHEN the user confirms changes by selecting 'C' (or auto-proceed in dry-run
 
 - Managed section format loaded from {managedSectionData}
 - Target file(s) correctly determined from platform flag or config.yaml ides list
-- Multi-platform loop executed for all target_platforms
-- Root paths rewritten per platform in managed section
+- Multi-context-file loop executed for all target_context_files
+- Root paths rewritten per context file's skill_root in managed section
 - Complete skill index rebuilt from exported skills only (filtered via .export-manifest.json per ADR-K)
 - Export manifest updated after successful write (non-dry-run only)
 - Correct case detected (create/append/regenerate)
