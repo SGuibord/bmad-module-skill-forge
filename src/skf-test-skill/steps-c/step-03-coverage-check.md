@@ -39,23 +39,45 @@ Load `{sourceAccessProtocol}` and follow both sections:
 
 ### 1. Extract Documented Exports from SKILL.md
 
-Read SKILL.md and extract all documented items:
+<!-- Subagent delegation: read SKILL.md + references/*.md, return compact JSON inventory -->
 
-- **Functions:** name, parameters, return type, description
-- **Classes:** name, methods, properties
-- **Types/Interfaces:** name, fields
-- **Constants/Enums:** name, values
-- **Hooks/Patterns:** name, usage signature
+Delegate reading of the skill under test to a subagent. The subagent receives the path to SKILL.md (and the `references/` directory path if it exists) and MUST:
+1. Read SKILL.md
+2. If a `references/` directory exists alongside SKILL.md and SKILL.md's `## Full` headings are absent or stubs, also read all `references/*.md` files
+3. ONLY return this compact JSON inventory — no prose, no extra commentary:
 
-Build the **documented inventory** — a list of everything the SKILL.md claims the source provides.
+```json
+{
+  "exports": [
+    {"name": "functionName", "kind": "function", "params": "...", "return_type": "...", "description": "..."},
+    {"name": "ClassName", "kind": "class", "methods": ["..."], "properties": ["..."]},
+    {"name": "TypeName", "kind": "type", "fields": ["..."]},
+    {"name": "CONST_NAME", "kind": "constant", "values": ["..."]},
+    {"name": "useHook", "kind": "hook", "usage_signature": "..."}
+  ],
+  "capabilities": ["brief capability descriptions from the skill overview"],
+  "references": ["references/api-reference.md", "references/type-definitions.md"],
+  "cross_check_mismatches": [
+    {
+      "export": "functionName",
+      "skill_md_line": 42,
+      "reference_file": "references/api-reference.md",
+      "reference_line": 18,
+      "issue": "description of the signature mismatch"
+    }
+  ]
+}
+```
 
-**Split-body traversal:** If a `references/` directory exists alongside SKILL.md and SKILL.md's `## Full` headings are absent or stubs (not a stack skill's structural references), extend the documented inventory scan to include all `references/*.md` files. After split-body, Tier 2 content (Full API Reference, Full Type Definitions) lives in reference files — the inventory must reflect the full skill content regardless of where it resides.
+**Parent uses this JSON summary as the documented inventory.** Do not load SKILL.md or references file contents into parent context.
+
+**Split-body traversal** is handled inside the subagent: if `references/` exists and `## Full` headings are absent or stubs in SKILL.md, the subagent extends its scan to all `references/*.md` files and includes them in the `exports` array. After split-body, Tier 2 content (Full API Reference, Full Type Definitions) lives in reference files — the inventory must reflect the full skill content regardless of where it resides.
 
 ### 1b. Cross-Check Split-Body Consistency
 
-**Only execute if a `references/` directory exists alongside SKILL.md** (detected during split-body traversal in Section 1). Skip silently otherwise.
+**Only execute if the subagent's `references` array is non-empty** (detected during split-body traversal in Section 1). Skip silently otherwise.
 
-For each function, class, type, or interface that appears in BOTH the SKILL.md body AND any `references/*.md` file, compare the documented signatures:
+The subagent has already read both SKILL.md body and `references/*.md` files. For each function, class, type, or interface that appears in BOTH the SKILL.md body AND any `references/*.md` file, instruct the subagent (or perform in the same subagent call from Section 1) to compare the documented signatures and include mismatches in its JSON output as a `cross_check_mismatches` array:
 
 - **Parameters:** name, type, order, optionality
 - **Return types:** exact type match
@@ -63,7 +85,7 @@ For each function, class, type, or interface that appears in BOTH the SKILL.md b
 
 **SKILL.md body is authoritative.** When a mismatch is found, the reference file is the one that needs updating.
 
-Build a split-body consistency findings list:
+Parent reads `cross_check_mismatches` from the subagent JSON summary. Build the split-body consistency findings list:
 
 ```json
 {

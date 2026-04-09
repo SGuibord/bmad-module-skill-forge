@@ -66,6 +66,11 @@ If there were warnings from extraction, validation, or enrichment, display them:
 
 If no warnings, omit this section entirely.
 
+**Next steps:** After reviewing the report, recommend the next workflow:
+- **TS** (test skill) — verify completeness before export
+- **EX** (export) — publish to your IDE's context system
+- If issues were flagged, suggest **reviewing the SKILL.md** and re-running compilation
+
 ### 4. Suggest Next Steps
 
 "**Recommended next steps:**
@@ -105,6 +110,12 @@ Set `batch_active: false` in `{sidecar_path}/batch-state.yaml` to prevent stale 
 **If not batch mode:**
 
 End workflow. No further steps.
+
+### Result Contract
+
+**If not batch mode (or all batch briefs complete):**
+
+Write `{skill_package}/create-skill-result.json` per `shared/references/output-contract-schema.md`. Include `SKILL.md`, `context-snippet.md`, and `metadata.json` paths in `outputs` and confidence distribution in `summary`.
 
 ### 6. Workflow Health Check
 

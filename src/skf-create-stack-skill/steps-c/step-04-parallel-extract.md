@@ -24,7 +24,7 @@ For each confirmed dependency, extract key exports, usage patterns, and API surf
 
 "**Extraction data already available from individual skills. Skipping extraction phase.**"
 
-For each confirmed skill, load SKILL.md from the version-aware path resolved in step-02. Use `skill_package_path` (stored in step-02) directly — this already points to the resolved `{skill_package}` or `{active_skill}` directory containing the skill's artifacts. If `skill_package_path` is not available, resolve via the `{active_skill}` template: `{skills_output_folder}/{skill_dir}/active/{skill_dir}/SKILL.md` (see [knowledge/version-paths.md](../../knowledge/version-paths.md)). Build a `per_library_extractions[]` entry for each skill with the following fields:
+For each confirmed skill, load SKILL.md from the version-aware path resolved in step-02. Use `skill_package_path` (stored in step-02) directly — this already points to the resolved `{skill_package}` or `{active_skill}` directory containing the skill's artifacts. If `skill_package_path` is not available, resolve via the `{active_skill}` template: `{skills_output_folder}/{skill_dir}/active/{skill_dir}/SKILL.md` (see `knowledge/version-paths.md`). Build a `per_library_extractions[]` entry for each skill with the following fields:
 - `library`: skill name from metadata.json
 - `exports`: exports list extracted from the SKILL.md exports section
 - `usage_patterns`: usage patterns from the SKILL.md usage section
@@ -81,7 +81,7 @@ For each library in `confirmed_dependencies`, determine extraction strategy base
   - Query `qmd_bridge.search("{library_name} deprecated OR removed OR breaking change")` for deprecation context
   - Query `qmd_bridge.search("{library_name} migration OR upgrade")` for migration patterns
   - Query `qmd_bridge.search("{library_name} version issue OR bug OR workaround")` for version-specific warnings
-  - **Tool resolution for qmd_bridge:** Use QMD MCP tools — `mcp__plugin_qmd-plugin_qmd__search` (Claude Code), qmd MCP server (Cursor), `qmd search "{query}"` (CLI). See [knowledge/tool-resolution.md](../../knowledge/tool-resolution.md)
+  - **Tool resolution for qmd_bridge:** Use QMD MCP tools — `mcp__plugin_qmd-plugin_qmd__search` (Claude Code), qmd MCP server (Cursor), `qmd search "{query}"` (CLI). See `knowledge/tool-resolution.md`
   - Classify each result as T2-past (historical) or T2-future (planned changes) per confidence-tiers.md
   - Append temporal findings to the library's extraction as T2 annotations with `[QMD:{collection}:{doc}]` citations
 - **If no matching temporal collection found:**

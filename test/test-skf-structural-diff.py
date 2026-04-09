@@ -13,7 +13,7 @@ spec = importlib.util.spec_from_file_location(
 )
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
-diff_exports = mod.diff_exports
+diff_inventories = mod.diff_inventories
 
 
 @pytest.fixture()
@@ -25,37 +25,38 @@ def baseline():
 
 
 class TestNoChanges:
-    def test_identical_exports_zero_findings(self, baseline):
-        r = diff_exports(baseline, baseline)
-        assert r["total_findings"] == 0
+    def test_identical_exports_zero_diff(self, baseline):
+        r = diff_inventories(baseline, baseline)
+        s = r["summary"]
+        assert s["added"] == 0 and s["removed"] == 0 and s["changed"] == 0 and s["moved"] == 0
 
-    def test_identical_exports_baseline_count(self, baseline):
-        r = diff_exports(baseline, baseline)
-        assert r["baseline_count"] == 2
+    def test_identical_exports_unchanged_count(self, baseline):
+        r = diff_inventories(baseline, baseline)
+        assert r["unchanged_count"] == 2
 
 
 class TestAddedExports:
     def test_one_added(self, baseline):
         current = baseline + [{"name": "baz", "file": "src/utils.ts", "line": 5, "type": "function"}]
-        r = diff_exports(baseline, current)
-        assert r["by_type"]["added"] == 1
+        r = diff_inventories(baseline, current)
+        assert r["summary"]["added"] == 1
 
     def test_added_name_is_baz(self, baseline):
         current = baseline + [{"name": "baz", "file": "src/utils.ts", "line": 5, "type": "function"}]
-        r = diff_exports(baseline, current)
-        assert r["findings"][0]["name"] == "baz"
+        r = diff_inventories(baseline, current)
+        assert r["added"][0]["name"] == "baz"
 
 
 class TestRemovedExports:
     def test_one_removed(self, baseline):
         current = baseline + [{"name": "baz", "file": "src/utils.ts", "line": 5, "type": "function"}]
-        r = diff_exports(current, baseline)
-        assert r["by_type"]["removed"] == 1
+        r = diff_inventories(current, baseline)
+        assert r["summary"]["removed"] == 1
 
     def test_removed_name_is_baz(self, baseline):
         current = baseline + [{"name": "baz", "file": "src/utils.ts", "line": 5, "type": "function"}]
-        r = diff_exports(current, baseline)
-        assert r["findings"][0]["name"] == "baz"
+        r = diff_inventories(current, baseline)
+        assert r["removed"][0]["name"] == "baz"
 
 
 class TestMovedExport:
@@ -64,71 +65,69 @@ class TestMovedExport:
             {"name": "foo", "file": "src/new-location.ts", "line": 15, "type": "function"},
             {"name": "Bar", "file": "src/index.ts", "line": 20, "type": "class"},
         ]
-        r = diff_exports(baseline, moved_current)
-        assert r["by_type"]["moved"] == 1
+        r = diff_inventories(baseline, moved_current)
+        assert r["summary"]["moved"] == 1
 
     def test_moved_previous_file(self, baseline):
         moved_current = [
             {"name": "foo", "file": "src/new-location.ts", "line": 15, "type": "function"},
             {"name": "Bar", "file": "src/index.ts", "line": 20, "type": "class"},
         ]
-        r = diff_exports(baseline, moved_current)
-        moved_finding = [f for f in r["findings"] if f["type"] == "moved"][0]
-        assert moved_finding["previous_file"] == "src/index.ts"
+        r = diff_inventories(baseline, moved_current)
+        assert r["moved"][0]["previous_file"] == "src/index.ts"
 
     def test_moved_new_file(self, baseline):
         moved_current = [
             {"name": "foo", "file": "src/new-location.ts", "line": 15, "type": "function"},
             {"name": "Bar", "file": "src/index.ts", "line": 20, "type": "class"},
         ]
-        r = diff_exports(baseline, moved_current)
-        moved_finding = [f for f in r["findings"] if f["type"] == "moved"][0]
-        assert moved_finding["file"] == "src/new-location.ts"
+        r = diff_inventories(baseline, moved_current)
+        assert r["moved"][0]["current_file"] == "src/new-location.ts"
 
 
 class TestChangedSignature:
     def test_one_changed(self):
         base_with_sig = [{"name": "foo", "file": "src/index.ts", "line": 10, "type": "function", "signature": "foo(a: string): void"}]
         curr_with_sig = [{"name": "foo", "file": "src/index.ts", "line": 10, "type": "function", "signature": "foo(a: string, b: number): void"}]
-        r = diff_exports(base_with_sig, curr_with_sig)
-        assert r["by_type"]["changed"] == 1
+        r = diff_inventories(base_with_sig, curr_with_sig)
+        assert r["summary"]["changed"] == 1
 
-    def test_category_is_signature(self):
+    def test_changed_field_is_signature(self):
         base_with_sig = [{"name": "foo", "file": "src/index.ts", "line": 10, "type": "function", "signature": "foo(a: string): void"}]
         curr_with_sig = [{"name": "foo", "file": "src/index.ts", "line": 10, "type": "function", "signature": "foo(a: string, b: number): void"}]
-        r = diff_exports(base_with_sig, curr_with_sig)
-        changed = [f for f in r["findings"] if f["type"] == "changed"][0]
-        assert changed["category"] == "signature"
+        r = diff_inventories(base_with_sig, curr_with_sig)
+        sig_change = [c for c in r["changed"] if c["field"] == "signature"]
+        assert len(sig_change) == 1
 
 
 class TestTypeChanged:
     def test_type_change_detected(self):
         base_type = [{"name": "foo", "file": "src/index.ts", "line": 10, "type": "function"}]
         curr_type = [{"name": "foo", "file": "src/index.ts", "line": 10, "type": "class"}]
-        r = diff_exports(base_type, curr_type)
-        assert r["by_type"]["changed"] == 1
+        r = diff_inventories(base_type, curr_type)
+        assert r["summary"]["changed"] == 1
 
 
 class TestEmptyBaseline:
     def test_all_added_from_empty(self, baseline):
         current = baseline + [{"name": "baz", "file": "src/utils.ts", "line": 5, "type": "function"}]
-        r = diff_exports([], current)
-        assert r["by_type"]["added"] == 3
+        r = diff_inventories([], current)
+        assert r["summary"]["added"] == 3
 
-    def test_baseline_empty(self, baseline):
+    def test_unchanged_zero(self, baseline):
         current = baseline + [{"name": "baz", "file": "src/utils.ts", "line": 5, "type": "function"}]
-        r = diff_exports([], current)
-        assert r["baseline_count"] == 0
+        r = diff_inventories([], current)
+        assert r["unchanged_count"] == 0
 
 
 class TestEmptyCurrent:
     def test_all_removed(self, baseline):
-        r = diff_exports(baseline, [])
-        assert r["by_type"]["removed"] == 2
+        r = diff_inventories(baseline, [])
+        assert r["summary"]["removed"] == 2
 
 
 class TestMixedChanges:
-    def test_at_least_three_findings(self):
+    def test_has_added_and_removed(self):
         base = [
             {"name": "a", "file": "src/a.ts", "line": 1, "type": "function"},
             {"name": "b", "file": "src/b.ts", "line": 1, "type": "function", "signature": "b(): void"},
@@ -139,8 +138,8 @@ class TestMixedChanges:
             {"name": "b", "file": "src/b.ts", "line": 1, "type": "function", "signature": "b(x: number): void"},  # signature changed
             {"name": "d", "file": "src/d.ts", "line": 1, "type": "class"},  # added (c removed)
         ]
-        r = diff_exports(base, curr)
-        assert r["total_findings"] >= 3
+        r = diff_inventories(base, curr)
+        assert r["summary"]["added"] >= 1 and r["summary"]["removed"] >= 1
 
     def test_has_moved(self):
         base = [
@@ -153,8 +152,8 @@ class TestMixedChanges:
             {"name": "b", "file": "src/b.ts", "line": 1, "type": "function", "signature": "b(x: number): void"},
             {"name": "d", "file": "src/d.ts", "line": 1, "type": "class"},
         ]
-        r = diff_exports(base, curr)
-        assert r["by_type"]["moved"] >= 1
+        r = diff_inventories(base, curr)
+        assert r["summary"]["moved"] >= 1
 
     def test_has_changed(self):
         base = [
@@ -167,5 +166,5 @@ class TestMixedChanges:
             {"name": "b", "file": "src/b.ts", "line": 1, "type": "function", "signature": "b(x: number): void"},
             {"name": "d", "file": "src/d.ts", "line": 1, "type": "class"},
         ]
-        r = diff_exports(base, curr)
-        assert r["by_type"]["changed"] >= 1
+        r = diff_inventories(base, curr)
+        assert r["summary"]["changed"] >= 1

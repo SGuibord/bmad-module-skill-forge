@@ -23,7 +23,7 @@ Load the existing skill and all its provenance data, detect whether this is an i
 "**Which skill would you like to update?**
 
 Provide either:
-- A skill name (resolves via version-aware path resolution — see [knowledge/version-paths.md](../../knowledge/version-paths.md))
+- A skill name (resolves via version-aware path resolution — see `knowledge/version-paths.md`)
 - A full path to the skill folder
 - A skill name with `--from-test-report` to use the test report's gap findings instead of source drift detection
 
@@ -53,8 +53,19 @@ Search for the test report at `{forge_data_folder}/{skill_name}/{active_version}
 - If missing: **ABORT** — "No metadata.json found. This skill may have been created manually. Run create-skill to generate provenance data."
 
 **Detect skill type from metadata:**
-- If `skill_type == "stack"`: flag as stack skill (multi-file update mode)
 - If `skill_type == "single"` or absent: flag as single skill
+- If `skill_type == "stack"`: flag as stack skill (multi-file update mode)
+
+### Stack Skill Guard
+
+After loading metadata.json, check `skill_type`:
+- If `skill_type` is `"stack"`: display message:
+  "**Stack skills cannot be surgically updated.** Stack skills compose exports from multiple sources — surgical re-extraction requires re-running the full composition pipeline.
+  
+  **To update this stack skill**, run `skf-create-stack-skill` with the same project path. It will re-analyze manifests (code-mode) or re-read constituent skills (compose-mode) and produce an updated stack.
+  
+  If you came here from an audit report, the drift report identifies which constituent libraries changed — use that to decide whether re-composition is needed."
+- Exit the workflow (do not proceed to step-02)
 
 ### 3. Load Forge Tier Configuration
 

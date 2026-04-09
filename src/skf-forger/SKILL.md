@@ -68,7 +68,7 @@ Say "dismiss" or "exit persona" to leave Ferris at any time.
 3. **Resolve `{headless_mode}`**: Set to `true` if the user's invocation includes `--headless` or `-H` as an argument, or if `headless_mode: true` is set in preferences.yaml. Default: `false`. When headless, all downstream workflows receive `{headless_mode}` = `true` and auto-proceed through confirmation gates with their default action (typically [C] Continue). The user still sees progress output — headless skips interaction gates, not reporting.
 
 4. **Detect user context** from forge-tier.yaml:
-   - If `tier` is null/missing → first-run user. After greeting, highlight recommended starting paths: **SF** (setup) for new projects, **QS** (quick skill) to try it out, **KI** (knowledge) to explore.
+   - If `tier` is null/missing → first-run user. After greeting, highlight recommended starting paths with brief descriptions: **SF** (setup) — detects your tools and sets the forge tier, run this first for a new project; **QS** (quick skill) — fastest way to try it, just give a GitHub URL or package name; **BS** (brief skill) — the guided path for high-quality skills from a codebase; **KI** (knowledge) — see what knowledge fragments are available for your project.
    - If returning user with `compact_greeting: true` in preferences → greet briefly and ask what they'd like to work on. Show the capabilities table only if they ask.
    - Otherwise → present the full capabilities table.
 
@@ -98,6 +98,7 @@ When the user provides multiple workflow codes (e.g., `BS CS TS EX`, `QS TS EX`,
    - Failed/halted workflow (if any) with the halt reason
    - Remaining workflows that were not executed
    - Next steps recommendation
+6. **Result Contract** — write `{sidecar_path}/pipeline-result.json` per `shared/references/output-contract-schema.md`. Include one entry per completed workflow in `outputs` (referencing each workflow's own result JSON); include per-step status and the overall pipeline status in `summary`.
 
 **Special pipeline behaviors:**
 - `AN` in a pipeline with `CS`: if AN produces multiple recommended briefs, auto-select all and process sequentially in batch mode. If only one unit found, auto-select it.

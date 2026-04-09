@@ -80,7 +80,7 @@ This cleanup only runs during interactive export. Drop-skill and rename-skill op
 
 #### 4a. Read Export Manifest (v2 — version-aware)
 
-Read `{skills_output_folder}/.export-manifest.json` — see [knowledge/version-paths.md](../../knowledge/version-paths.md) for the full v2 schema:
+Read `{skills_output_folder}/.export-manifest.json` — see `knowledge/version-paths.md` for the full v2 schema:
 
 **If the file exists:** Parse JSON. Check for `schema_version` field:
 

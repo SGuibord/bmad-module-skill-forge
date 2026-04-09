@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-02-execute.md'
-versionPathsKnowledge: '../../knowledge/version-paths.md'
+versionPathsKnowledge: 'knowledge/version-paths.md'
 ---
 
 # Step 1: Select Drop Target

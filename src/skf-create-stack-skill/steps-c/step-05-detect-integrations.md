@@ -49,7 +49,7 @@ All integration evidence inherits confidence tiers from the source skills. Load 
 **VS verdict parsing (if feasibility report exists):** Read the `overall_verdict` from the report's YAML frontmatter. Parse the `## Integration Verdicts` markdown table for per-pair verdicts. For each architecture-detected pair, include `VS overall: {verdict}` and `VS pair: {verdict}` in the integration evidence per the format in `{composeModeRules}`. VS verdicts do not apply to inferred integrations since the VS report operates on architecture-described interactions only. Additionally, flag any pairs where VS reported `Risky` or `Blocked` by appending a `[VS: Risky]` or `[VS: Blocked]` warning annotation to the integration entry.
 
 If no architecture document available:
-- Infer potential integrations from skills sharing the same `language` field or sharing domain keywords in their SKILL.md descriptions (use the `usage_patterns` and `exports` fields from `per_library_extractions[]` built in step-04, or reload SKILL.md from the version-aware path: use `skill_package_path` from step-02, or resolve via `{skills_output_folder}/{skill_dir}/active/{skill_dir}/SKILL.md` — see [knowledge/version-paths.md](../../knowledge/version-paths.md))
+- Infer potential integrations from skills sharing the same `language` field or sharing domain keywords in their SKILL.md descriptions (use the `usage_patterns` and `exports` fields from `per_library_extractions[]` built in step-04, or reload SKILL.md from the version-aware path: use `skill_package_path` from step-02, or resolve via `{skills_output_folder}/{skill_dir}/active/{skill_dir}/SKILL.md` — see `knowledge/version-paths.md`)
 - Mark inferred integrations: `[inferred from shared domain]` — use this suffix instead of `[composed]` for inferred integrations
 - Inferred integrations qualify automatically — no file-count threshold applies
 
@@ -61,7 +61,7 @@ For each library pair (A, B):
 
 **Launch a subprocess** that greps across all source files to find files importing BOTH library A and library B. Return only file paths and import line numbers.
 
-**Subprocess resolution:** Use the Grep tool (Claude Code), built-in search (Cursor), or `grep`/`rg` (CLI). See [knowledge/tool-resolution.md](../../knowledge/tool-resolution.md).
+**Subprocess resolution:** Use the Grep tool (Claude Code), built-in search (Cursor), or `grep`/`rg` (CLI). See `knowledge/tool-resolution.md`.
 
 **Subprocess returns:** `{pair: [A, B], co_import_files: [{path, line_A, line_B}], count: N}`
 
@@ -75,7 +75,7 @@ If `tools.ccc` is true AND `ccc_index.status` is `"fresh"` or `"stale"` in forge
 
 For each library pair that has exactly 1 co-import file (below the 2-file threshold), run `ccc_bridge.search("{libA} {libB}", source_root, top_k=10)` to find files where the two libraries interact semantically — even without explicit import co-location. If CCC returns additional files where both libraries appear, add them to the pair's co-import candidate list and re-evaluate against the 2-file threshold.
 
-**Tool resolution for ccc_bridge.search:** Use `/ccc` skill search (Claude Code), ccc MCP server (Cursor), or `ccc search "{libA} {libB}" --path {source_root} --top 10` (CLI). See [knowledge/tool-resolution.md](../../knowledge/tool-resolution.md).
+**Tool resolution for ccc_bridge.search:** Use `/ccc` skill search (Claude Code), ccc MCP server (Cursor), or `ccc search "{libA} {libB}" --path {source_root} --top 10` (CLI). See `knowledge/tool-resolution.md`.
 
 For pairs that already qualify (2+ files), CCC is not needed for detection — but the CCC results may surface additional integration files for richer classification in section 3.
 

@@ -132,45 +132,84 @@ Write workspace artifacts to `{forge_version}`:
 **In code-mode:**
 ```json
 {
-  "libraries": {
-    "lib_name": {
-      "manifest_source": "package.json",
-      "extraction_method": "ast_bridge|source_reading|qmd_bridge",
+  "provenance_version": "2.0",
+  "skill_name": "{project_name}-stack",
+  "skill_type": "stack",
+  "source_repo": ["{repo_url_1}", "{repo_url_2}"],
+  "source_commit": {"{repo_1}": "{hash_1}", "{repo_2}": "{hash_2}"},
+  "generated_at": "{ISO-8601}",
+  "entries": [
+    {
+      "export_name": "{name}",
+      "export_type": "{type}",
+      "source_library": "{library-name}",
+      "params": [],
+      "return_type": "{type}",
+      "source_file": "{file}",
+      "source_line": 0,
       "confidence": "T1|T1-low|T2",
-      "files_analyzed": N,
-      "exports_found": N
+      "extraction_method": "ast_bridge|source_reading|qmd_bridge",
+      "signature_source": "T1|T2|T3"
     }
-  },
-  "integrations": {
-    "libA+libB": {
+  ],
+  "integrations": [
+    {
+      "libraries": ["{libA}", "{libB}"],
+      "pattern_type": "{type}",
       "detection_method": "co-import grep",
-      "co_import_files": N,
-      "type": "pattern_type"
+      "co_import_files": [{"file": "{path}", "line": 0}],
+      "confidence": "T1|T2"
     }
-  }
+  ]
 }
 ```
 
 **In compose-mode:**
 ```json
 {
-  "libraries": {
-    "lib_name": {
-      "source_skill_path": "skills/{skill_dir}/",
-      "compose_source": "architecture_co_mention|inferred_from_shared_domain",
+  "provenance_version": "2.0",
+  "skill_name": "{project_name}-stack",
+  "skill_type": "stack",
+  "source_repo": null,
+  "source_commit": null,
+  "source_ref": null,
+  "generated_at": "{ISO-8601}",
+  "entries": [
+    {
+      "export_name": "{name}",
+      "export_type": "{type}",
+      "source_library": "{library-name}",
+      "params": [],
+      "return_type": "{type}",
+      "source_file": "{from constituent skill}",
+      "source_line": 0,
       "confidence": "T1|T1-low|T2",
-      "source_skill_tier": "{original skill confidence tier}",
-      "exports_found": N
+      "extraction_method": "compose-from-skill",
+      "signature_source": "T1|T2|T3"
     }
-  },
-  "integrations": {
-    "libA+libB": {
+  ],
+  "integrations": [
+    {
+      "libraries": ["{libA}", "{libB}"],
+      "pattern_type": "{type}",
       "detection_method": "architecture_co_mention|inferred_from_shared_domain",
-      "type": "pattern_type"
+      "co_import_files": [],
+      "confidence": "T2|T3"
     }
-  }
+  ],
+  "constituents": [
+    {
+      "skill_name": "{constituent-skill-name}",
+      "skill_path": "skills/{skill-dir}/",
+      "version": "{version from constituent metadata.json}",
+      "composed_at": "{ISO-8601}",
+      "metadata_hash": "sha256:{hash of constituent metadata.json}"
+    }
+  ]
 }
 ```
+
+> **Note:** Per-export entries use the same schema as single skills (see `skill-sections.md`), with `source_library` identifying the originating library. In compose-mode, `constituents[]` enables audit to detect constituent drift via metadata hash comparison.
 
 **evidence-report.md:**
 - Extraction summary per library

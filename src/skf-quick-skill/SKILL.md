@@ -1,6 +1,6 @@
 ---
 name: skf-quick-skill
-description: Fast skill from a package name or GitHub URL — no brief needed. Use when the user requests a "quick skill" or "create a skill from URL."
+description: Fast skill from a package name or GitHub URL — no brief needed. Use when the user requests a "quick skill" or "skill from URL" or "skill from package."
 ---
 
 # Quick Skill

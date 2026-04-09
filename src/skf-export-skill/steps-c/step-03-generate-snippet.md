@@ -36,7 +36,7 @@ Load {snippetFormatData} and read the format template for the skill type.
 
 Before generating new snippet content, check for a prior snippet:
 
-1. Read `{resolved_skill_package}/context-snippet.md` if it exists (resolved in step-01 — see [knowledge/version-paths.md](../../knowledge/version-paths.md))
+1. Read `{resolved_skill_package}/context-snippet.md` if it exists (resolved in step-01 — see `knowledge/version-paths.md`)
 2. If it exists, extract the `|gotchas:` line (if any). Trim leading whitespace and the `|gotchas:` prefix, then capture the remaining content as `prior_gotchas_content`.
 3. **Detect the carry-forward marker:** If `prior_gotchas_content` starts with the token `[CARRIED]` (whitespace-insensitive), set `prior_gotchas_already_carried = true` and strip the marker before storing the remainder. Otherwise set `prior_gotchas_already_carried = false`.
 4. **Distinguish empty from absent:** If the `|gotchas:` line exists but has no non-whitespace content after the prefix, treat it as **absent** — set `prior_gotchas = null`. Only a non-empty value counts as a prior gotchas line worth carrying forward.

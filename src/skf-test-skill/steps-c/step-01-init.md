@@ -35,7 +35,7 @@ Provide the skill path or name. I'll search in `{skillsOutputFolder}`.
 
 ### 2. Validate Skill Exists (version-aware)
 
-Resolve the skill path using version-aware resolution (see [knowledge/version-paths.md](../../knowledge/version-paths.md)):
+Resolve the skill path using version-aware resolution (see `knowledge/version-paths.md`):
 
 1. Read `{skillsOutputFolder}/.export-manifest.json` and look up the skill name in `exports` to get `active_version`
 2. If found: resolve to `{skill_package}` = `{skillsOutputFolder}/{skill_name}/{active_version}/{skill_name}/`

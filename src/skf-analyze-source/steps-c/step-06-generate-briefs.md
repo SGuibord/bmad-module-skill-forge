@@ -178,7 +178,11 @@ nextWorkflow: '{primary recommendation}'
 
 **This analysis is complete.** To refine any brief, run the recommended next workflow. To re-analyze with different scope, run analyze-source again."
 
-### 9. Workflow Health Check
+### 9. Result Contract
+
+Write `{forge_data_folder}/analyze-source-result.json` per `shared/references/output-contract-schema.md`. Include all generated `skill-brief.yaml` paths in `outputs` and brief counts in `summary`.
+
+### 10. Workflow Health Check
 
 Load and execute `{nextStepFile}` for workflow self-improvement check.
 

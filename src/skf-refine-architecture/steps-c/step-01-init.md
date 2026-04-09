@@ -40,7 +40,7 @@ Wait for user input. Store the validated architecture document path as `architec
 
 ### 2. Scan Skills Folder
 
-Read the `{skills_output_folder}` directory. Skills use a version-nested directory structure (see [knowledge/version-paths.md](../../knowledge/version-paths.md)).
+Read the `{skills_output_folder}` directory. Skills use a version-nested directory structure (see `knowledge/version-paths.md`).
 
 **Version-aware skill discovery:**
 1. Read `{skills_output_folder}/.export-manifest.json` if it exists. For each skill in `exports`, use `active_version` to resolve `{skill_package}` = `{skills_output_folder}/{skill-name}/{active_version}/{skill-name}/`

@@ -1,9 +1,9 @@
 ---
 nextStepFile: './step-04-merge.md'
-extractionPatternsData: '../../skf-create-skill/references/extraction-patterns.md'
-extractionPatternsTracingData: '../../skf-create-skill/references/extraction-patterns-tracing.md'
+extractionPatternsData: 'skf-create-skill/references/extraction-patterns.md'
+extractionPatternsTracingData: 'skf-create-skill/references/extraction-patterns-tracing.md'
 remoteSourceResolutionData: 'references/remote-source-resolution.md'
-tierDegradationRulesData: '../../skf-create-skill/references/tier-degradation-rules.md'
+tierDegradationRulesData: 'skf-create-skill/references/tier-degradation-rules.md'
 ---
 
 # Step 3: Re-Extract Changed Exports
@@ -80,7 +80,7 @@ Perform tier-aware extraction on only the changed files identified in step 02, p
 - QMD provides: usage patterns, historical context, related documentation
 - Confidence: T1 for structural, T2 for semantic enrichment
 
-**Tool resolution:** `ast_bridge` → ast-grep MCP tools (`find_code`, `find_code_by_rule`) or `ast-grep` CLI. `qmd_bridge` → QMD MCP tools (`mcp__plugin_qmd-plugin_qmd__search`, `vector_search`) or `qmd` CLI. See [knowledge/tool-resolution.md](../../knowledge/tool-resolution.md).
+**Tool resolution:** `ast_bridge` → ast-grep MCP tools (`find_code`, `find_code_by_rule`) or `ast-grep` CLI. `qmd_bridge` → QMD MCP tools (`mcp__plugin_qmd-plugin_qmd__search`, `vector_search`) or `qmd` CLI. See `knowledge/tool-resolution.md`.
 
 ### 2. Extract Changed Files
 

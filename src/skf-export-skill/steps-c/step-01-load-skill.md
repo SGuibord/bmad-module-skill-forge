@@ -23,7 +23,7 @@ To load the target skill's artifacts, validate they meet agentskills.io spec com
 
 Determine the skill to export and any flags:
 
-**Skill Path Discovery (version-aware — see [knowledge/version-paths.md](../../knowledge/version-paths.md)):**
+**Skill Path Discovery (version-aware — see `knowledge/version-paths.md`):**
 - If user provided a skill name or path as argument, use that
 - If not provided, discover available skills using the export manifest:
   1. Read `{skills_output_folder}/.export-manifest.json` — list skill names from `exports`

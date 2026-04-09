@@ -111,7 +111,7 @@ If `tools.ccc` is true in forge-tier.yaml, supplement the module listing with a 
 - **Cursor:** Use `ccc` MCP server `search` tool with query `"{repo_name} public API exports modules"` and path `{source_path}`
 - **CLI fallback:** `ccc search "{repo_name} public API exports modules" --path {source_path} --limit 10`
 
-See [knowledge/tool-resolution.md](../../knowledge/tool-resolution.md) for full bridge-to-tool mapping.
+See `knowledge/tool-resolution.md` for full bridge-to-tool mapping.
 
 If results are returned, display:
 

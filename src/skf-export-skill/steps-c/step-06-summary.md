@@ -122,11 +122,20 @@ No files were written. To run the export for real:
 - **update-skill** — After refactoring source code, regenerate the skill
 - **test-skill** — Verify skill completeness and accuracy"
 
+**Verification:** After export, inform the user how to verify the skill is active:
+- Check that context files exist at the expected IDE paths
+- Suggest testing by invoking the skill's trigger phrase in a new conversation
+- If token budget was exceeded, note which skills were trimmed
+
 ### 6. Workflow Complete
 
 "---
 
 **Skill forged and delivered.** ⚒️"
+
+### Result Contract
+
+Write `{skills_output_folder}/export-skill-result.json` per `shared/references/output-contract-schema.md`. Include all context files and target managed-section files in `outputs`; include total always-on and on-trigger token counts in `summary`.
 
 ### 7. Workflow Health Check
 

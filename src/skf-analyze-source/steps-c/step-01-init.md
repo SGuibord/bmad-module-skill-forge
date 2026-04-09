@@ -2,7 +2,7 @@
 nextStepFile: './step-02-scan-project.md'
 continueFile: './step-01b-continue.md'
 outputFile: '{forge_data_folder}/analyze-source-report-{project_name}.md'
-templateFile: '../templates/analysis-report-template.md'
+templateFile: 'templates/analysis-report-template.md'
 ---
 
 # Step 1: Initialize Analysis

@@ -87,6 +87,23 @@ For each entry in `file_entries`:
 
 Append results to the Structural Drift section as "### Script/Asset Drift ({count})".
 
+### Stack-Specific Structural Diff
+
+If `{is_stack_skill}` is true:
+
+**For v2 provenance (per-export entries with `source_library`):**
+- Group entries by `source_library`
+- For each library, perform the standard structural diff (same as single-skill) against current source
+- Report per-library diff results
+
+**For code-mode stacks:** Re-extract from each source repo and compare per-library entries.
+
+**For compose-mode stacks:** Compare current constituent skill exports against the entries recorded at compose time. Use the `source_library` field to match entries to constituents.
+
+**For v1 legacy provenance:** Report library-level summary only (export counts, extraction methods). Note that per-export drift detection requires re-composition with v2 provenance.
+
+**Integration drift:** For each integration in `integrations[]`, verify that co-import files still contain the detected patterns (code-mode) or that constituent skills still document the integration (compose-mode).
+
 ### 5. Compile Structural Drift Section
 
 Append to {outputFile}:

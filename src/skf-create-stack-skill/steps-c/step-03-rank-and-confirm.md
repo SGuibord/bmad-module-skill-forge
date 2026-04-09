@@ -47,7 +47,7 @@ For each dependency in `raw_dependencies`:
 
 **Launch a subprocess** that runs grep across all source files in the project to count import statements for each library. Return only the counts, not file contents.
 
-**Subprocess resolution:** Use the Grep tool (Claude Code), built-in search (Cursor), or `grep`/`rg` (CLI). See [knowledge/tool-resolution.md](../../knowledge/tool-resolution.md).
+**Subprocess resolution:** Use the Grep tool (Claude Code), built-in search (Cursor), or `grep`/`rg` (CLI). See `knowledge/tool-resolution.md`.
 
 Use ecosystem-appropriate import patterns:
 - JavaScript/TypeScript: `import .* from ['"]library`, `require\(['"]library`

@@ -1,13 +1,13 @@
 ---
 name: skf-audit-skill
-description: Drift detection between skill and current source code. Use when the user requests to "audit a skill" for drift.
+description: Drift detection between skill and current source code. Use when the user requests to "audit a skill" or "audit skill" for drift.
 ---
 
 # Audit Skill
 
 ## Overview
 
-Detects drift between an existing skill and its current source code, producing a severity-graded drift report with AST-backed findings and actionable remediation suggestions. Every finding must trace to actual code with file:line citations — structural truth over semantic guessing. Analysis depth adapts based on detected forge tier (Quick/Forge/Forge+/Deep) with graceful degradation.
+Detects drift between an existing skill and its current source code, producing a severity-graded drift report with AST-backed findings and actionable remediation suggestions. Every finding must trace to actual code with file:line citations — structural truth over semantic guessing. Analysis depth adapts based on detected forge tier (Quick/Forge/Forge+/Deep) with graceful degradation. Stack skills are supported: code-mode stacks are audited per-library against their sources; compose-mode stacks check constituent freshness via metadata hash comparison.
 
 ## Role
 

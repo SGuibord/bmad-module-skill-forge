@@ -69,6 +69,10 @@ restore the managed section entry.
 These require manual review — see the error-handling guidance in step-02.
 ```
 
+### Result Contract
+
+Write `{skills_output_folder}/drop-skill-result.json` per `shared/references/output-contract-schema.md`. Include all purged file paths in `outputs`; include `target_skill`, `drop_mode`, and `versions_affected` in `summary`.
+
 ### 3. Workflow Health Check
 
 Load and execute `{nextStepFile}` for workflow self-improvement check.

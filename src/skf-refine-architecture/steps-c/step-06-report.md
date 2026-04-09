@@ -79,6 +79,10 @@ Re-run **[RA] Refine Architecture** anytime after updating your skills or archit
 
 **Architecture refinement complete.**"
 
+  ### Result Contract
+
+  Write `{output_folder}/refine-architecture-result.json` per `shared/references/output-contract-schema.md`. Include the refined architecture doc path in `outputs`; include `gap_count`, `issue_count`, and `improvement_count` in `summary`.
+
   Then load and execute `{nextStepFile}` for workflow self-improvement check.
 
 #### EXECUTION RULES:

@@ -158,6 +158,10 @@ Update {outputFile} frontmatter:
 
 **Audit workflow complete.**"
 
+### Result Contract
+
+Write `{forge_version}/audit-skill-result.json` per `shared/references/output-contract-schema.md`. Include the drift report path in `outputs`; include `drift_count` and `severity` (CLEAN/MINOR/SIGNIFICANT/CRITICAL) in `summary`.
+
 ### Workflow Health Check
 
 Load and execute `{nextStepFile}` for workflow self-improvement check.

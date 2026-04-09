@@ -51,7 +51,7 @@ Extract:
 - **Forge+:** ast_bridge + ccc_bridge (ccc semantic co-import augmentation) — ccc available for step-05
 - **Deep:** qmd_bridge (QMD temporal enrichment) — required for Deep tier
 
-See [knowledge/tool-resolution.md](../../knowledge/tool-resolution.md) for how each bridge name resolves to concrete tools per IDE environment.
+See `knowledge/tool-resolution.md` for how each bridge name resolves to concrete tools per IDE environment.
 
 Report tool availability. If a tier-required tool is missing, downgrade tier and note:
 
@@ -73,7 +73,7 @@ Check if the user provided:
 
 Set `compose_mode: false` as the default.
 
-Skills use version-nested directories — see [knowledge/version-paths.md](../../knowledge/version-paths.md) for the full path templates and resolution rules.
+Skills use version-nested directories — see `knowledge/version-paths.md` for the full path templates and resolution rules.
 
 - If user provides an architecture document path for composition or explicitly requests compose mode → set `compose_mode: true` and store `architecture_doc_path`
 - If no manifest files exist in project root AND at least one skill is discoverable in `{skills_output_folder}` → suggest compose mode to the user and ask for optional architecture document path

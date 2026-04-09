@@ -67,6 +67,8 @@ Wait for confirmation. Record any changes to `doc_urls`.
 
 **If no supplemental doc_urls were collected:** Skip this subsection.
 
+**Scope guidance for first-time users:** A well-scoped skill covers one cohesive capability with 3-8 primary functions. If the scope includes unrelated concerns (e.g., authentication AND data visualization), suggest splitting into separate briefs. If the scope is too narrow (single utility function), suggest expanding to the surrounding capability surface.
+
 ### 2c. Offer Scope Templates
 
 Load `{scopeTemplatesFile}` for the scope type options ([F], [M], [P], [C]) and their descriptions.

@@ -117,6 +117,10 @@ Please check:
 
 **Note:** This is a best-effort community skill. For deeper analysis with AST-verified exports and provenance tracking, use the full **create-skill** workflow with a skill brief."
 
+### Result Contract
+
+Write `{skill_package}/quick-skill-result.json` per `shared/references/output-contract-schema.md`. Include `SKILL.md`, `context-snippet.md`, and `metadata.json` paths in `outputs` and export count in `summary`.
+
 ### 7. Workflow Health Check
 
 Load and execute `{nextStepFile}` for workflow self-improvement check.

@@ -117,7 +117,7 @@ Source code matches provenance map exactly. The skill `{skill_name}` is current 
 | `{forge_version}/evidence-report.md` | Appended |
 | {stack reference files if applicable} | Updated |
 
-Where `{resolved_skill_package}` = `{skills_output_folder}/{skill_name}/{version}/{skill_name}/` and `{forge_version}` = `{forge_data_folder}/{skill_name}/{version}/` — see [knowledge/version-paths.md](../../knowledge/version-paths.md)."
+Where `{resolved_skill_package}` = `{skills_output_folder}/{skill_name}/{version}/{skill_name}/` and `{forge_version}` = `{forge_data_folder}/{skill_name}/{version}/` — see `knowledge/version-paths.md`."
 
 ### 5. Workflow Chaining Recommendations
 

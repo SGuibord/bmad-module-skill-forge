@@ -69,6 +69,10 @@ Informational: the old name still appears in SKILL.md body text (prose only, non
   - If this skill was published to agentskills.io under `{old_name}`, the registry version is unchanged — this rename is a LOCAL operation only
 ```
 
+### Result Contract
+
+Write `{skills_output_folder}/{new_name}/rename-skill-result.json` per `shared/references/output-contract-schema.md`. Include all updated file paths (SKILL.md, metadata.json, context-snippet.md, provenance-map.json) in `outputs`; include `old_name`, `new_name`, and `versions_renamed` in `summary`.
+
 ### 2. Workflow Health Check
 
 Load and execute `{nextStepFile}` for workflow self-improvement check.

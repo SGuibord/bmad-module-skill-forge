@@ -27,7 +27,7 @@ Use the explicit dependency list directly. Store the explicit list as `raw_depen
 
 **If `compose_mode` is true AND `explicit_deps` was NOT provided:**
 
-Discover skills in `{skills_output_folder}` using version-aware resolution — see [knowledge/version-paths.md](../../knowledge/version-paths.md) for path templates.
+Discover skills in `{skills_output_folder}` using version-aware resolution — see `knowledge/version-paths.md` for path templates.
 
 **Version-aware skill enumeration:**
 

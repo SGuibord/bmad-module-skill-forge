@@ -46,21 +46,37 @@ Parse the architecture document for statements describing two or more technologi
 
 ### 3. Load Skill API Surfaces
 
-For each library in an integration pair, load the skill artifacts:
+<!-- Subagent delegation: read SKILL.md files in parallel, return compact JSON -->
 
-**From SKILL.md, extract:**
-- Exported functions and their signatures
-- Exported types, interfaces, and classes
-- Protocol indicators (HTTP, gRPC, WebSocket, message queue, file I/O, IPC)
-- Data format indicators (JSON, protobuf, CSV, binary, streaming)
+For each library in an integration pair, delegate SKILL.md reading to a parallel subagent. Launch up to **8 subagents concurrently** (batch if needed). Each subagent receives one skill's SKILL.md path and MUST:
+1. Read the SKILL.md file
+2. Extract the API surface
+3. ONLY return this compact JSON — no prose, no extra commentary:
 
-**From metadata.json, extract:**
+```json
+{
+  "skill_name": "...",
+  "exports": ["functionName(params): ReturnType", "..."],
+  "protocols": ["HTTP", "gRPC", "WebSocket", "message queue", "file I/O", "IPC"],
+  "data_formats": ["JSON", "protobuf", "CSV", "binary", "streaming"]
+}
+```
+
+**Extraction rules for subagents:**
+- `exports`: exported functions with signatures, exported types/interfaces/classes
+- `protocols`: any protocol indicators found in the SKILL.md
+- `data_formats`: any data format indicators found in the SKILL.md
+- If a field has no matches, return an empty array `[]`
+
+**Parent collects all subagent JSON summaries.** Do not load full SKILL.md content into parent context.
+
+**From metadata.json (read in parent — lightweight), also extract:**
 - `language` — primary programming language
 - `exports` — export names array (populated for individual skills; empty for stack skills)
 - `stats.exports_documented` — export count
 - `confidence_tier` — extraction confidence level
 
-Store loaded API surfaces for cross-referencing.
+Store collected API surface summaries for cross-referencing.
 
 ### 4. Cross-Reference Each Integration Pair
 

@@ -1,6 +1,6 @@
 ---
 name: skf-test-skill
-description: Cognitive completeness verification — quality gate before export. Use when the user requests to "test" or "verify a skill."
+description: Cognitive completeness verification — quality gate before export. Use when the user requests to "test a skill" or "verify skill completeness."
 ---
 
 # Test Skill

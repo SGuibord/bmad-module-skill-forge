@@ -64,7 +64,7 @@ Then run CCC indexing and discovery on the ephemeral clone:
 4. **Construct semantic query:** Build from brief data: `"{brief.name} {brief.scope}"`. Truncate to 80 characters — keep the full skill name and trim `brief.scope` from the end. If `brief.scope` is very short (< 10 chars), append terms from `brief.description` to fill the remaining space.
 
 5. **Execute search:** Run `ccc_bridge.search(query, temp_path, top_k=20)`:
-   - **Tool resolution:** Use `/ccc` skill search (Claude Code), ccc MCP server (Cursor), or `cd {temp_path} && ccc search --limit 20 "{query}"` (CLI). Note: `ccc search` operates on the index in the current working directory. See [knowledge/tool-resolution.md](../../knowledge/tool-resolution.md).
+   - **Tool resolution:** Use `/ccc` skill search (Claude Code), ccc MCP server (Cursor), or `cd {temp_path} && ccc search --limit 20 "{query}"` (CLI). Note: `ccc search` operates on the index in the current working directory. See `knowledge/tool-resolution.md`.
 
 6. **Store results:** If search succeeds, store as `{ccc_discovery: [{file, score, snippet}]}`. Display: "**CCC semantic discovery (post-clone): {N} relevant regions identified across {M} unique files.**"
 
@@ -112,7 +112,7 @@ Source resolution, version reconciliation, and CCC discovery were completed in s
 5. Infer types from JSDoc, docstrings, type annotations
 6. Confidence: All results T1-low — `[SRC:{file}:L{line}]`
 
-**Tool resolution for gh_bridge:** Use `gh api repos/{owner}/{repo}/git/trees/{branch}?recursive=1` for list_tree, `gh api repos/{owner}/{repo}/contents/{path}` for read_file. If source is local, use direct file listing/reading instead. See [knowledge/tool-resolution.md](../../knowledge/tool-resolution.md).
+**Tool resolution for gh_bridge:** Use `gh api repos/{owner}/{repo}/git/trees/{branch}?recursive=1` for list_tree, `gh api repos/{owner}/{repo}/contents/{path}` for read_file. If source is local, use direct file listing/reading instead. See `knowledge/tool-resolution.md`.
 
 **Forge/Forge+/Deep Tier (AST available):**
 
@@ -128,7 +128,7 @@ Source resolution, version reconciliation, and CCC discovery were completed in s
 5. Build extraction rules YAML data for reproducibility
 6. Confidence: All results T1 — `[AST:{file}:L{line}]`
 
-**Tool resolution for ast_bridge:** Use ast-grep MCP tools (`mcp__ast-grep__find_code`, `mcp__ast-grep__find_code_by_rule`) as specified in the AST Extraction Protocol above, or `ast-grep` CLI. For `detect_co_imports`, use `find_code_by_rule` with a co-import YAML rule scoped to the libraries list. See [knowledge/tool-resolution.md](../../knowledge/tool-resolution.md).
+**Tool resolution for ast_bridge:** Use ast-grep MCP tools (`mcp__ast-grep__find_code`, `mcp__ast-grep__find_code_by_rule`) as specified in the AST Extraction Protocol above, or `ast-grep` CLI. For `detect_co_imports`, use `find_code_by_rule` with a co-import YAML rule scoped to the libraries list. See `knowledge/tool-resolution.md`.
 
 **If AST tool is unavailable at Forge/Deep tier** (see `{tierDegradationRulesData}` for full rules):
 

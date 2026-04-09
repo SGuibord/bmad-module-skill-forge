@@ -27,7 +27,7 @@ Load the existing skill artifacts, provenance map, and forge tier configuration 
 
 Which skill would you like to audit? Please provide the skill name or path."
 
-**If user provides skill name (not full path) — version-aware path resolution (see [knowledge/version-paths.md](../../knowledge/version-paths.md)):**
+**If user provides skill name (not full path) — version-aware path resolution (see `knowledge/version-paths.md`):**
 1. Read `{skills_output_folder}/.export-manifest.json` and look up the skill name in `exports` to get `active_version`
 2. If found: resolve to `{skill_package}` = `{skills_output_folder}/{skill_name}/{active_version}/{skill_name}/`
 3. If not in manifest: check for `active` symlink at `{skills_output_folder}/{skill_name}/active` — resolve to `{skill_group}/active/{skill_name}/`
@@ -51,7 +51,7 @@ Load `{sidecar_path}/forge-tier.yaml` to detect available tools.
 
 **If found:**
 - Extract tier level: Quick / Forge / Forge+ / Deep
-- Extract available tools: gh_bridge, ast_bridge, qmd_bridge — see [knowledge/tool-resolution.md](../../knowledge/tool-resolution.md) for concrete tool resolution per IDE
+- Extract available tools: gh_bridge, ast_bridge, qmd_bridge — see `knowledge/tool-resolution.md` for concrete tool resolution per IDE
 
 **Apply tier override:** Read `{sidecar_path}/preferences.yaml`. If `tier_override` is set and is a valid tier value (Quick, Forge, Forge+, or Deep), use it instead of the detected tier.
 
@@ -83,6 +83,21 @@ Search for provenance map at `{forge_data_folder}/{skill_name}/{active_version}/
 - "**[D]egraded mode** — proceed with text-diff only"
 - "**[X]** — abort audit"
 - Wait for user selection. If D, set `degraded_mode: true`. If X, halt workflow.
+
+### Stack Skill Detection
+
+After loading provenance-map.json, detect skill type:
+- If `provenance_version` is `"2.0"` and `skill_type` is `"stack"`: set `{is_stack_skill}` = true
+- If provenance-map has top-level `libraries` key (v1 stack format): set `{is_stack_skill}` = true, `{legacy_stack_provenance}` = true
+- Otherwise: `{is_stack_skill}` = false
+
+If `{is_stack_skill}` is true and `constituents` array is present (compose-mode stack):
+- For each constituent, compute the current metadata hash: read `{constituent.skill_path}/active/{constituent.skill_name}/metadata.json` and compute SHA-256
+- Compare against `constituent.metadata_hash`
+- Flag any mismatches as **constituent drift** with severity HIGH
+- Record constituent freshness results for the report
+
+If `{legacy_stack_provenance}` is true: log a note that this stack uses v1 provenance format with reduced audit depth (library-level only, no per-export verification).
 
 ### 5. Resolve Source Path
 

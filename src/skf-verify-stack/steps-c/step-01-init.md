@@ -48,7 +48,7 @@ Wait for user input. **GATE [default: use args]** — If `{headless_mode}` and a
 
 ### 2. Scan Skills Folder
 
-Read the `{skills_output_folder}` directory. Skills use a version-nested directory structure (see [knowledge/version-paths.md](../../knowledge/version-paths.md)).
+Read the `{skills_output_folder}` directory. Skills use a version-nested directory structure (see `knowledge/version-paths.md`).
 
 **Version-aware skill discovery:**
 1. Read `{skills_output_folder}/.export-manifest.json` if it exists. For each skill in `exports`, use `active_version` to resolve `{skill_package}` = `{skills_output_folder}/{skill-name}/{active_version}/{skill-name}/`
@@ -57,12 +57,30 @@ Read the `{skills_output_folder}` directory. Skills use a version-nested directo
 
 For each resolved skill package, check for the presence of `SKILL.md` and `metadata.json`.
 
-**For each valid skill directory, extract from metadata.json:**
-- `name` — skill name
-- `language` — primary language
-- `confidence_tier` — Quick, Forge, Forge+, or Deep
-- `exports_documented` — read from `stats.exports_documented` in metadata.json (count of documented exports)
-- `source_repo` or `source_root` — original source repository
+<!-- Subagent delegation: read metadata.json files in parallel, return compact JSON -->
+
+**Read all metadata.json files in parallel using subagents.** Launch up to **8 subagents concurrently** (batch larger inventories in rounds of 8). Each subagent receives one resolved skill package path and MUST:
+1. Read `{skill_package}/metadata.json`
+2. ONLY return this compact JSON — no prose, no extra commentary:
+
+```json
+{
+  "skill_name": "...",
+  "language": "...",
+  "confidence_tier": "...",
+  "exports_documented": 0,
+  "source_repo": "...",
+  "source_root": "..."
+}
+```
+
+Parent collects all subagent JSON summaries. Fields map directly from metadata.json:
+- `skill_name` ← `name`
+- `language` ← `language`
+- `confidence_tier` ← `confidence_tier`
+- `exports_documented` ← `stats.exports_documented`
+- `source_repo` ← `source_repo` (or empty string if absent)
+- `source_root` ← `source_root` (or empty string if absent)
 
 **Build a skill inventory** as an internal list of all loaded skills with the fields above.
 
