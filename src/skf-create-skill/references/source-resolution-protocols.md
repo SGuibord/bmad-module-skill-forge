@@ -170,7 +170,7 @@ Also store `source_ref` in context (from tag resolution above, or `HEAD` if no t
 
 **If `source_type: "docs-only"`:** skip this section — no source files exist to reconcile.
 
-After the source path is accessible (local path from step-01, or ephemeral clone from above), check whether the source contains a version identifier and reconcile it with `brief.version`. Look for the first matching version file in the resolved source path:
+After the source path is accessible (local path from step-01, or workspace/ephemeral clone from above), check whether the source contains a version identifier and reconcile it with `brief.version`. Look for the first matching version file in the resolved source path:
 
 - Python: `pyproject.toml` (`[project] version`), `setup.py` (`version=`), `__version__` in `__init__.py`
 - JavaScript/TypeScript: `package.json` (`"version"`). **Monorepo resolution:** When multiple `package.json` files exist (workspace root + packages), resolve version using this priority:

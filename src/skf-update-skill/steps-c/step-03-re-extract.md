@@ -57,7 +57,7 @@ Perform tier-aware extraction on only the changed files identified in step 02, p
 
 **If all MCP tools fail for this repo:** Fall back to workspace or ephemeral clone — load and follow `{remoteSourceResolutionData}` for clone setup, version reconciliation, and AST tool unavailability handling.
 
-**If all approaches fail (MCP + ephemeral clone):** Degrade to provenance-map-only analysis (State 2, T1 confidence from compilation-time data). Warn user: "Source access failed for {source_repo}. Analysis limited to provenance-map baseline."
+**If all approaches fail (MCP + workspace/ephemeral clone):** Degrade to provenance-map-only analysis (State 2, T1 confidence from compilation-time data). Warn user: "Source access failed for {source_repo}. Analysis limited to provenance-map baseline."
 
 **Quick tier (text pattern matching):**
 - Extract function/class/type names via regex patterns

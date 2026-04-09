@@ -39,7 +39,7 @@ Build the filtered file list from the source tree resolved in step-01. Record th
 
 ### 2a. Resolve Source Access
 
-Load `{sourceResolutionData}` completely. Follow the **Remote Source Resolution** protocol for Forge/Deep tiers (ephemeral clone, sparse-checkout, cleanup), the **Source Commit Capture** protocol for all tiers, and the **Version Reconciliation** protocol for all tiers. This ensures source code is accessible regardless of which extraction path is taken below (standard, component-library, or docs-only).
+Load `{sourceResolutionData}` completely. Follow the **Remote Source Resolution** protocol for Forge/Deep tiers (workspace or ephemeral clone, cleanup), the **Source Commit Capture** protocol for all tiers, and the **Version Reconciliation** protocol for all tiers. This ensures source code is accessible regardless of which extraction path is taken below (standard, component-library, or docs-only).
 
 **Deferred CCC Discovery (Forge+ and Deep — remote sources only):**
 
