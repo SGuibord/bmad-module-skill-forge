@@ -21,7 +21,7 @@ AI agents hallucinate API calls. They invent function names, guess parameter typ
 
 ## Quick Install
 
-Requires [Node.js](https://nodejs.org/) >= 22.
+Requires [Node.js](https://nodejs.org/) >= 22, [Python](https://www.python.org/) >= 3.10, and [uv](https://docs.astral.sh/uv/) (Python package runner).
 
 ```bash
 npx bmad-module-skill-forge install
