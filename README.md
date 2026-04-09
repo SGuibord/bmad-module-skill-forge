@@ -67,7 +67,7 @@ The skill told the agent the real function name, the real parameters, and that t
 
 ## Install
 
-Requires [Node.js](https://nodejs.org/) >= 22.
+Requires [Node.js](https://nodejs.org/) >= 22, [Python](https://www.python.org/) >= 3.10, and [uv](https://docs.astral.sh/uv/) (Python package runner).
 
 ```bash
 npx bmad-module-skill-forge install

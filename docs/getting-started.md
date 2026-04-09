@@ -70,6 +70,8 @@ The installer reads the installed version from your manifest and shows the delta
 | Tool                                                                   | Required For                                     | Install                                                |
 |------------------------------------------------------------------------|--------------------------------------------------|--------------------------------------------------------|
 | [Node.js](https://nodejs.org/) >= 22                                   | Installation, npx commands                       | <https://nodejs.org>                                   |
+| [Python](https://www.python.org/) >= 3.10                              | Deterministic scoring, validation, and utility scripts | <https://www.python.org>                               |
+| [uv](https://docs.astral.sh/uv/) (Python package runner)              | Running Python scripts with automatic dependency management | <https://docs.astral.sh/uv/getting-started/installation/> |
 | `gh` (GitHub CLI)                                                      | Required for Deep mode. Optional convenience in Quick/Forge/Forge+ for source access. | <https://cli.github.com>                               |
 | `ast-grep`  (CLI tool for code structural search, lint, and rewriting) | Forge + Deep modes                               | <https://ast-grep.github.io>                           |
 | `ast-grep` MCP server (recommended alongside CLI)                      | Forge + Deep modes                               | <https://github.com/ast-grep/ast-grep-mcp>             |
@@ -77,7 +79,7 @@ The installer reads the installed version from your manifest and shows the delta
 | `qmd` (local hybrid search engine for project files)                   | Deep mode                                        | <https://github.com/tobi/qmd>                          |
 | `SNYK_TOKEN` (Snyk API token — **Enterprise plan required**)           | Optional security scan                           | <https://docs.snyk.io/snyk-api/authentication-for-api> |
 
-Don't worry if you don't have all tools — SKF detects what's available and sets your tier automatically. Security scanning via Snyk is optional and requires an Enterprise plan; it does not affect your tier level.
+Node.js, Python, and uv are required for all tiers. Don't worry about the rest — SKF detects what's available and sets your tier automatically. Security scanning via Snyk is optional and requires an Enterprise plan; it does not affect your tier level.
 
 ---
 
