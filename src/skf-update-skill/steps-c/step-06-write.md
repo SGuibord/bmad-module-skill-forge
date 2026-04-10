@@ -49,7 +49,14 @@ Update `{skill_package}/metadata.json`:
 
 Write to `{forge_version}/provenance-map.json`:
 
-**For each export in the updated skill:**
+**If `no_reextraction == true` (gap-driven mode from step-03 section 0):**
+No fresh extraction data exists for `verified` exports — their provenance entries stay byte-identical. Only apply targeted updates:
+- For `moved` exports: update `source_line` (and `source_file` if different) to the new location recorded by the spot-check
+- For `unknown` exports (not found in provenance map but present in gap manifest): add new entries with fields populated from step-04 merge output; `source_file`/`source_line` may be `null` if the export was undocumented and no fresh extraction was performed — leave these fields unset rather than writing stale values
+- Do NOT overwrite `confidence`, `extraction_method`, `ast_node_type`, `params[]`, or `return_type` for `verified` exports
+- Skip the "For each export in the updated skill" bullets below — they apply only to normal re-extraction mode
+
+**For each export in the updated skill (normal mode only):**
 - Update `export_name` if renamed
 - Update `params[]` array if parameters changed (add, remove, or modify individual entries)
 - Update `return_type` if changed
