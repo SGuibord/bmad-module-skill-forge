@@ -86,6 +86,17 @@ You'll be prompted for project name, output folders, and IDE configuration. See 
 
 See the [workflows docs](https://armelhbobdad.github.io/bmad-module-skill-forge/workflows/) for all 14 available workflows, pipeline aliases, and headless mode.
 
+## Help SKF Improve — Let Workflows Finish
+
+Every SKF workflow ends with a **health check** — a reflection step where Ferris captures any friction, bugs, or gaps from the session and offers to file them as GitHub issues (with your approval). Clean runs exit in one line; when something breaks, this is how SKF learns to do better.
+
+**Please let workflows run to completion.** If you cancel early or the terminal step gets skipped, the feedback is lost. If the health check didn't run, you can:
+
+- Ask Ferris directly: `@Ferris please run the workflow health check for this session`, or
+- [Open an issue](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/new/choose) — every concrete report makes SKF sharper for the next person.
+
+See the [Workflow Health Check](https://armelhbobdad.github.io/bmad-module-skill-forge/workflows/#terminal-step-health-check) docs for details.
+
 ## Who Is This For?
 
 - **You use AI agents to write code** and they keep getting API calls wrong — hallucinating function names, guessing parameter types, inventing methods that don't exist
