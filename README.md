@@ -34,7 +34,7 @@ This isn't an edge case. It's the default experience.
 
 1. **Analyzes your sources** — extracts real function signatures, types, and patterns from code repositories, documentation websites, and developer discourse
 2. **Compiles verified instruction files** — every instruction links to the exact file and line it came from
-3. **Version-aware** — skills are stored per-version, so updating to v2.0 doesn't break your v1.x skill. Compatible with [skill.sh](https://skill.sh) and [npx skills](https://www.npmjs.com/package/skills)
+3. **Version-aware** — skills are stored per-version, so updating to v2.0 doesn't break your v1.x skill. Compatible with [skills.sh](https://skills.sh) and [npx skills](https://www.npmjs.com/package/skills)
 4. **Manageable lifecycle** — rename skills and drop deprecated versions without manual file surgery. Transactional safety for destructive operations.
 5. **Follows an open standard** — skills comply with the [agentskills.io](https://agentskills.io) spec and work across Claude, Cursor, Copilot, and other AI agents
 
@@ -56,7 +56,7 @@ import cognee
 
 # Agent follows the skill instruction:
 # `search(query_text: str, query_type: SearchType = GRAPH_COMPLETION) -> List[SearchResult]`
-# [AST:cognee/api/v1/search/search.py:L26]
+# [AST:cognee/api/v1/search/search.py:L27]
 results = await cognee.search(
     query_text="What does Cognee do?",
     query_type=cognee.SearchType.GRAPH_COMPLETION

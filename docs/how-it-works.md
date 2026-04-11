@@ -229,6 +229,8 @@ Your forge tier limits what authority claims a skill can make:
 | Forge+ | Yes | Yes | No | `official` | Structural + semantic discovery |
 | Deep | Yes | opt. (enhances when installed) | Yes | `official` | Full (structural + contextual + temporal) |
 
+**Tier governs technical verification; authority is an ecosystem claim.** Reaching Deep tier unlocks the *capability* to claim `official` authority — it does not grant it. Only library maintainers can publish `source_authority: official` skills via the [agentskills.io](https://agentskills.io) open-format ecosystem. A Deep-tier skill compiled by a third party is `community` by default. See [oh-my-skills](https://github.com/armelhbobdad/oh-my-skills), where all four Deep-tier skills ship as `community` by design — audited, not blessed.
+
 ---
 
 ## Completeness Scoring
@@ -388,7 +390,7 @@ description: >
 Every instruction in the body traces to source:
 
 ```python
-await cognee.search(  # [AST:cognee/api/v1/search/search.py:L26]
+await cognee.search(  # [AST:cognee/api/v1/search/search.py:L27]
     query_text="What does Cognee do?"
 )
 ```
@@ -428,6 +430,8 @@ Machine-readable provenance for every skill:
   }
 }
 ```
+
+Example shows core fields. Real skills also carry `description`, `language`, `ast_node_count`, `exports`, `tool_versions`, `dependencies`, `compatibility`, and `last_update` — see [oh-my-skills/skills/oms-cognee/0.5.8/oms-cognee/metadata.json](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/oms-cognee/0.5.8/oms-cognee/metadata.json) for a complete example.
 
 `scripts` and `assets` arrays are optional — omitted entirely (not empty) when the source has no scripts or assets.
 

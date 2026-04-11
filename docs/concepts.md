@@ -15,7 +15,7 @@ An agent skill is an instruction file that tells an AI agent how to use your cod
 
 Skills follow the [agentskills.io](https://agentskills.io) open standard, so they work across Claude, Cursor, Copilot, and other AI tools.
 
-**Example:** A skill for [cognee](https://github.com/armelhbobdad/oh-my-skills) tells your agent: "The function is `cognee.search()`, it takes `query_text`, `query_type`, `top_k`, and `session_id`, and it's defined at `cognee/api/v1/search/search.py:L26`." Every parameter and location is AST-verified from the actual source code.
+**Example:** A skill for [cognee](https://github.com/topoteretes/cognee) tells your agent: "The function is `cognee.search()`, it takes `query_text`, `query_type`, `top_k`, and `session_id`, and it's defined at `cognee/api/v1/search/search.py:L27`." Every parameter and location is AST-verified from the actual source code.
 
 ---
 
@@ -24,7 +24,7 @@ Skills follow the [agentskills.io](https://agentskills.io) open standard, so the
 Provenance means every instruction in a skill traces back to where it came from. For code, that's a file and line number. For documentation, it's a URL. For developer discourse, it's an issue or PR reference. If SKF can't point to a source, it doesn't include the instruction.
 
 **Examples** (from a [real generated skill](https://github.com/armelhbobdad/oh-my-skills)):
-- `[AST:cognee/api/v1/search/search.py:L26]` — extracted from source code via AST parsing (T1)
+- `[AST:cognee/api/v1/search/search.py:L27]` — extracted from source code via AST parsing (T1)
 - `[SRC:cognee/api/v1/session/__init__.py:L8]` — read from source code without AST verification (T1-low)
 - `[QMD:cognee-temporal:issues.md]` — surfaced from indexed developer discourse (T2)
 - `[EXT:docs.cognee.ai/getting-started/quickstart]` — sourced from external documentation (T3)
