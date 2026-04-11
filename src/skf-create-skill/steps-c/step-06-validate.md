@@ -116,6 +116,8 @@ Parse output for: `description_score`, `content_score`, `review_score`, `validat
 - **Unavailable:** Skip with note: "Content quality review skipped — tessl tool unavailable"
 
 > **EXPECTED BEHAVIOR — Two-Tier Scoring:** The Skill Forge two-tier design (Tier 1 Key API Summary + Tier 2 Full API Reference) intentionally includes progressive disclosure. tessl's `conciseness` scorer will flag this as redundancy (typically scoring 2/3), which is **expected behavior — not a defect**. tessl may also suggest removing `[MANUAL]` markers, moving Full API Reference to a separate file, or consolidating duplicate parameter documentation — **all three suggestions conflict with SKF design principles and must be dismissed.** Acceptable threshold: content scores >= 60% are normal for two-tier skills. Do NOT consolidate Tier 1 and Tier 2 content to improve the score — the two-tier structure is a deliberate design choice for standalone usability.
+>
+> **EXPECTED BEHAVIOR — Description Field:** The description has been sanitized by step-05 §2a to ensure no angle-bracket tokens (`<name>`, `<component>`, etc.) reach the validator. If tessl's `description_field` deterministic validator reports an XML-tag failure anyway, this is a compilation bug — the sanitizer missed a token. Do NOT work around the failure by rewriting the description at step-06; instead, fix the sanitizer in step-05 §2a. Expected description score at this point: 100%.
 
 tessl installs automatically via `npx`. A missing tool is not an error — graceful skip.
 

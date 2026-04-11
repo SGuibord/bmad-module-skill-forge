@@ -54,6 +54,21 @@ This rule applies to ALL sections including Tier 1 Key API Summary, Tier 2 Full 
 
 Assemble each section in order using the assembly rules data file (`{assemblyRulesData}`). The data file specifies frontmatter format, Tier 1 section details (Sections 1-8, including conditional Section 7b for scripts/assets), Tier 2 section details (Sections 9-11), and assembly ordering rules. Follow it exactly. Assemble Section 7b (Scripts & Assets) only if `scripts_inventory` or `assets_inventory` is non-empty.
 
+### 2a. Description Sanitization Pass
+
+**Before writing SKILL.md frontmatter to disk**, scan the assembled `description` string for angle-bracket tokens and substitute them. This prevents `skill-check` and `tessl` deterministic validators from rejecting the description as containing XML tags (which fails the review with 0% description score).
+
+**Detection:** match any substring of the form `<token>` where `token` contains only letters, digits, hyphens, underscores, or dots (e.g., `<name>`, `<component-id>`, `<file.ts>`). Do NOT match email addresses, URLs with `<` / `>`, or tokens containing spaces.
+
+**Substitution (in priority order):**
+
+1. **Backticked form** — wrap the entire angle-bracket token in backticks: `<name>` → `` `<name>` ``. Preferred for CLI placeholders and example phrasing because it preserves visual intent.
+2. **If the token already sits inside a backtick span**, leave it alone — the backticks already protect it from XML-tag parsing. Example: `` `npx foo add <name>` `` is safe as-is.
+
+Perform this pass on the final assembled description in context before it is written to `SKILL.md`. Record the count of substitutions (if any) in context as `description_sanitizations: {count}` for the evidence report.
+
+**Rationale:** The LTS-stable guarantee is that no angle-bracket token reaches step-06 validation. The assembly rules in `{assemblyRulesData}` define this as a drafting rule; this step makes it an enforced pass so authors and reviewers don't have to remember it. See the description rule in `{assemblyRulesData}` for the full rationale.
+
 ### 3. Build context-snippet.md Content
 
 Vercel-aligned indexed format for CLAUDE.md managed section (~80-120 tokens):
