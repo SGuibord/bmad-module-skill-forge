@@ -125,17 +125,31 @@ Read the source directory at `{source_root}` and build a current file inventory:
 
 **Record for evidence report:** the update-skill evidence report appends `authoritative_files_mirror: {candidates: N, promoted: P, skipped: S, pre_decided: A, already_tracked: T, decisions: [{path, action, heuristic, reason}]}`.
 
-**Interaction with §2 change detection:** promoted docs live in `promoted_docs_new[]`, NOT in the change manifest. But §2 Category A ("files in source but not in provenance map → ADDED") would still find the promoted doc files on disk and try to classify them as ADDED code. Prevent this collision: before building the Category A pre-filter exclusion set (step 0 below), add every path in `promoted_docs_new[]` to the exclusion set. This ensures promoted docs are never marked ADDED, never sent to §3 re-extraction, and only ever reach step-04 as file_entries additions via Priority 7.
+**Interaction with §2 change detection:** promoted docs live in `promoted_docs_new[]`, NOT in the change manifest. But §2 Category A ("files in source but not in provenance map → ADDED") would still find the promoted doc files on disk and classify them as ADDED if nothing prevents it. The coordination mechanism is an explicit pre-filter exclusion set built in §2.0 (below) that every Category A subprocess worker receives as an input before it starts scanning. See §2.0 for the exact contract. The exclusion set is the only mechanism guaranteeing that parallel subprocesses cannot double-count `promoted_docs_new[]` paths — prose-level "skip any path" instructions cannot cross subprocess boundaries.
 
 ### 2. Compare Against Provenance Map
 
 **If normal mode (provenance map available):**
 
-Launch subprocesses in parallel that compare source state against provenance map across these categories, returning change findings per category:
+#### 2.0 — Build Pre-filter Exclusion Set
+
+Before launching parallel subprocesses, build a `change_detection_excludes` set in context that Category A subprocess workers must honor. Parallel subprocesses cannot see each other's in-memory state, so any coordination between §1b's decisions and §2's scan results must be pre-materialized into an explicit input the subprocesses receive.
+
+The exclusion set includes:
+
+- Every path in `promoted_docs_new[]` (populated by §1b). These files are tracked as `file_entries[]` via step-04 Priority 7, not through Category A code extraction. Without this exclusion, Category A would classify them as ADDED (because they're in source but not yet in the provenance map) and §3 re-extract would send them to AST extraction, producing ghost entries.
+- Every source path in `file_entries[].source_file` where `file_type == "doc"` in the existing provenance map. These are already-tracked authoritative docs; any drift in them is handled by Category D (script/asset file changes), not Category A.
+
+Record the set size: "**Change-detection excludes:** {count} paths ({promoted_docs_new count} new promotions + {existing doc file_entries count} already tracked)."
+
+#### 2.1 — Launch Category Subprocesses
+
+Launch subprocesses in parallel that compare source state against provenance map across these categories, returning change findings per category. **Every subprocess receives `change_detection_excludes` as an explicit input** and applies it to its file-path iteration loop.
 
 **Category A — File-level changes:**
 - Files in provenance map but missing from source → DELETED
-- Files in source but not in provenance map → ADDED (skip any path in the `promoted_docs_new[]` exclusion set built by §1b — promoted docs are routed to file_entries via Priority 7, not through Category A code extraction)
+- Files in source but not in provenance map AND not in `change_detection_excludes` → ADDED
+- Files in `change_detection_excludes`: skip entirely (routed to file_entries via §1b → step-04 Priority 7, never through Category A)
 - Files in both but with different timestamps/sizes → MODIFIED
 - Files with same content at different paths → MOVED
 
