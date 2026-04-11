@@ -21,6 +21,30 @@ To validate the compiled SKILL.md content against the agentskills.io specificati
 
 **CRITICAL:** Follow this sequence exactly. Do not skip, reorder, or improvise.
 
+### 0. Description Guard Protocol
+
+**Used by:** §2 (`skill-check check --fix`), §4 (`split-body`), and any future tool invocation that may modify SKILL.md.
+
+External validators occasionally rewrite the frontmatter `description` field — `skill-check --fix` may replace it with a generic or truncated version, and `split-body` may touch it during mechanical restructuring. The step-05 §2a compiled description is **authoritative**: it has already been sanitized of angle-bracket tokens and trigger-optimized for agent discovery. Losing it to a tool's well-meaning rewrite breaks discovery quality and re-introduces the angle-bracket failure mode.
+
+To prevent this, any tool invocation that may touch SKILL.md must run inside the following four-phase guard:
+
+1. **Capture.** Before invoking the tool, read the current SKILL.md frontmatter and snapshot the exact `description` value into a local variable (e.g., `guarded_description`). Capture the in-context copy as well.
+2. **Execute.** Run the tool as specified in its section.
+3. **Verify.** After the tool completes, re-read the on-disk SKILL.md and compare its frontmatter `description` against `guarded_description`. Normalize whitespace for comparison (trim leading/trailing whitespace, collapse internal runs) but do not ignore content differences.
+4. **Restore on divergence.** If the post-tool description differs from `guarded_description` in any way other than whitespace normalization, write `guarded_description` back to the on-disk SKILL.md frontmatter and update the in-context copy to match. Record `description_guard_restored: true` with the tool name in context for the evidence report.
+
+**What counts as divergence:**
+
+- The description was replaced (different content).
+- The description was truncated (suffix missing).
+- Angle-bracket tokens were re-introduced (should never happen after step-05 §2a, but protect anyway).
+- The field was deleted entirely (extreme tool behavior).
+
+**What does NOT count as divergence:** whitespace-only differences (trailing newline, trimmed spaces) — treat as equivalent.
+
+**Why this is centralized:** previously, §2 and §4 each contained their own capture/verify/restore prose. Duplicated defensive code drifts: a fix in one section doesn't propagate to the other, and adding a new tool invocation in the future requires remembering to copy the pattern. Centralizing the protocol gives step-06 one place to update when external validator behavior changes.
+
 ### 1. Check Tool Availability
 
 Run: `npx skill-check -h`
@@ -42,9 +66,7 @@ This performs frontmatter validation, description quality checks, body limit enf
 
 **Parse the JSON output** for: `qualityScore` (0-100), `diagnostics[]` (remaining issues), `fixed[]` (auto-corrected issues).
 
-**Context sync after --fix:** If `fixed[]` is non-empty (i.e., `--fix` modified files on disk), re-read the modified SKILL.md to update the in-context copy. Verify the re-read content matches expectations before proceeding. This prevents silent divergence between the in-context SKILL.md and the on-disk version that step-07 will use for artifact generation.
-
-**Description preservation after --fix:** After re-reading the modified SKILL.md, compare the frontmatter `description` field against the original step-05 compiled description. If `--fix` replaced the description with a generic or truncated version, restore the original description to the on-disk file and update the in-context copy. The step-05 compiled description is authoritative — auto-fix tools must not replace trigger-optimized descriptions.
+**Description Guard Protocol:** This invocation may modify SKILL.md (especially when `fixed[]` is non-empty). Wrap the `skill-check check --fix` call in the four-phase protocol defined in §0: capture `guarded_description` before the call, execute, verify against the post-tool description, and restore on divergence. If `fixed[]` is non-empty, also re-read the modified SKILL.md to sync the in-context copy before proceeding — this prevents silent divergence between the in-context and on-disk versions that step-07 will use for artifact generation.
 
 **Note:** `skill-check` may return non-zero exit code even when `errorCount` is 0. Always rely on parsed JSON, not the shell exit code.
 
@@ -71,7 +93,7 @@ If fails: auto-fix (deterministic), re-validate once, record result. If passes: 
 
 **If step 2 reported `body.max_lines` failure:**
 
-**Description preservation:** Before any split operation, capture the current SKILL.md frontmatter `description` field. After the split completes, verify the `description` was not modified. If it was replaced with a generic placeholder, restore the original immediately.
+**Description Guard Protocol:** Split operations may rewrite the frontmatter. Wrap the split invocation in the four-phase protocol defined in §0 to capture `guarded_description` before the call, execute, verify, and restore on divergence.
 
 **Mandatory approach — selective split:** Identify Tier 2 sections by their `## Full` heading prefix (e.g., `## Full API Reference`, `## Full Type Definitions`, `## Full Integration Patterns`). Extract ONLY those sections to `references/`, starting with the largest. Keep ALL Tier 1 content and any smaller sections inline. Inline passive context achieves 100% task accuracy vs 79% for on-demand retrieval (per Vercel research).
 
