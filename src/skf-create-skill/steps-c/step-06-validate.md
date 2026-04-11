@@ -1,5 +1,6 @@
 ---
 nextStepFile: './step-07-generate-artifacts.md'
+tesslDismissalData: 'assets/tessl-dismissal-rules.md'
 ---
 
 # Step 6: Validate
@@ -112,25 +113,33 @@ Record: "Security scan skipped — SNYK_TOKEN not configured"
 
 Parse output for: `description_score`, `content_score`, `review_score`, `validation_result`, `judge_suggestions[]`.
 
-- **Content score < 70%:** Record warning: "Content quality warning: tessl scored content at {score}%."
-- **Unavailable:** Skip with note: "Content quality review skipped — tessl tool unavailable"
+**Load dismissal rules:** Before interpreting any findings, load `{tesslDismissalData}` completely. This file is the single source of truth for tessl findings that SKF expects and must dismiss. It defines score thresholds, suggestion dismissal patterns, and the action to take when each rule matches.
 
-> **EXPECTED BEHAVIOR — Two-Tier Scoring:** The Skill Forge two-tier design (Tier 1 Key API Summary + Tier 2 Full API Reference) intentionally includes progressive disclosure. tessl's `conciseness` scorer will flag this as redundancy (typically scoring 2/3), which is **expected behavior — not a defect**. tessl may also suggest removing `[MANUAL]` markers, moving Full API Reference to a separate file, or consolidating duplicate parameter documentation — **all three suggestions conflict with SKF design principles and must be dismissed.** Acceptable threshold: content scores >= 60% are normal for two-tier skills. Do NOT consolidate Tier 1 and Tier 2 content to improve the score — the two-tier structure is a deliberate design choice for standalone usability.
->
-> **EXPECTED BEHAVIOR — Description Field:** The description has been sanitized by step-05 §2a to ensure no angle-bracket tokens (`<name>`, `<component>`, etc.) reach the validator. If tessl's `description_field` deterministic validator reports an XML-tag failure anyway, this is a compilation bug — the sanitizer missed a token. Do NOT work around the failure by rewriting the description at step-06; instead, fix the sanitizer in step-05 §2a. Expected description score at this point: 100%.
+**Apply dismissal rules** in this order:
+
+1. **Check score thresholds** against the "Score Thresholds" table in `{tesslDismissalData}`. Most importantly:
+   - If `description_score < 100`: halt immediately with the error message from the threshold table. This indicates step-05 §2a sanitization missed a case — do not attempt to fix at step-06.
+   - If `review_score < 60` or `content_score < 60`: record warnings in the evidence report, continue.
+2. **Iterate `judge_suggestions[]`.** For each suggestion:
+   - Cross-reference against the rules in `{tesslDismissalData}` in order.
+   - If a rule matches: record `{rule_id, rationale, suggestion_text}` under "Dismissed tessl suggestions" in the evidence report. Do not apply.
+   - If no rule matches: add to the "Novel tessl suggestions" list for §6b to surface to the user.
+3. **Short-circuit when empty.** If every suggestion was dismissed (no novel suggestions), §6b has nothing to show — auto-proceed to §7.
+
+- **Unavailable:** Skip with note: "Content quality review skipped — tessl tool unavailable"
 
 tessl installs automatically via `npx`. A missing tool is not an error — graceful skip.
 
 #### 6b. User Decision Gate (conditional)
 
-**If tessl returned no suggestions OR tessl was unavailable:** Skip this gate — auto-proceed.
+**If §6 produced no novel suggestions (all dismissed via `{tesslDismissalData}`) OR tessl was unavailable:** Skip this gate — auto-proceed.
 
-**If tessl returned suggestions**, present them to the user:
+**If §6 produced novel suggestions** (ones not matched by any dismissal rule), present them to the user:
 
 "**Content quality review: {score}%**
 
-tessl suggestions:
-{numbered list of judge_suggestions}
+tessl suggestions (novel — not matched by `{tesslDismissalData}`):
+{numbered list of novel suggestions}
 
 **Select an option:**
 - **[S] Skip** — proceed with current content as-is (default)
