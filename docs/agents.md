@@ -3,12 +3,6 @@ title: Agents
 description: Ferris agent reference — modes, capabilities, menu, and communication style
 ---
 
-# Agents Reference
-
-Ferris is the AI agent that runs all SKF workflows. You always interact with Ferris — he switches modes based on which workflow you invoke.
-
----
-
 ## Ferris — Skill Architect & Integrity Guardian
 
 **ID:** `skf-forger`

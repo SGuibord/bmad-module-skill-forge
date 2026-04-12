@@ -3,9 +3,7 @@ title: How It Works
 description: How Skill Forge works — the BMad framework, architecture, output format, confidence model, progressive tiers, and tool ecosystem
 ---
 
-# How It Works
-
-This page is for people who want to understand how SKF works under the hood. It covers the BMad framework, workflow architecture, capability tiers, output format, tool ecosystem, and key design decisions. For definitions of key terms, see [Concepts](../concepts/).
+For definitions of key terms, see [Concepts](../concepts/).
 
 ---
 

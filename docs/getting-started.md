@@ -3,12 +3,6 @@ title: Getting Started
 description: Installation, prerequisites, first steps, and common use cases for Skill Forge
 ---
 
-# Getting Started with SKF: Skill Forge
-
-Welcome to Skill Forge! This guide will help you get up and running.
-
----
-
 ## What This Module Does
 
 Skill Forge analyzes code repositories, documentation websites, and developer discourse to build verified instruction files ("skills") for AI agents. Instead of your agent guessing API calls from training data, it follows instructions where every function, type, and pattern traces back to its source — a file and line for code, a URL for documentation, an issue or PR for discourse. Skills comply with the [agentskills.io](https://agentskills.io) open standard and work across Claude, Cursor, Copilot, and other AI tools. See the [Concepts](../concepts/) page for definitions of key terms.

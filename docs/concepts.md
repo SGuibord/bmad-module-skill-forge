@@ -3,12 +3,6 @@ title: Concepts
 description: Plain-English definitions of key Skill Forge terms — agent skills, provenance, confidence tiers, drift, and more
 ---
 
-# Concepts
-
-This page defines the key terms you'll encounter in Skill Forge, with concrete examples.
-
----
-
 ## Agent Skills
 
 An agent skill is an instruction file that tells an AI agent how to use your code. Instead of the agent guessing your API from its training data, it reads the skill and gets real function names, real parameter types, and real usage patterns.

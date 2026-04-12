@@ -3,11 +3,7 @@ title: BMAD Synergy
 description: How SKF workflows pair with BMAD CORE phases and optional modules (BMM, TEA, BMB, GDS, CIS) — integration patterns, entry points, and artifact flow
 ---
 
-# Using SKF with BMAD
-
-This page is for people already using [BMAD](https://docs.bmad-method.org/) who want to know where SKF workflows plug in. It assumes you know what BMM phases are, what TEA does, and what a BMAD module is. If any of that is new, start with the [BMAD docs](https://docs.bmad-method.org/) and then come back.
-
-If you're new to SKF itself, read [Getting Started](../getting-started/) first. The rest of this page assumes you have SKF installed and have run `@Ferris SF`.
+Assumes you know [BMAD](https://docs.bmad-method.org/) — BMM phases, TEA, and what a BMAD module is. If any of that is new, start with the [BMAD docs](https://docs.bmad-method.org/) first. If you're new to SKF, read [Getting Started](../getting-started/) instead.
 
 ---
 

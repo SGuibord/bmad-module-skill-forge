@@ -3,11 +3,7 @@ title: Verifying a Skill
 description: How to audit any SKF-compiled skill — walk every instruction back to an upstream commit and line number in under 60 seconds.
 ---
 
-# Verifying a Skill
-
-The whole point of Skill Forge is that **nothing is made up**. Every instruction in every skill traces back to a specific file, a specific line, and a specific commit in the upstream source. If a skill claims a function exists, you can open the real source tree at the pinned commit and see it with your own eyes. If the claim and the source disagree — that's a bug, and SKF treats it as one.
-
-This page is the recipe for walking that chain yourself. It takes under a minute per symbol and works for every skill SKF produces, whether you compiled it locally or are auditing someone else's output.
+**Nothing is made up.** Every instruction in every skill traces back to a specific file, a specific line, and a specific commit in the upstream source. If a skill claims a function exists, you can open the real source tree at the pinned commit and see it with your own eyes. If the claim and the source disagree — that's a bug, and SKF treats it as one.
 
 ---
 

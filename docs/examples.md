@@ -3,12 +3,6 @@ title: Examples
 description: Real-world scenarios, tips, and troubleshooting for Skill Forge
 ---
 
-# Examples & Use Cases
-
-This section provides practical examples for using SKF: Skill Forge.
-
----
-
 ## What the Output Looks Like
 
 When SKF generates a skill, you get a `SKILL.md` file with machine-readable frontmatter and provenance-backed instructions. Here's a trimmed example from a real skill generated for [cognee](https://github.com/topoteretes/cognee) (browse the full output at [oh-my-skills](https://github.com/armelhbobdad/oh-my-skills)):
