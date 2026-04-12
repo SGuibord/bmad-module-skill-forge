@@ -103,7 +103,7 @@ See the [workflows docs](https://armelhbobdad.github.io/bmad-module-skill-forge/
 
 ## Help SKF Improve
 
-Every workflow ends with a health-check reflection that can file bugs or friction reports as GitHub issues (with your approval). **Please let workflows run to completion** so the feedback isn't lost. If you skipped the terminal step, ask Ferris: `@Ferris please run the workflow health check for this session` — or [open an issue](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/new/choose) directly. Full details: [How It Works → Workflow Health Check](https://armelhbobdad.github.io/bmad-module-skill-forge/workflows/#terminal-step-health-check).
+Every workflow ends with a health-check reflection that can file bugs or friction reports as GitHub issues (with your approval). Reports are auto-deduped by fingerprint, so **re-reporting is safe** — if the same defect was already filed, your report becomes a 👍 on the canonical issue instead of a duplicate. **Please let workflows run to completion** so the feedback isn't lost. If you skipped the terminal step, ask Ferris: `@Ferris please run the workflow health check for this session` — or [open an issue](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/new/choose) directly. Full details: [How It Works → Workflow Health Check](https://armelhbobdad.github.io/bmad-module-skill-forge/workflows/#terminal-step-health-check).
 
 ## Who Is This For?
 
