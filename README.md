@@ -9,7 +9,7 @@
 [![Quality & Validation](https://github.com/armelhbobdad/bmad-module-skill-forge/actions/workflows/quality.yaml/badge.svg)](https://github.com/armelhbobdad/bmad-module-skill-forge/actions/workflows/quality.yaml)
 [![npm](https://img.shields.io/npm/v/bmad-module-skill-forge)](https://www.npmjs.com/package/bmad-module-skill-forge)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![BMad Module](https://img.shields.io/badge/BMad-module-blue)](https://github.com/bmad-code-org/BMAD-METHOD)
+[![BMAD Module](https://img.shields.io/badge/BMAD-module-blue)](https://github.com/bmad-code-org/BMAD-METHOD)
 [![Python Version](https://img.shields.io/badge/python-%3E%3D3.10-blue?logo=python&logoColor=white)](https://www.python.org)
 [![uv](https://img.shields.io/badge/uv-package%20manager-blueviolet?logo=uv)](https://docs.astral.sh/uv/)
 [![Docs](https://img.shields.io/badge/docs-online-green)](https://armelhbobdad.github.io/bmad-module-skill-forge/)
@@ -19,6 +19,7 @@
 *Skill Forge analyzes your code repositories, documentation, and developer discourse to build verified instruction files for AI agents. Every instruction links back to where it came from — nothing is made up.*
 
 **If SKF helps your agent stop hallucinating, give it a ⭐ — it helps others find this tool.**
+**If it saved you an afternoon, [grab me a coffee ☕](https://buymeacoffee.com/armelhbobdad) — it helps me keep forging.**
 
 </div>
 
@@ -152,7 +153,7 @@ SKF builds on these excellent open-source tools:
 | [skill-check](https://github.com/thedaviddias/skill-check)   | Skill validation, auto-fix, quality scoring, and security scanning |
 | [Snyk Agent Scan](https://github.com/snyk/agent-scan)   | Security scanning for prompt injection and data exposure (optional) |
 | [tessl](https://tessl.io)                                     | Content quality review, actionability scoring, and AI judge evaluation |
-| [BMad Method](https://github.com/bmad-code-org/BMAD-METHOD)  | Agent-workflow framework that SKF extends as a module              |
+| [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD)  | Agent-workflow framework that SKF extends as a module              |
 
 ## Contributing
 
@@ -164,7 +165,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-**Skill Forge (SKF)** — A standalone [BMad](https://github.com/bmad-code-org/BMAD-METHOD) module for agent skill compilation.
+**Skill Forge (SKF)** — A standalone [BMAD](https://github.com/bmad-code-org/BMAD-METHOD) module for agent skill compilation.
 
 [![Contributors](https://contrib.rocks/image?repo=armelhbobdad/bmad-module-skill-forge)](https://github.com/armelhbobdad/bmad-module-skill-forge/graphs/contributors)
 

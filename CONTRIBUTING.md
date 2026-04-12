@@ -1,6 +1,6 @@
-# Contributing to BMad
+# Contributing to BMAD
 
-Thank you for considering contributing to the BMad project! We believe in **Human Amplification, Not Replacement** - bringing out the best thinking in both humans and AI through guided collaboration.
+Thank you for considering contributing to the BMAD project! We believe in **Human Amplification, Not Replacement** - bringing out the best thinking in both humans and AI through guided collaboration.
 
 💬 **Discord Community**: Join our [Discord server](https://discord.gg/gk8jAdXWmj) for real-time discussions:
 
@@ -10,18 +10,18 @@ Thank you for considering contributing to the BMad project! We believe in **Huma
 
 ## Our Philosophy
 
-### BMad Core™: Universal Foundation
+### BMAD Core™: Universal Foundation
 
-BMad Core empowers humans and AI agents working together in true partnership across any domain through our **C.O.R.E. Framework** (Collaboration Optimized Reflection Engine):
+BMAD Core empowers humans and AI agents working together in true partnership across any domain through our **C.O.R.E. Framework** (Collaboration Optimized Reflection Engine):
 
 - **Collaboration**: Human-AI partnership where both contribute unique strengths
 - **Optimized**: The collaborative process refined for maximum effectiveness
 - **Reflection**: Guided thinking that helps discover better solutions and insights
 - **Engine**: The powerful framework that orchestrates specialized agents and workflows
 
-### BMad Method™: Agile AI-Driven Development
+### BMAD Method™: Agile AI-Driven Development
 
-The BMad Method is the flagship bmad module for agile AI-driven software development. It emphasizes thorough planning and solid architectural foundations to provide detailed context for developer agents, mirroring real-world agile best practices.
+The BMAD Method is the flagship bmad module for agile AI-driven software development. It emphasizes thorough planning and solid architectural foundations to provide detailed context for developer agents, mirroring real-world agile best practices.
 
 ### Core Principles
 
@@ -29,9 +29,9 @@ The BMad Method is the flagship bmad module for agile AI-driven software develop
 
 **Bidirectional Guidance** - Agents guide users through structured workflows while users push agents with advanced prompting. Both sides actively work to extract better information from each other.
 
-**Systems of Workflows** - BMad Core builds comprehensive systems of guided workflows with specialized agent teams for any domain.
+**Systems of Workflows** - BMAD Core builds comprehensive systems of guided workflows with specialized agent teams for any domain.
 
-**Tool-Agnostic Foundation** - BMad Core remains tool-agnostic, providing stable, extensible groundwork that adapts to any domain.
+**Tool-Agnostic Foundation** - BMAD Core remains tool-agnostic, providing stable, extensible groundwork that adapts to any domain.
 
 ## What Makes a Good Contribution?
 
@@ -43,14 +43,14 @@ Every contribution should strengthen human-AI collaboration. Ask yourself: **"Do
 - Improve agent personas and workflows
 - Strengthen planning and context continuity
 - Increase cross-domain accessibility
-- Add domain-specific modules leveraging BMad Core
+- Add domain-specific modules leveraging BMAD Core
 
 **❌ What detracts from our mission:**
 
 - Purely automated solutions that sideline humans
 - Tools that don't improve the partnership
 - Complexity that creates barriers to adoption
-- Features that fragment BMad Core's foundation
+- Features that fragment BMAD Core's foundation
 
 ## Before You Contribute
 
@@ -62,7 +62,7 @@ Every contribution should strengthen human-AI collaboration. Ask yourself: **"Do
    - Clear bug description
    - Steps to reproduce
    - Expected vs actual behavior
-   - Model/IDE/BMad version details
+   - Model/IDE/BMAD version details
    - Screenshots or links if applicable
 4. **Indicate if you're working on a fix** to avoid duplicate efforts
 
@@ -71,7 +71,7 @@ Every contribution should strengthen human-AI collaboration. Ask yourself: **"Do
 1. **Discuss first in Discord** (#suggestions-feedback channel) - the feature request template asks if you've done this
 2. **Check existing issues and discussions** to avoid duplicates
 3. **Use the feature request template** when creating an issue
-4. **Be specific** about why this feature would benefit the BMad community and strengthen human-AI collaboration
+4. **Be specific** about why this feature would benefit the BMAD community and strengthen human-AI collaboration
 
 ### Before Starting Work
 

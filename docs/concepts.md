@@ -103,9 +103,9 @@ Both operations automatically rebuild platform context files so your AI agents s
 
 ## BMAD Module
 
-SKF is a plugin (called a "module") for [BMad Method](https://docs.bmad-method.org/), a framework for running structured AI workflows. You don't need to know BMad to use SKF — the standalone installer sets everything up.
+SKF is a plugin (called a "module") for [BMAD Method](https://docs.bmad-method.org/), a framework for running structured AI workflows. You don't need to know BMAD to use SKF — the standalone installer sets everything up.
 
-→ If you already use BMAD, see [BMAD Synergy](../bmad-synergy/) for how SKF workflows pair with BMM phases and optional modules like TEA, BMB, and GDS.
+If you already use BMAD, see [BMAD Synergy](../bmad-synergy/) for how SKF workflows pair with BMM phases and optional modules like TEA, BMB, and GDS.
 
 ---
 
@@ -168,3 +168,5 @@ SKF integrates skill authoring best practices from the Claude platform and commu
 - **One workflow per session** — clear context between workflows to prevent stale state from affecting results
 - **Multiple skills per target** — compile different skills from the same repo or docs for different use cases and audiences
 - **Progressive capability** — start with Quick mode, upgrade tiers as you install more tools
+
+> **Tip from Armel:** When forging skills with Claude Code, I run `claude --dangerously-skip-permissions` to bypass all permission prompts. SKF workflows only read source code, write to `skills/` and `forge-data/`, and call local tools (ast-grep, qmd, gh) — every step is auditable in the [open source](https://github.com/armelhbobdad/bmad-module-skill-forge). Skipping permissions drastically reduces forge time: I start a pipeline, go [grab one of those coffees ☕ you keep offering](https://buymeacoffee.com/armelhbobdad), and come back to a completed workflow. Review the output at the end, not at every gate.

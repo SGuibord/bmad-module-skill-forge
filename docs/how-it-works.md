@@ -1,25 +1,25 @@
 ---
 title: How It Works
-description: How Skill Forge works — the BMad framework, architecture, output format, confidence model, progressive tiers, and tool ecosystem
+description: How Skill Forge works — the BMAD framework, architecture, output format, confidence model, progressive tiers, and tool ecosystem
 ---
 
 For definitions of key terms, see [Concepts](../concepts/).
 
 ---
 
-## How BMad Works
+## How BMAD Works
 
-[BMad](https://docs.bmad-method.org/) tackles complex, open-ended work by decomposing it into **repeatable workflows**. Every workflow is a sequence of small, explicit steps, so the AI takes the same route on every run. A **shared knowledge base** of standards and patterns backs those steps, keeping outputs consistent instead of improvised. The formula is simple: **structured steps + shared standards = reliable results**.
+[BMAD](https://docs.bmad-method.org/) tackles complex, open-ended work by decomposing it into **repeatable workflows**. Every workflow is a sequence of small, explicit steps, so the AI takes the same route on every run. A **shared knowledge base** of standards and patterns backs those steps, keeping outputs consistent instead of improvised. The formula is simple: **structured steps + shared standards = reliable results**.
 
 ## How SKF Fits In
 
-SKF plugs into BMad the same way a specialist plugs into a team. It uses the same step-by-step workflow engine and shared standards, but focuses exclusively on skill compilation and quality assurance. That means you get **evidence-based agent skills**, **AST-verified instructions**, and **drift detection** that align with the rest of the BMad process.
+SKF plugs into BMAD the same way a specialist plugs into a team. It uses the same step-by-step workflow engine and shared standards, but focuses exclusively on skill compilation and quality assurance. That means you get **evidence-based agent skills**, **AST-verified instructions**, and **drift detection** that align with the rest of the BMAD process.
 
 ---
 
 ## Architecture & Flow
 
-BMad is a small **agent + workflow engine**. There is no external orchestrator — everything runs inside the LLM context window through structured instructions.
+BMAD is a small **agent + workflow engine**. There is no external orchestrator — everything runs inside the LLM context window through structured instructions.
 
 ### Building Blocks
 
@@ -32,6 +32,7 @@ Each workflow directory contains these files, and each has a specific job:
 | `references/*.md`         | Workflow-specific reference data — rules, patterns, protocols                                                       | Read by steps on demand                           |
 | `assets/*.md`             | Workflow-specific output formats — schemas, templates, heuristics                                                   | Read by steps on demand                           |
 | `templates/*.md`          | Output skeletons with placeholder vars — steps fill these in to produce the final artifact                          | Read by steps when generating output              |
+| `scripts/*.py`            | Deterministic Python scripts — scoring, validation, structural diffing, manifest operations                         | Invoked by steps via `uv run` for reproducible computation |
 
 **Module-level shared files** (not per-workflow — loaded by the agent or referenced across workflows):
 
@@ -40,6 +41,7 @@ Each workflow directory contains these files, and each has a specific job:
 | `skf-forger/SKILL.md`     | Expert persona — identity, principles, critical actions, menu of triggers                                           | First — always in context                         |
 | `knowledge/skf-knowledge-index.csv` | Knowledge fragment index — id, name, tags, tier, file path                                                          | Read by steps to decide which fragments to load   |
 | `knowledge/*.md`          | 14 reusable fragments + overview.md index — cross-cutting principles and patterns (e.g., `zero-hallucination.md`, `confidence-tiers.md`, `ccc-bridge.md`) | Selectively read into context when a step directs |
+| `shared/scripts/*.py`     | 7 cross-workflow Python scripts — preflight checks, manifest ops, managed-section rebuilds, frontmatter validation, severity classification, structural diffing, skill inventory | Invoked by any workflow that needs deterministic computation |
 
 ```mermaid
 flowchart LR
@@ -48,6 +50,7 @@ flowchart LR
   W --> S[Step Files: steps-c/]
   S --> K[Knowledge Fragments<br/>skf-knowledge-index.csv → knowledge/*.md]
   S --> D[References & Assets<br/>references/*.md, assets/*.md, templates/*.md]
+  S --> P[Scripts<br/>scripts/*.py, shared/scripts/*.py]
   S --> O[Outputs: skills/, forge-data/, sidecar<br/>when a step writes output]
 ```
 
@@ -57,10 +60,12 @@ flowchart LR
 2. **Agent loads** — `skf-forger/SKILL.md` injects the persona (identity, principles, critical actions) into the context window. Sidecar files (`forge-tier.yaml`, `preferences.yaml`) are loaded for persistent state.
 3. **Workflow loads** — `SKILL.md` presents the mode choice and routes to the first step file.
 4. **Step-by-step execution** — Only the current step file is in context (just-in-time loading). Each step explicitly names the next one. The LLM reads, executes, saves output, then loads the next step. No future steps are ever preloaded.
-5. **Knowledge injection** — Steps consult `skf-knowledge-index.csv` and selectively load fragments from `knowledge/` by tags and relevance. Cross-cutting principles (zero hallucination, confidence tiers, provenance) are loaded only when a step directs — not preloaded.
+5. **Sub-agent delegation** — When a step needs to process large files (full `SKILL.md` documents, multiple `references/*.md` files, parallel per-library extraction), it spawns sub-agents via the Agent tool instead of loading the content into the parent context. Each sub-agent receives a file path, extracts a compact JSON summary, and returns it. Up to 8 sub-agents run concurrently. The parent collects JSON summaries without ever loading the full source — context isolation by design, preventing one step's data from bloating the window for the next. Used in TS (coverage check), RA (gap analysis), VS (integration verification), AS (structural diff), and SS (parallel extraction).
+6. **Knowledge injection** — Steps consult `skf-knowledge-index.csv` and selectively load fragments from `knowledge/` by tags and relevance. Cross-cutting principles (zero hallucination, confidence tiers, provenance) are loaded only when a step directs — not preloaded.
 6. **Reference and asset injection** — Steps read `references/*.md` and `assets/*.md` files as needed (rules, patterns, schemas, heuristics). This is deliberate context engineering: only the data relevant to the current step enters the context window.
-7. **Templates** — When a step produces output (e.g., a skill brief or test report), it reads the template file and fills in placeholders with computed results. The template provides consistent structure; the step provides the content.
-8. **Progress tracking** — Each step appends to an output file with state tracking. Resume mode reads this state and routes to the next incomplete step.
+7. **Script execution** — Steps invoke deterministic Python scripts (`scripts/*.py`, `shared/scripts/*.py`) via `uv run` for computation that must be reproducible: scoring, structural diffing, manifest operations, frontmatter validation. The LLM prepares inputs, the script computes, the LLM uses the output. Same inputs always produce the same result.
+8. **Templates** — When a step produces output (e.g., a skill brief or test report), it reads the template file and fills in placeholders with computed results. The template provides consistent structure; the step provides the content.
+9. **Progress tracking** — Each step appends to an output file with state tracking. Resume mode reads this state and routes to the next incomplete step.
 
 ### Ferris Operating Modes
 
@@ -389,14 +394,18 @@ Skills follow the [agentskills.io specification](https://agentskills.io/specific
 ---
 name: cognee
 description: >
-  Use when cognee is a Python AI memory engine that transforms documents into
-  knowledge graphs with vector and graph storage for semantic search and
-  reasoning. Use this skill when writing code that calls cognee's Python API
-  (add, cognify, search, memify, config, datasets, prune, session) or
-  integrating cognee-mcp. Covers the full public API, SearchType modes,
-  DataPoint custom models, pipeline tasks, and configuration for
-  LLM/embedding/vector/graph providers. Do NOT use for general knowledge graph
-  theory or unrelated Python libraries.
+  Builds apps on top of cognee v0.5.8, the knowledge-graph memory engine for AI agents.
+  Use when ingesting text/files/URLs into persistent agent memory, building knowledge
+  graphs with entities and relationships, searching graph-backed memory with multiple
+  search modes (GRAPH_COMPLETION, CHUNKS, SUMMARIES, TEMPORAL, CYPHER, CODING_RULES),
+  enriching existing graphs with memify, scoping memory with datasets and node_sets,
+  configuring LLM/embedding/graph/vector backends, running custom task pipelines,
+  tracing cognee operations, or visualizing the resulting graph. Covers the top-level
+  exports from cognee/__init__.py: add, cognify, search, memify, datasets, prune,
+  update, run_custom_pipeline, config, SearchType, visualize_graph, and the tracing
+  API. Do NOT use for: cognee internals (cognify task implementation, graph adapters),
+  the HTTP REST API (use cognee-mcp or the FastAPI server instead), non-cognee memory
+  or RAG libraries.
 ---
 ```
 
@@ -612,8 +621,8 @@ Provenance maps enable verification: an `official` skill's provenance must trace
 
 SKF relies on a curated skill compilation knowledge base:
 
-- Index: `src/knowledge/skf-knowledge-index.csv`
-- Fragments: `src/knowledge/`
+- Index: [`src/knowledge/skf-knowledge-index.csv`](https://github.com/armelhbobdad/bmad-module-skill-forge/blob/main/src/knowledge/skf-knowledge-index.csv)
+- Fragments: [`src/knowledge/`](https://github.com/armelhbobdad/bmad-module-skill-forge/tree/main/src/knowledge)
 
 Workflows load only the fragments required for the current task to stay focused and compliant.
 
