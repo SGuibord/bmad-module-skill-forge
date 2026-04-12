@@ -37,7 +37,7 @@ Provenance maps live in `forge-data/{skill}/{version}/provenance-map.json` along
 }
 ```
 
-The snippet above is a real entry from [`forge-data/oms-cognee/0.5.8/provenance-map.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/forge-data/oms-cognee/0.5.8/provenance-map.json). Line number is not rounded. Confidence tier is explicit. Extraction method is named. Nothing is paraphrased.
+The snippet above is a real entry from [`forge-data/oms-cognee/1.0.0/provenance-map.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/forge-data/oms-cognee/1.0.0/provenance-map.json). Line number is not rounded. Confidence tier is explicit. Extraction method is named. Nothing is paraphrased.
 
 ### 3. Visit the upstream repo at the pinned commit
 
@@ -77,7 +77,7 @@ Take oh-my-skills' four reference skills as an example. Their scores range from 
 | Skill | Score | What the report discloses |
 |---|---|---|
 | [oms-cocoindex](https://github.com/armelhbobdad/oh-my-skills/blob/main/forge-data/oms-cocoindex/0.3.37/test-report-oms-cocoindex.md) | **99.0%** | 114/114 provenance entries; 55 public-API denominator from `__init__.py` `__all__`; 20/20 sampled signatures matched. Two denominators (barrel vs. full surface) both disclosed with rationale. |
-| [oms-cognee](https://github.com/armelhbobdad/oh-my-skills/blob/main/forge-data/oms-cognee/0.5.8/test-report-oms-cognee.md) | **99.45%** | 25/25 exports documented; denominator pinned to `cognee/__init__.py` lines 18–47. |
+| [oms-cognee](https://github.com/armelhbobdad/oh-my-skills/blob/main/forge-data/oms-cognee/1.0.0/test-report-oms-cognee.md) | **99.0%** | 34/34 exports documented; denominator is the `cognee/__init__.py` barrel (61 lines, 34 public re-exports) at pinned commit `3c048aa4` (v1.0.0). |
 | [oms-storybook-react-vite](https://github.com/armelhbobdad/oh-my-skills/blob/main/forge-data/oms-storybook-react-vite/10.3.5/test-report-oms-storybook-react-vite.md) | **99.49%** | 215/216 documented — the missing 1 entry is logged openly as **GAP-004**, a canonical surface count drift from the stated denominator. |
 | [oms-uitripled](https://github.com/armelhbobdad/oh-my-skills/blob/main/forge-data/oms-uitripled/0.1.0/test-report-oms-uitripled.md) | **99.45%** | 34-entry denominator (not 11, not 25) with the full reconciliation reasoning in the report. |
 

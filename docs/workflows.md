@@ -75,7 +75,7 @@ Trigger workflows by typing commands to [Ferris](../agents/). See [Concepts](../
 
 **Purpose:** Brief-less fast skill with package-to-repo resolution.
 
-**When to Use:** When you need a skill quickly — no brief needed. Accepts package names or GitHub URLs. Append `@version` to target a specific version (e.g., `@Ferris QS cognee@0.5.8`).
+**When to Use:** When you need a skill quickly — no brief needed. Accepts package names or GitHub URLs. Append `@version` to target a specific version (e.g., `@Ferris QS cognee@1.0.0`).
 
 **Key Steps:** Resolve target → Ecosystem check → Quick extract → Compile → Validate → Write
 

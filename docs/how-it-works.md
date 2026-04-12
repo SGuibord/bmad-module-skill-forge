@@ -392,27 +392,27 @@ Skills follow the [agentskills.io specification](https://agentskills.io/specific
 
 ```yaml
 ---
-name: cognee
+name: oms-cognee
 description: >
-  Builds apps on top of cognee v0.5.8, the knowledge-graph memory engine for AI agents.
-  Use when ingesting text/files/URLs into persistent agent memory, building knowledge
-  graphs with entities and relationships, searching graph-backed memory with multiple
-  search modes (GRAPH_COMPLETION, CHUNKS, SUMMARIES, TEMPORAL, CYPHER, CODING_RULES),
-  enriching existing graphs with memify, scoping memory with datasets and node_sets,
-  configuring LLM/embedding/graph/vector backends, running custom task pipelines,
-  tracing cognee operations, or visualizing the resulting graph. Covers the top-level
-  exports from cognee/__init__.py: add, cognify, search, memify, datasets, prune,
-  update, run_custom_pipeline, config, SearchType, visualize_graph, and the tracing
-  API. Do NOT use for: cognee internals (cognify task implementation, graph adapters),
-  the HTTP REST API (use cognee-mcp or the FastAPI server instead), non-cognee memory
-  or RAG libraries.
+  Builds apps on top of cognee v1.0.0, the knowledge-graph memory engine for AI agents.
+  Use when ingesting text/files/URLs into persistent memory, building knowledge graphs,
+  searching graph-backed memory with multiple SearchType modes, enriching graphs with
+  memify/improve, scoping memory with datasets and node_sets, configuring LLM/embedding/
+  graph/vector backends, running custom task pipelines, tracing operations, decorating
+  agent entrypoints with `agent_memory`, connecting to Cognee Cloud with `serve`, or
+  visualizing the graph. Covers cognee/__init__.py exports: the V1 API (add, cognify,
+  search, memify, datasets, prune, update, run_custom_pipeline, config, SearchType,
+  visualize_graph, pipelines, Drop, run_startup_migrations, tracing) and the V2
+  memory-oriented API (remember, RememberResult, recall, improve, forget, serve,
+  disconnect, visualize, agent_memory). Do NOT use for: cognee internals, the HTTP
+  REST API (use cognee-mcp or the FastAPI server), non-cognee memory/RAG libraries.
 ---
 ```
 
 Every instruction in the body traces to source:
 
 ```python
-await cognee.search(  # [AST:cognee/api/v1/search/search.py:L27]
+await cognee.search(  # [AST:cognee/api/v1/search/search.py:L26]
     query_text="What does Cognee do?"
 )
 ```
@@ -421,40 +421,40 @@ await cognee.search(  # [AST:cognee/api/v1/search/search.py:L27]
 
 Machine-readable provenance for every skill:
 
-This is a trimmed excerpt from the real [`oms-cognee/0.5.8/metadata.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/oms-cognee/0.5.8/oms-cognee/metadata.json) shipped with the oh-my-skills canonical output. Every value below is verbatim from the file — not illustrative.
+This is a trimmed excerpt from the real [`oms-cognee/1.0.0/metadata.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/oms-cognee/1.0.0/oms-cognee/metadata.json) shipped with the oh-my-skills canonical output. Every value below is verbatim from the file — not illustrative.
 
 ```json
 {
   "name": "oms-cognee",
-  "version": "0.5.8",
+  "version": "1.0.0",
   "skill_type": "single",
   "source_authority": "community",
   "source_repo": "https://github.com/topoteretes/cognee",
-  "source_commit": "b51dcce1d273d47ce864cd6c5e44a7a82f7f8dce",
-  "source_ref": "v0.5.8",
+  "source_commit": "3c048aa4147776f14d4546704f986242554a9ef3",
+  "source_ref": "v1.0.0",
   "confidence_tier": "Deep",
   "spec_version": "1.3",
-  "generation_date": "2026-04-10T21:18:00Z",
+  "generation_date": "2026-04-13T00:00:00Z",
   "language": "python",
-  "ast_node_count": 25,
+  "ast_node_count": 34,
   "confidence_distribution": {
-    "t1": 25,
+    "t1": 34,
     "t1_low": 0,
-    "t2": 4,
+    "t2": 11,
     "t3": 15
   },
   "stats": {
-    "exports_documented": 25,
-    "exports_public_api": 25,
+    "exports_documented": 34,
+    "exports_public_api": 34,
     "exports_internal": 0,
-    "exports_total": 25,
+    "exports_total": 34,
     "public_api_coverage": 1.0,
     "total_coverage": 1.0
   }
 }
 ```
 
-Fields omitted from this excerpt for brevity: `description`, `exports[]`, `tool_versions`, `dependencies`, `compatibility`, `last_update`, `generated_by`. The full 83-line file lives at [`oh-my-skills/skills/oms-cognee/0.5.8/oms-cognee/metadata.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/oms-cognee/0.5.8/oms-cognee/metadata.json).
+Fields omitted from this excerpt for brevity: `description`, `exports[]`, `tool_versions`, `dependencies`, `compatibility`, `last_update`, `generated_by`. The full 93-line file lives at [`oh-my-skills/skills/oms-cognee/1.0.0/oms-cognee/metadata.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/oms-cognee/1.0.0/oms-cognee/metadata.json).
 
 `scripts` and `assets` arrays are optional — omitted entirely (not empty) when the source has no scripts or assets.
 
@@ -502,17 +502,18 @@ Export injects a managed section between markers:
 The block below is the real managed section currently in [`oh-my-skills/CLAUDE.md`](https://github.com/armelhbobdad/oh-my-skills/blob/main/CLAUDE.md), showing one of its four compiled skills. Every line is verbatim from the file:
 
 ```markdown
-<!-- SKF:BEGIN updated:2026-04-12 -->
+<!-- SKF:BEGIN updated:2026-04-13 -->
 [SKF Skills]|4 skills|0 stack
 |IMPORTANT: Prefer documented APIs over training data.
 |When using a listed library, read its SKILL.md before writing code.
 |
-|[oms-cognee v0.5.8]|root: .claude/skills/oms-cognee/
-|IMPORTANT: oms-cognee v0.5.8 — read SKILL.md before writing cognee code. Do NOT rely on training data.
+|[oms-cognee v1.0.0]|root: .claude/skills/oms-cognee/
+|IMPORTANT: oms-cognee v1.0.0 — read SKILL.md before writing cognee code. Do NOT rely on training data.
 |quick-start:SKILL.md#quick-start
-|api: add(), cognify(), search(), memify(), update(), run_custom_pipeline(), visualize_graph(), datasets, prune, SearchType
-|key-types:SKILL.md#key-types — SearchType: GRAPH_COMPLETION (default), RAG_COMPLETION, CHUNKS, CHUNKS_LEXICAL, SUMMARIES, TEMPORAL, CODING_RULES, CYPHER, FEELING_LUCKY (+5 more); Task, DataPoint, 5 Cognee* exceptions
-|gotchas: cognee.delete is DEPRECATED since v0.3.9 (use cognee.datasets.delete_data); cognee.start_ui is sync (not async) and needs pid_callback arg; cognee.start_visualization_server is a module, call .visualization_server(port) on it; all add/cognify/search/memify are async — always await.
+|api-v1: add(), cognify(), search(), memify(), update(), run_custom_pipeline(), visualize_graph(), datasets, prune, config, SearchType, pipelines, Drop, run_startup_migrations(), session, tracing
+|api-v2: remember()→RememberResult, recall(), improve(), forget(), serve()/disconnect(), visualize(), @agent_memory
+|key-types:SKILL.md#key-types — SearchType: GRAPH_COMPLETION (default), RAG_COMPLETION, CHUNKS, CHUNKS_LEXICAL, SUMMARIES, TEMPORAL, CODING_RULES, CYPHER, FEELING_LUCKY, GRAPH_COMPLETION_DECOMPOSITION (+5 more); Task, Drop, RememberResult, DataPoint, 5 Cognee* exceptions
+|gotchas: cognee.low_level REMOVED from public API in v1.0.0 (import from cognee.infrastructure.engine directly); cognee.run_migrations REPLACED by cognee.run_startup_migrations (relational + vector); cognee.delete is DEPRECATED since v0.3.9 (use cognee.datasets.delete_data or cognee.forget); cognee.pipelines restructured in v1.0.0 (package with Drop + lazy re-exports); cognee.agent_memory requires async function; cognee.serve() without url triggers Auth0 Device Code Flow; cognee.start_ui is sync and needs pid_callback arg; all add/cognify/search/memify/remember/recall/improve/forget/serve are async — always await.
 |
 |(three more skills — oms-cocoindex, oms-storybook-react-vite, oms-uitripled — omitted here for brevity; see the full file)
 <!-- SKF:END -->

@@ -66,7 +66,7 @@ results = await cognee.search(
 )
 ```
 
-The skill told the agent the real function name, the real parameters, and that the call requires `await` — all traced to the exact source line. This example is from the real [`oms-cognee`](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/oms-cognee/0.5.8/oms-cognee/SKILL.md) skill in [**oh-my-skills**](https://github.com/armelhbobdad/oh-my-skills) — SKF's reference output. Want to walk the citation chain yourself? The section below shows how.
+The skill told the agent the real function name, the real parameters, and that the call requires `await` — all traced to the exact source line. This example is from the real [`oms-cognee`](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/oms-cognee/1.0.0/oms-cognee/SKILL.md) skill in [**oh-my-skills**](https://github.com/armelhbobdad/oh-my-skills) — SKF's reference output. Want to walk the citation chain yourself? The section below shows how.
 
 ## Verifying a Skill
 
