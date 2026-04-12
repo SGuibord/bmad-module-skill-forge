@@ -5,25 +5,25 @@ description: Real-world scenarios, tips, and troubleshooting for Skill Forge
 
 ## What the Output Looks Like
 
-When SKF generates a skill, you get a `SKILL.md` file with machine-readable frontmatter and provenance-backed instructions. Here's a trimmed example from the real [`oms-cognee` SKILL.md](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/oms-cognee/0.5.8/oms-cognee/SKILL.md) generated for [cognee](https://github.com/topoteretes/cognee) (full portfolio at [oh-my-skills](https://github.com/armelhbobdad/oh-my-skills)):
+When SKF generates a skill, you get a `SKILL.md` file with machine-readable frontmatter and provenance-backed instructions. Here's a trimmed example from the real [`oms-cognee` SKILL.md](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/oms-cognee/1.0.0/oms-cognee/SKILL.md) generated for [cognee](https://github.com/topoteretes/cognee) (full portfolio at [oh-my-skills](https://github.com/armelhbobdad/oh-my-skills)):
 
 **Frontmatter (tells AI agents when to load this skill):**
 
 ```yaml
-name: cognee
+name: oms-cognee
 description: >
-  Builds apps on top of cognee v0.5.8, the knowledge-graph memory engine for AI agents.
-  Use when ingesting text/files/URLs into persistent agent memory, building knowledge
-  graphs with entities and relationships, searching graph-backed memory with multiple
-  search modes (GRAPH_COMPLETION, CHUNKS, SUMMARIES, TEMPORAL, CYPHER, CODING_RULES),
-  enriching existing graphs with memify, scoping memory with datasets and node_sets,
-  configuring LLM/embedding/graph/vector backends, running custom task pipelines,
-  tracing cognee operations, or visualizing the resulting graph. Covers the top-level
-  exports from cognee/__init__.py: add, cognify, search, memify, datasets, prune,
-  update, run_custom_pipeline, config, SearchType, visualize_graph, and the tracing
-  API. Do NOT use for: cognee internals (cognify task implementation, graph adapters),
-  the HTTP REST API (use cognee-mcp or the FastAPI server instead), non-cognee memory
-  or RAG libraries.
+  Builds apps on top of cognee v1.0.0, the knowledge-graph memory engine for AI agents.
+  Use when ingesting text/files/URLs into persistent memory, building knowledge graphs,
+  searching graph-backed memory with multiple SearchType modes, enriching graphs with
+  memify/improve, scoping memory with datasets and node_sets, configuring LLM/embedding/
+  graph/vector backends, running custom task pipelines, tracing operations, decorating
+  agent entrypoints with `agent_memory`, connecting to Cognee Cloud with `serve`, or
+  visualizing the graph. Covers cognee/__init__.py exports: the V1 API (add, cognify,
+  search, memify, datasets, prune, update, run_custom_pipeline, config, SearchType,
+  visualize_graph, pipelines, Drop, run_startup_migrations, tracing) and the V2
+  memory-oriented API (remember, RememberResult, recall, improve, forget, serve,
+  disconnect, visualize, agent_memory). Do NOT use for: cognee internals, the HTTP
+  REST API (use cognee-mcp or the FastAPI server), non-cognee memory/RAG libraries.
 ```
 
 **Body (what your AI agent reads):**
@@ -33,15 +33,15 @@ description: >
 
 | Function | Purpose | Key Params | Source |
 |----------|---------|------------|--------|
-| add() | Ingest text, files, binary data | data, dataset_name | [AST:cognee/api/v1/add/add.py:L21] |
+| add() | Ingest text, files, binary data | data, dataset_name | [AST:cognee/api/v1/add/add.py:L22] |
 | cognify() | Build knowledge graph | datasets, graph_model | [AST:cognee/api/v1/cognify/cognify.py:L44] |
-| search() | Query knowledge graph | query_text, query_type | [AST:cognee/api/v1/search/search.py:L27] |
+| search() | Query knowledge graph | query_text, query_type | [AST:cognee/api/v1/search/search.py:L26] |
 | memify() | Enrich graph with custom tasks | extraction_tasks, data | [AST:cognee/modules/memify/memify.py:L25] |
-| session | Session module | session.py module | [SRC:cognee/api/v1/session/session.py:L16] |
+| remember() | V2 one-shot memory ingest | data, dataset_name | [AST:cognee/api/v1/remember/remember.py:L339] |
 | DataPoint | Base class for custom graph nodes | inherit and add fields | [EXT:docs.cognee.ai/guides/custom-data-models] |
 ```
 
-Every line number above is verbatim from the real [`forge-data/oms-cognee/0.5.8/provenance-map.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/forge-data/oms-cognee/0.5.8/provenance-map.json) shipped with oh-my-skills — not illustrative.
+Every line number above is verbatim from the real [`forge-data/oms-cognee/1.0.0/provenance-map.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/forge-data/oms-cognee/1.0.0/provenance-map.json) shipped with oh-my-skills — not illustrative.
 
 Provenance tags trace each instruction to its source:
 - `[AST:file:line]` — extracted from code via AST parsing (highest confidence)
@@ -55,10 +55,16 @@ See [How It Works](../how-it-works/) for the full output structure.
 
 ```
 skills/oms-cognee/
-├── active -> 0.5.8
-└── 0.5.8/
+├── active -> 1.0.0
+├── 0.5.8/
+│   └── oms-cognee/
+│       ├── SKILL.md              # Archived: v0.5.8, pinned to b51dcce1
+│       ├── context-snippet.md
+│       ├── metadata.json
+│       └── references/
+└── 1.0.0/
     └── oms-cognee/
-        ├── SKILL.md              # What your agent reads
+        ├── SKILL.md              # Active: pinned to cognee v1.0.0 (3c048aa4)
         ├── context-snippet.md    # Compressed index for platform context files
         ├── metadata.json         # Machine-readable provenance
         └── references/           # Progressive disclosure detail
@@ -68,7 +74,7 @@ skills/oms-cognee/
             └── pipelines-and-datapoints.md
 ```
 
-This is the real directory listing from [`oh-my-skills/skills/oms-cognee/`](https://github.com/armelhbobdad/oh-my-skills/tree/main/skills/oms-cognee). Skills are stored per-version — updating cognee to v1.0.0 creates a new version directory without overwriting v0.5.8. The `active` symlink always points to the current version. Some skills also include `scripts/` and `assets/` directories when the source repository contains executable scripts or static assets — oms-cognee doesn't have either, but see [How It Works → Per-Skill Output](../how-it-works/#per-skill-output) for the full schema.
+This is the real directory listing from [`oh-my-skills/skills/oms-cognee/`](https://github.com/armelhbobdad/oh-my-skills/tree/main/skills/oms-cognee) after cognee shipped v1.0.0 upstream. SKF recompiled the skill from the v1.0.0 commit and wrote it next to the existing 0.5.8 tree — the older version stays pinned to its original commit (`b51dcce1`) and is still installable by any project that hasn't bumped its `CLAUDE.md` pin yet. The `active` symlink and the [`.export-manifest.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/.export-manifest.json) both point at the current version. Some skills also include `scripts/` and `assets/` directories when the source repository contains executable scripts or static assets — oms-cognee doesn't have either, but see [How It Works → Per-Skill Output](../how-it-works/#per-skill-output) for the full schema.
 
 ---
 
@@ -87,7 +93,7 @@ Ferris reads the repository, extracts the public API, and validates against the 
 Need a specific version? Append `@version`:
 
 ```
-@Ferris QS cognee@0.5.8
+@Ferris QS cognee@1.0.0
 ```
 
 ### Brownfield Platform — Pipeline or per-workflow

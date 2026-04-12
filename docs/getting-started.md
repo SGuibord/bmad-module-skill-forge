@@ -124,7 +124,7 @@ Ferris reads the repository, extracts the public API, and generates a skill in u
 
 **Targeting a specific version:** Append `@version` to pin the skill to a library version:
 ```
-@Ferris QS cognee@0.5.8
+@Ferris QS cognee@1.0.0
 ```
 
 **Full quality path (pipeline mode):**
