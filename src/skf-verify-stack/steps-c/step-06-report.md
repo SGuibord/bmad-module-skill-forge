@@ -126,6 +126,8 @@ Write the result contract per `shared/references/output-contract-schema.md`: the
 
 Write both JSON files through `python3 {atomicWriteScript} write --target ...` to avoid partial-write corruption.
 
+**Result-contract ordering:** The result contract is written exactly once on the first entry to step-06 (the `[X] Exit verification` path). Re-walks of the report via the `[R] Review full report` menu option do NOT regenerate it — the contract captures the run, not the presentation loop. If the user selects `[R]` repeatedly before exiting, the single on-disk contract written on first entry remains authoritative.
+
 ### 5. Present Menu
 
 Display: "**[R] Review full report** | **[X] Exit verification**"

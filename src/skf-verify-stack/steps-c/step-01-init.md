@@ -45,7 +45,7 @@ Wait for user input. **GATE [default: use args]** — If `{headless_mode}` and a
 
 **Validate previous report (if provided):**
 - Confirm the file exists and is readable
-- **Collision check:** Compare both the provided path and `{outputFile}` via `(st_dev, st_ino)` tuples obtained from `stat(2)` on each path (do not rely on absolute-path string equality — symlinks, bind mounts, and case-insensitive filesystems can defeat string comparison). If `{outputFile}` does not yet exist, stat its parent directory and combine with the target basename for comparison. If the two paths resolve to the same inode, warn: "The previous report path points to the same inode as the new report. This file will be overwritten during this run. Provide a path to a backup copy, or leave empty to skip delta comparison." HALT until resolved.
+- **Collision check:** Compare both the provided path and `{outputFile}` via `(st_dev, st_ino)` tuples obtained from `stat(2)` on each path (do not rely on absolute-path string equality — symlinks, bind mounts, and case-insensitive filesystems can defeat string comparison; the `(st_dev, st_ino)` comparison is the canonical kernel-level equivalent of `os.path.realpath`-based equality and is strictly stronger because it also catches hardlinks). If `{outputFile}` does not yet exist, resolve its parent via `realpath`, stat that directory, and combine `(st_dev, parent_ino, basename)` for comparison. If the two paths resolve to the same inode, warn: "The previous report path points to the same inode as the new report. This file will be overwritten during this run. Provide a path to a backup copy, or leave empty to skip delta comparison." HALT until resolved.
 - If missing → "Previous report not found at `{path}`. Proceeding without delta comparison."
 - Store as `previousReport: {path}` (or empty string if not provided)
 
@@ -70,7 +70,7 @@ For each resolved skill package, check for the presence of `SKILL.md`, `metadata
 
 <!-- Subagent delegation: read metadata.json files in parallel, return compact JSON -->
 
-**Read all metadata.json files in parallel using subagents.** Launch up to **8 subagents concurrently** (batch larger inventories in rounds of 8). Each subagent receives one resolved skill package path and MUST:
+**Read all metadata.json files in parallel using subagents.** Launch up to **8 subagents concurrently** (batch larger inventories in rounds of 8 — the 8-way cap keeps the aggregate token window for the parent manageable while still parallelizing most typical stack sizes; tune in a future minor if inventories routinely exceed ~40 skills). Each subagent receives one resolved skill package path and MUST:
 1. Read `{skill_package}/metadata.json`
 2. ONLY return this compact JSON — no prose, no extra commentary:
 
@@ -93,7 +93,7 @@ Parent collects all subagent JSON summaries. Fields map directly from metadata.j
 - `source_repo` ← `source_repo` (or empty string if absent)
 - `source_root` ← `source_root` (or empty string if absent)
 
-**Subagent JSON schema validation:** For each subagent response, require keys `skill_name`, `language`, and an integer `exports_documented`. Wrap each JSON parse in try/catch. On parse failure or missing required key, log "Skipping `{dir_name}` — metadata.json unparseable (skill may be under active modification)" and exclude from the inventory. If more than 20% of subagent calls fail schema validation, HALT the workflow with: "Inventory scan unreliable — {failed_count}/{total_count} skills returned malformed metadata. Re-run [VS] after skills stabilize."
+**Subagent JSON schema validation:** For each subagent response, require keys `skill_name`, `language`, and an integer `exports_documented`. Wrap each JSON parse in try/catch. On parse failure or missing required key, log "Skipping `{dir_name}` — metadata.json unparseable (skill may be under active modification)" and exclude from the inventory. If more than **20%** (the failure-budget threshold — chosen so a single malformed skill in a small 3-5 skill inventory does not trip the halt, while larger inventories still halt before evidence quality collapses) of subagent calls fail schema validation, HALT the workflow with: "Inventory scan unreliable — {failed_count}/{total_count} skills returned malformed metadata. Re-run [VS] after skills stabilize."
 
 **Capture mtime:** For each accepted skill, also record `metadata.json`'s mtime (via `stat`) into the inventory as `metadata_mtime`. Step-03 will re-verify this to detect mid-run modifications.
 

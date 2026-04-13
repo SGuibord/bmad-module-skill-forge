@@ -1,6 +1,7 @@
 ---
 nextStepFile: './step-04-requirements.md'
 integrationRulesData: 'references/integration-verification-rules.md'
+coveragePatternsData: 'references/coverage-patterns.md'
 feasibilitySchemaRef: 'src/shared/references/feasibility-report-schema.md'
 atomicWriteScript: '{project-root}/src/shared/scripts/skf-atomic-write.py'
 outputFile: '{forge_data_folder}/feasibility-report-{project_slug}-{timestamp}.md'
@@ -41,7 +42,7 @@ Parse the architecture document for statements describing two or more technologi
 - Look for data flow descriptions: "{A} sends data to {B}", "{A} results are consumed by {B}"
 - Look for layer boundary descriptions: "{A} at the API layer connects to {B} at the data layer"
 
-**CRITICAL:** Do NOT parse Mermaid diagram syntax. Use only prose text for co-mention detection.
+**CRITICAL — Mermaid Diagram Handling:** See `{coveragePatternsData}` → "Mermaid Diagram Handling" for the canonical rule (single source of truth). Summary: do NOT parse Mermaid diagram syntax for co-mention detection; use only prose text.
 
 **Build integration pairs list:**
 - Each pair: `{library_a, library_b, architectural_context}`
@@ -53,7 +54,7 @@ Parse the architecture document for statements describing two or more technologi
 
 <!-- Subagent delegation: read SKILL.md files in parallel, return compact JSON -->
 
-For each library in an integration pair, delegate SKILL.md reading to a parallel subagent. Launch up to **8 subagents concurrently** (batch if needed). Each subagent receives one skill's SKILL.md path and MUST:
+For each library in an integration pair, delegate SKILL.md reading to a parallel subagent. Launch up to **8 subagents concurrently** (batch if needed — same 8-way cap as step-01 §2; keeps aggregate token window manageable while still parallelizing typical stack sizes). Each subagent receives one skill's SKILL.md path and MUST:
 1. Read the SKILL.md file
 2. Extract the API surface
 3. ONLY return this compact JSON — no prose, no extra commentary:
@@ -77,7 +78,7 @@ For each library in an integration pair, delegate SKILL.md reading to a parallel
 
 **CRITICAL — these fields are inferred, not declared.** `protocols` and `data_formats` do not exist in any skill's `metadata.json`. Treat them as weak evidence from prose scanning only. When either list is used to justify compatibility in Check 2, the per-pair verdict MUST be capped at `Plausible` (see the schema's producer obligations — `src/shared/references/feasibility-report-schema.md`).
 
-**Schema validation (parent):** Each subagent response must contain the required keys (`skill_name`, `language`, `exports`). Reject responses missing required keys and exclude that skill from pair evaluation; HALT if more than 20% of subagent calls return malformed JSON.
+**Schema validation (parent):** Each subagent response must contain the required keys (`skill_name`, `language`, `exports`). Reject responses missing required keys and exclude that skill from pair evaluation; HALT if more than **20%** (same failure-budget threshold as step-01 §2; see the justification there) of subagent calls return malformed JSON.
 
 **Parent collects all subagent JSON summaries.** Do not load full SKILL.md content into parent context.
 
