@@ -245,6 +245,42 @@ You have `cognee` with versions 0.1.0, 0.5.0, and 0.6.0 (active). Version 0.1.0 
 
 Version 0.6.0 remains active. Version 0.5.0 is untouched. The managed sections in CLAUDE.md/AGENTS.md no longer reference 0.1.0.
 
+### Scenario G: Maximum Accuracy for a High-Stakes Library
+
+You're building skills for a production payments library and need maximum citation density. Every signature must be AST-verified, and you want historical context (deprecations, migration notes) baked into the skill.
+
+**Workflow:**
+
+```
+@Ferris SF
+# Ferris detects installed tools and sets your tier automatically:
+# - Quick: no tools required (best-effort, source-read only)
+# - Forge: + ast-grep (T1 AST-verified signatures)
+# - Forge+: + cocoindex-code (semantic pre-ranking for large repos)
+# - Deep: + gh + qmd (T2 evidence — issues, PRs, changelogs)
+# Install the missing tools, then re-run @Ferris SF to promote your tier.
+@Ferris BS    # Scope — confirm the forge tier is Deep (+ ccc if installed)
+@Ferris CS    # Extract — AST + QMD enrichment
+@Ferris TS    # Completeness score — 80%+ threshold
+```
+
+**What you get:** Every signature carries `[AST:file:Lnn]` at T1. Deprecation warnings and design rationale carry `[QMD:collection:doc]` at T2. Install tooling once, every downstream skill benefits. See [Capability Tiers](../concepts/#capability-tiers-quickforgeforgedeep).
+
+### Scenario H: OSS Maintainer Publishing Official Skills
+
+You maintain an OSS library and want to ship official agent skills alongside each release — distributed via [skills.sh](https://skills.sh) or [oh-my-skills](https://github.com/armelhbobdad/oh-my-skills) so consumers install them with `npx skills add`.
+
+**Workflow:**
+
+```
+@Ferris BS    # Scope the skill — set source_authority: official in the brief
+@Ferris CS    # Compile — AST extraction + QMD enrichment (Deep tier recommended)
+@Ferris TS    # Verify completeness before publishing (target: 90%+)
+@Ferris EX    # Package for distribution — emits npx skills publish instructions
+```
+
+**What you get:** A verified skill pinned to the release commit, with `source_authority: official` surfaced in metadata as a trust signal so downstream tooling (and the ecosystem check in `@Ferris QS`) recognize it as maintainer-published rather than community-forged. Re-run `@Ferris maintain <skill>` (AS → US → TS → EX) on every release to keep published skills current.
+
 ---
 
 ## Tips & Tricks
