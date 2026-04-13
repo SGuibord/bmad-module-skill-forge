@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 import tempfile
 from pathlib import Path
 
@@ -17,6 +19,32 @@ spec = importlib.util.spec_from_file_location(
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 scan_inventory = mod.scan_inventory
+
+
+def _link_active(active_link: Path, version: str) -> None:
+    """Create active->version link with Windows junction fallback.
+
+    Mirrors src/shared/scripts/skf-atomic-write.py — symlink first, junction
+    via `mklink /J` when the symlink privilege isn't held. Junctions need an
+    existing absolute target directory.
+    """
+    try:
+        active_link.symlink_to(version)
+        return
+    except OSError as e:
+        if os.name != "nt" or getattr(e, "winerror", None) not in (1314, 5):
+            raise
+        abs_target = (active_link.parent / version).resolve()
+        result = subprocess.run(
+            ["cmd", "/c", "mklink", "/J", str(active_link), str(abs_target)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if result.returncode != 0:
+            raise OSError(
+                f"junction fallback failed: {result.stderr.strip() or result.stdout.strip()}"
+            ) from e
 
 
 def make_skill(skills_dir, name, version="1.0.0", with_metadata=True, with_provenance=False):
@@ -44,11 +72,15 @@ def make_skill(skills_dir, name, version="1.0.0", with_metadata=True, with_prove
     if with_provenance:
         (version_dir / "provenance-map.json").write_text("{}")
 
-    # Create active symlink
+    # Create active symlink (junction on Windows w/o Dev Mode)
     active_link = skill_group / "active"
-    if active_link.exists() or active_link.is_symlink():
+    if active_link.is_symlink():
         active_link.unlink()
-    active_link.symlink_to(version)
+    elif active_link.is_dir():
+        active_link.rmdir()
+    elif active_link.exists():
+        active_link.unlink()
+    _link_active(active_link, version)
 
     return skill_group
 
