@@ -1,13 +1,19 @@
 ---
 nextStepFile: './step-07-health-check.md'
 
-outputFile: '{forge_version}/test-report-{skill_name}.md'
+outputFile: '{forge_version}/test-report-{skill_name}-{run_id}.md'
 scoringRulesFile: 'references/scoring-rules.md'
 outputFormatsFile: 'assets/output-section-formats.md'
-# outputContractSchema `shared/references/output-contract-schema.md` resolves
-# relative to the SKF module root (`_bmad/skf/` when installed, `src/` during
-# development), NOT relative to this step file.
+# outputContractSchema and healthCheck resolve relative to the SKF module root
+# (`_bmad/skf/` when installed, `src/` during development), NOT relative to
+# this step file. Both paths are probed in order; HALT if neither exists.
 outputContractSchema: 'shared/references/output-contract-schema.md'
+healthCheckProbeOrder:
+  - '{project-root}/_bmad/skf/shared/health-check.md'
+  - '{project-root}/src/shared/health-check.md'
+atomicWriteProbeOrder:
+  - '{project-root}/_bmad/skf/shared/scripts/skf-atomic-write.py'
+  - '{project-root}/src/shared/scripts/skf-atomic-write.py'
 ---
 
 # Step 6: Gap Report
@@ -76,33 +82,93 @@ Load the Gap Report section format from `{outputFormatsFile}`. Count gaps by sev
 
 If no gaps found, append a clean pass message recommending **export-skill** workflow.
 
-### 4b. Discovery and Description Quality Recommendations
+### 4b. Discovery Testing (MANDATORY — H4)
 
-After gap enumeration, append a **Discovery Quality** subsection to the gap report. Use the `Gap Entry Format` from `{outputFormatsFile}` for any Low/Info entries. The prose recommendations below are appended after the gap entries:
+After gap enumeration, perform minimum-viable discovery testing. This is a **Medium-weight** check contributing to the Discovery Quality subsection — no longer advisory boilerplate.
 
-**Description optimization:** If tessl `description_score` (from step 04b) is below 90%, or if skill-check flagged description issues, recommend description improvements:
-- Check that the description uses third-person voice consistently
-- Check for specific trigger keywords that match how users would phrase requests
-- Check for negative triggers ("NOT for: ...") to prevent false matches
-- Check for alternative skill references for excluded use cases
+**4b.1 Extract realistic prompts from the skill under test:**
 
-**Discovery testing recommendation:** Regardless of pass/fail, always append:
+Parse SKILL.md for the three most "organic" prompts found in its `description`, `Triggers`, or example sections. Prefer prompts that:
+- Use conversational phrasing (contractions, casual language, implicit context)
+- Omit the skill name or explicit command invocation
+- Reflect how a user would actually ask for this capability
 
-"**Discovery testing recommended.** Before export, test the skill with 3-5 realistic prompts phrased the way real users actually talk — with casual language, typos, incomplete context, and implicit references. A skill tested only with clean prompts may fail to trigger in production. Example realistic prompt patterns:
-- Vague: 'can you help me with this csv file my boss sent'
-- Implicit: 'why did revenue drop last quarter'
-- Abbreviated: 'run the {skill-name} thing on this data'"
+If SKILL.md does not contain enough organic examples, synthesize 3 from the skill's exports/capability summary using the patterns from §4b.4 below.
 
-Record discovery testing status as Info-level in the gap table. This is advisory — it does not affect the score.
+**4b.2 Spawn a discovery subagent:**
 
-### 4c. Result Contract
+For each of the 3 prompts, spawn an isolated subagent with NO prior context about which skill is under test. Provide only:
+1. A compact list of ALL skills available in `{skillsOutputFolder}` (name + description line from each skill's SKILL.md frontmatter)
+2. The prompt text
 
-Write the result contract per `{outputContractSchema}`: the per-run record at `{forge_version}/skf-test-skill-result-{YYYYMMDD-HHmmss}.json` (UTC timestamp, resolution to seconds) and a copy at `{forge_version}/skf-test-skill-result-latest.json` (stable path for pipeline consumers — copy, not symlink). Include the test report path in `outputs`; include `score`, `threshold`, `result` (PASS/FAIL), and `testMode` (naive/contextual) in `summary`.
+Instruction to the subagent:
 
-### 5. Finalize Output Document
+> "You are an agent selecting the best skill to handle a user request. Here is the catalog: {catalog}. The user says: '{prompt}'. Return JSON: `{\"selected_skill\": \"<name>\", \"confidence\": \"<high|medium|low>\", \"reasoning\": \"<one sentence>\"}`. If no skill fits, return `{\"selected_skill\": null, ...}`. Return ONLY JSON."
 
-Update `{outputFile}` frontmatter:
-- Set `stepsCompleted` to `['step-01-init', 'step-02-detect-mode', 'step-03-coverage-check', 'step-04-coherence-check', 'step-04b-external-validators', 'step-05-score', 'step-06-report']`
+**4b.3 Evaluate discovery results:**
+
+Parse the 3 responses. Schema-validate (required: `selected_skill`, `confidence`, `reasoning`). On any parse/schema failure, record the prompt as `discovery_result: error` and continue.
+
+For each prompt, PASS = `selected_skill == skill_name` (the skill under test), FAIL otherwise.
+
+- **3 of 3 PASS** → discovery check PASS (Info severity note, no gap)
+- **2 of 3 PASS** → discovery check WARN → **Medium**-severity gap: `discovery — 1/3 realistic prompts misrouted`
+- **≤1 of 3 PASS** → discovery check FAIL → **High**-severity gap: `discovery — {N}/3 realistic prompts misrouted; description triggers are not pulling the skill`
+
+Append the prompts, selected skills, and outcomes as a table in the Discovery Quality subsection.
+
+**4b.4 Description optimization (secondary):** If tessl `description_score` (from step 04b) is below 90%, or skill-check flagged description issues, add remediation hints to the Discovery Quality subsection:
+- Third-person voice check
+- Explicit trigger keywords matching real user phrasing
+- Negative triggers ("NOT for: ...") to prevent false positives
+- Alternative skill references for excluded use cases
+
+Realistic prompt patterns for synthesis (§4b.1 fallback):
+- Vague: "can you help me with this {artifact} my boss sent"
+- Implicit: "why did {metric} drop last {period}"
+- Abbreviated: "run the {keyword} thing on this data"
+
+### 4c. Result Contract (atomic write — B4)
+
+**Resolve `{atomicWriteHelper}`:** probe `{atomicWriteProbeOrder}`. HALT if neither candidate exists — the contract is a downstream-consumer protocol and must never be written non-atomically.
+
+Write the result contract per `{outputContractSchema}`:
+- Per-run record: `{forge_version}/skf-test-skill-result-{run_id}.json` (the `{run_id}` set in step-01 §6a — already carries UTC timestamp + PID + random suffix, so no same-second collision).
+- Latest copy: `{forge_version}/skf-test-skill-result-latest.json` (stable path for pipeline consumers — copy, not symlink).
+
+Both writes MUST go through the atomic writer so partial writes are never observable:
+
+```bash
+# Build the JSON payload in memory, then:
+cat payload.json | python3 {atomicWriteHelper} write --target {forge_version}/skf-test-skill-result-{run_id}.json
+cat payload.json | python3 {atomicWriteHelper} write --target {forge_version}/skf-test-skill-result-latest.json
+```
+
+Payload contents:
+- `outputs[]` — include the test report path at `{outputFile}` with its `{run_id}` suffix
+- `summary` — `score`, `threshold`, `result` (`"PASS"`, `"FAIL"`, or **`"INCONCLUSIVE"`**), `testMode` (naive/contextual), `activeCategories[]`, `inconclusiveReasons[]` (when present)
+- `runId` — the workflow's `{run_id}` for downstream correlation
+- `healthCheckDispatched` — boolean, set by §7 after the dispatch decision
+
+The `{forge_version}/.test-skill.lock` acquired in step-01 §6b remains held until the end of this step — it guards against concurrent latest-file overwrites.
+
+### 5. Finalize Output Document — Enforce Step Completeness
+
+**Per S6 (incremental step tracking):** read `stepsCompleted` from the output frontmatter. The expected set is the canonical chain:
+
+```
+['step-01-init',
+ 'step-02-detect-mode',
+ 'step-03-coverage-check',
+ 'step-04-coherence-check',
+ 'step-04b-external-validators',
+ 'step-05-score',
+ 'step-06-report']
+```
+
+If any expected entry is missing, HALT with "step completeness violation — missing {list}; workflow state is inconsistent, do not finalize the report". Only append `'step-06-report'` and write back after the check passes.
+
+**INCONCLUSIVE as gate:** if `testResult == 'inconclusive'` (from step-05), the report final presentation (§6) and result contract (§4c) have already been written with that verdict. Do NOT auto-map INCONCLUSIVE to PASS or FAIL. Recommend `manual-review`. The step must still complete (health-check runs unconditionally) — INCONCLUSIVE is a report-time signal, not a workflow abort.
 
 ### 6. Present Final Report
 
@@ -110,7 +176,7 @@ Update `{outputFile}` frontmatter:
 
 ---
 
-**Result:** **{PASS|FAIL}** — **{score}%** (threshold: {threshold}%)
+**Result:** **{PASS|FAIL|INCONCLUSIVE}** — **{score}%** (threshold: {threshold}%)
 
 **Gaps Found:** {total_gaps}
 - Critical: {N}
@@ -131,13 +197,43 @@ Update `{outputFile}` frontmatter:
 {IF FAIL:}
 **update-skill** — This skill needs remediation. Review the gap report above and run the update-skill workflow to address the {N} blocking issues (Critical + High).
 
+{IF INCONCLUSIVE:}
+**manual-review** — The evidence base was too thin to grade automatically. See `inconclusiveReasons` in the Completeness Score section. Typical fixes: upgrade forge tier, enable external validators, or re-extract with a wider scope. Do NOT export.
+
 ---
 
 **See Discovery Quality section in the report for description optimization and realistic prompt testing recommendations.**
 
 **Test report finalized.**"
 
-### 7. Present MENU OPTIONS
+### 6b. Headless Exit Status (S7)
+
+If `{headless_mode}`:
+- `testResult: 'pass'` → `exit 0`
+- `testResult: 'fail'` → `exit 2` (after the result contract has been written in §4c — never before)
+- `testResult: 'inconclusive'` → `exit 3` (distinct from fail so orchestrators can route to manual-review queues)
+
+Non-headless mode always drops to the menu in §7.
+
+### 7. Health-Check Dispatch + MENU OPTIONS
+
+Resolve `{healthCheckFile}` per H2: probe `{healthCheckProbeOrder}` in order. **HALT** if neither candidate exists — the health-check is the true terminal step; without it the workflow cannot complete honestly:
+
+```
+Error: cannot locate shared/health-check.md at either of:
+  - {project-root}/_bmad/skf/shared/health-check.md
+  - {project-root}/src/shared/health-check.md
+
+test-skill delegates its terminal step to the shared health-check. Install
+the SKF module or run from a development checkout with src/ present.
+```
+
+Before displaying the menu, write the dispatch decision into the output report frontmatter (so the artifact records whether the health-check ran):
+
+- `health_check_dispatched: true` — when the C menu choice will be taken (headless, or user will select C)
+- `health_check_dispatched: false` — should be rare (only if operator explicitly skips, e.g. future flag)
+
+Also mirror the boolean into the `healthCheckDispatched` field of the result contract written in §4c (re-write atomically via `{atomicWriteHelper}` if the dispatch decision is made after the initial contract write).
 
 Display: "**Test complete.** [C] Finish"
 
@@ -149,7 +245,7 @@ Display: "**Test complete.** [C] Finish"
 #### EXECUTION RULES:
 
 - ALWAYS halt and wait for user input after presenting menu
-- **GATE [default: C]** — If `{headless_mode}`: auto-proceed with [C] Continue, log: "headless: auto-continue past report menu"
+- **GATE [default: C]** — If `{headless_mode}`: auto-proceed with [C] Continue, log: "headless: auto-continue past report menu"; set `health_check_dispatched: true` in frontmatter before chaining
 - C triggers the health check, which is the true workflow exit
 - User may ask questions about the report before finishing
 

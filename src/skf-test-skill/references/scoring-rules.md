@@ -54,6 +54,8 @@ When `docs_only_mode: true` is set by step-03 (indicating a skill where all SKIL
 
 This is functionally identical to Quick tier weight redistribution but with a different coverage denominator (self-consistency instead of source comparison).
 
+**S4 external-validator requirement for docs-only:** docs-only mode removes two categories (Signature Accuracy, Type Coverage) from scoring. If External Validation is ALSO unavailable, the evidence base collapses to Coverage alone (naive) or Coverage + Coherence (contextual) — which in the naive/Quick case trips the minimum-evidence floor (INCONCLUSIVE). To keep docs-only skills gradable when external validators are present but still deterministic when they are missing: **when `docsOnly: true` AND `externalValidation is null`, step-05 MUST cap `totalScore` at `threshold - 1` (forcing FAIL) before the INCONCLUSIVE floor is evaluated.** This prevents a docs-only skill from PASSing with only one or two redistributed categories carrying all the weight. Implement in step-05 §4 as a pre-compare cap, recorded in the report as `scoring_notes: docs-only without external validators — capped below threshold per S4`.
+
 ### State 2 Source Access (Any Tier, Provenance-Map Only)
 
 When source is not locally available and analysis resolves to State 2 (provenance-map baseline per source-access-protocol.md):
@@ -65,6 +67,8 @@ When source is not locally available and analysis resolves to State 2 (provenanc
 - **Export Coverage denominator:** Uses the union of provenance-map entry names and metadata.json `exports[]` names (per source-access-protocol.md State 2 rules).
 
 Note: When provenance-map entries are predominantly T1 (AST-verified at compilation time), the coverage and name-matching data is already at highest confidence. The N/A categories reflect the inability to re-verify at test time, not low-quality extraction data.
+
+**S9 State 2 undercount risk acknowledgement:** provenance-map is a cached extraction snapshot — if the source has evolved since extraction, public API adds/removes will NOT surface in Export Coverage (denominator is frozen to the provenance-map union). When `state2: true` AND step-03 records any provenance vs metadata divergence (e.g. union > either source by >5%), apply a flat **10% deduction** to `exportCoverage` before calling the scoring script, AND set `analysis_confidence: provenance-map` (already set) with a report note: `scoring_notes: State 2 undercount risk acknowledged — 10% deduction applied to Export Coverage`. Rationale: the skill cannot be reliably scored on a frozen denominator when the cache is known to disagree with its own metadata; prefer understating over overstating.
 
 ### Forge Tier (ast-grep)
 - Export Coverage: AST-backed export comparison
@@ -103,8 +107,19 @@ If no integration patterns exist, combined coherence equals reference validity.
 
 ## Result Determination
 
-- score >= threshold → PASS
-- score < threshold → FAIL
+Three-state gate — **PASS / FAIL / INCONCLUSIVE**. `INCONCLUSIVE` is not PASS and not FAIL; it signals insufficient evidence to grade the skill. Downstream workflows MUST treat `INCONCLUSIVE` as a hard gate — do not export, do not auto-retry, surface to the human.
+
+- **Minimum-Evidence Floor (MANDATORY — applies before PASS/FAIL comparison):**
+  - `active_categories` = count of categories with a non-zero final weight *after* all redistribution (Quick tier, docs-only, State 2, external-validator-unavailable). Categories with a redistributed weight of 0 do not count as active, even if they received a score.
+  - **If `active_categories < 2`** → force `result: INCONCLUSIVE` with rationale `"insufficient evidence: only {N} active category"`. A single active category cannot cross-validate itself and a PASS would be a false signal.
+  - **If `tier == "Quick"` AND the sole active contributor is Export Coverage** → force `result: INCONCLUSIVE` with rationale `"Quick tier: Export Coverage alone is insufficient evidence — add a second active category by upgrading tier or enabling external validators"`. This catches the degenerate case where every signature/type/coherence/external category gets redistributed to 0 and Export Coverage is doing all the work.
+  - The floor is enforced by `scripts/compute-score.py`. The step-05 scoring step reads `result` from the script output and writes it into the test report frontmatter unchanged.
+
+- Otherwise:
+  - score >= threshold → PASS
+  - score < threshold → FAIL
+
+The floor is intentionally conservative: skf-test-skill grades other skills, so a false PASS has catastrophic downstream effects (polluted exports, misleading feasibility data). Falling back to INCONCLUSIVE is always preferred over a low-evidence PASS.
 
 ## Gap Severity
 

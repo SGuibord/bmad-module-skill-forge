@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-04b-external-validators.md'
-outputFile: '{forge_version}/test-report-{skill_name}.md'
+outputFile: '{forge_version}/test-report-{skill_name}-{run_id}.md'
 outputFormatsFile: 'assets/output-section-formats.md'
 scoringRulesFile: 'references/scoring-rules.md'
 ---
@@ -28,31 +28,46 @@ Read `testMode` from `{outputFile}` frontmatter.
 **IF naive mode → Execute Naive Coherence (Section 2)**
 **IF contextual mode → Execute Contextual Coherence (Sections 3-5)**
 
-### 2. Naive Mode: Basic Structural Validation
+### 2. Naive Mode: Concrete Structural Validation (H1)
 
-Perform lightweight structural checks:
+Perform the following explicit checks (no hand-waving — each recipe is a shell recipe or a literal pattern). Severity assignments are binding; do not relax them.
 
-**Document structure:**
-- SKILL.md has required top-level sections (description, exports, usage)
-- Section headers are properly formatted
-- Code examples have language annotations
-- No broken markdown (unclosed code blocks, malformed tables)
-- If `scripts/` or `assets/` directory exists alongside SKILL.md, a "Scripts & Assets" section (Section 7b) should be present
+**2.1 Required sections present.** For each required top-level H2, run `grep -n "^## {section}" SKILL.md`:
+- `## Description` (or frontmatter `description` field — either satisfies)
+- `## Usage` or `## Examples`
+- `## Exports` or equivalent API surface heading
+- **Zero matches for any required section → High severity** finding: `naive-coherence — missing required section: {section}`
 
-**Internal consistency:**
-- Exports referenced in usage examples match exports listed in exports section
-- Type names used in examples match documented types
-- No self-contradictions (e.g., function described as async but shown sync in example)
+**2.2 Code fence balance.** Count triple-backtick fences with `grep -c '^```' SKILL.md`. **Odd count → High severity** finding: `naive-coherence — unbalanced code fence (unclosed block)`.
 
-Build a simple structural findings list:
+**2.3 Language tags on fences.** `grep -n '^```$' SKILL.md` finds bare fences. **Each match → Medium severity** finding: `naive-coherence — code fence at line {N} missing language tag`.
+
+**2.4 Exports cross-used in Usage section.** For each function name reported in the step-03 subagent inventory (`exports[].name` where `kind == "function"` or `kind == "method"`):
+- `grep -c "{export.name}" SKILL.md` restricted to the Usage section (find the `## Usage` anchor from §2.1 and the next `^## ` anchor; count within that span).
+- **Zero occurrences → High severity** finding: `naive-coherence — exported {kind} \`{name}\` is not referenced in the Usage section`. This catches the "documented but unused" failure mode that trivially fails discovery testing.
+
+**2.5 Async/sync consistency.** For every export with `async` in its description prose (grep for `\basync\b` in the description segment), check the corresponding code example segment for `await` / `async` keywords:
+- Description says async + example shows no `await` → **High severity** finding: `naive-coherence — \`{name}\` described as async but example lacks \`await\``
+- Description says sync + example uses `await {name}` → **High severity** finding: `naive-coherence — \`{name}\` described as sync but example awaits it`
+
+**2.6 Table syntax.** `grep -nE '^\|.*\|$' SKILL.md | head` — for each table row, verify adjacent rows have the same pipe count (split on `|` and compare column count). **Column-count drift → Medium severity** finding: `naive-coherence — table row at line {N} has {X} columns; neighboring rows have {Y}`.
+
+**2.7 Scripts & Assets section.** If `{skillDir}/scripts/` or `{skillDir}/assets/` exists, `grep -n '^## Scripts' SKILL.md`:
+- Directory exists AND no `## Scripts` section → **Medium severity** finding: `naive-coherence — scripts/assets directory exists but Scripts & Assets section missing` (per `{scoringRulesFile}`)
+
+**Hard rule:** 0 findings across §§2.1–2.7 = naive coherence PASS. ≥1 finding = rerank per the severity rubric above; the count and severity list are appended to the Coherence Analysis output in §6.
+
+Build the findings list:
 
 ```json
 {
   "structural_issues": [
-    {"type": "missing_section", "detail": "No 'Usage' section found"},
-    {"type": "broken_example", "detail": "Line 42: references undeclared function 'getConfig'"}
+    {"type": "missing_section", "severity": "High", "detail": "No 'Usage' section found", "line": null},
+    {"type": "unbalanced_fence", "severity": "High", "detail": "3 opening fences, 2 closing", "line": null},
+    {"type": "export_not_in_usage", "severity": "High", "detail": "exported function `formatDate` never referenced in Usage section", "line": 42},
+    {"type": "async_mismatch", "severity": "High", "detail": "`fetchData` described async but example lacks await", "line": 67}
   ],
-  "issues_found": 2
+  "issues_found": 4
 }
 ```
 
@@ -110,6 +125,8 @@ DO NOT BE LAZY — For EACH reference found, launch a subprocess that:
 If subprocess unavailable, validate each reference in main thread.
 
 4. **Scripts/assets directory check:** If a `scripts/` or `assets/` directory exists alongside SKILL.md, verify that a "Scripts & Assets" section (Section 7b) is present in SKILL.md. This directory-level check applies in both modes (naive mode performs it in Section 2; contextual mode performs it here alongside per-reference validation). Flag absence as Medium severity gap per `{scoringRulesFile}`.
+
+5. **Path containment (S8):** for every resolved reference target, compute its canonical path (`os.path.realpath`) and require that it lives inside `{skillDir}` OR inside `{source_path}` (the extraction tree recorded in metadata.json). References whose canonical path escapes both roots (e.g. `../../../etc/passwd`, absolute paths to unrelated dirs, symlink redirections outside the skill or its source) are **High severity** findings: `coherence — reference escapes skill/source sandbox: {raw_ref} → {canonical_path}`. Do NOT validate the target's contents for escaping references — the escape itself is the finding.
 
 ### 5. Contextual Mode: Check Integration Pattern Completeness
 

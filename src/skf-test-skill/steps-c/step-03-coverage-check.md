@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-04-coherence-check.md'
-outputFile: '{forge_version}/test-report-{skill_name}.md'
+outputFile: '{forge_version}/test-report-{skill_name}-{run_id}.md'
 scoringRulesFile: 'references/scoring-rules.md'
 sourceAccessProtocol: 'references/source-access-protocol.md'
 ---
@@ -72,6 +72,26 @@ Delegate reading of the skill under test to a subagent. The subagent receives th
 ```
 
 **Parent uses this JSON summary as the documented inventory.** Do not load SKILL.md or references file contents into parent context.
+
+#### 1a. Parent-Side Schema Validation + Spot-Check (MANDATORY)
+
+test-skill is a quality gate — it MUST NOT trust subagent output blindly. Before any downstream step consumes the inventory, the parent performs two checks and HALTs on any failure:
+
+**Schema validation (required keys + types):**
+
+1. Parse the subagent response as JSON. On parse failure → HALT "coverage-check: subagent response not valid JSON".
+2. Required keys present: `skill_name` (string), `exports` (list), `cross_check_mismatches` (list — may be empty). Missing key or wrong type → HALT "coverage-check: subagent JSON schema invalid — missing/typo: {key}".
+3. Each `exports[]` entry must be a dict with at minimum `name` (non-empty string) and `kind` (one of `function|class|type|constant|hook|interface|method`). Reject entries violating this; if >0 rejections, HALT "coverage-check: subagent returned malformed export entries — {count} entries do not match schema".
+4. `cross_check_mismatches[]` entries (when non-empty) must carry `export`, `skill_md_line`, `reference_file`, `reference_line`, `issue`. Missing fields → HALT.
+
+**Spot-check (ground-truth verification, zero-hallucination guard):**
+
+1. If `len(exports) == 0`: skip the spot-check (no names to verify). Zero-exports policy is handled in section 3 (B1 zero-exports guard).
+2. Otherwise, sample `min(3, len(exports))` exports deterministically — by default take indices `[0, len//2, len-1]` (first, middle, last) from the `exports` array after a stable sort by `name`.
+3. For each sampled export, run: `grep -n "{export.name}" {resolved_skill_package}/SKILL.md` in the parent context. The name MUST appear at least once.
+4. If ANY sampled name returns zero matches, HALT "coverage-check: subagent inventory failed ground-truth spot-check — `{name}` claimed as export but absent from SKILL.md".
+
+These checks catch two hallucination classes: schema-shape drift (subagent paraphrased or dropped the contract) and fabricated exports (subagent invented names not in the document). Both are disqualifying for a grader skill — do not downgrade to a warning.
 
 **Split-body traversal** is handled inside the subagent: if `references/` exists and `## Full` headings are absent or stubs in SKILL.md, the subagent extends its scan to all `references/*.md` files and includes them in the `exports` array. After split-body, Tier 2 content (Full API Reference, Full Type Definitions) lives in reference files — the inventory must reflect the full skill content regardless of where it resides.
 
@@ -147,6 +167,29 @@ If subprocess unavailable, perform ast-grep analysis in main thread per file.
 - Use gh CLI to verify source repository matches documented version
 - Cross-check type definitions against their source declarations
 - Verify re-exported symbols trace to their original source
+
+### 2b. Zero-Exports Guard (B1)
+
+After the source-code analysis (§2) completes, compute `total_exports` — the count of exports discovered in the source / provenance-map / metadata.json, per the stratified-scope and State 2 rules resolved in §4.
+
+**If `total_exports == 0` AND `docs_only_mode == false`:** HALT with:
+
+```
+Error: indeterminate API surface — 0 exports discovered in source for {skill_name}.
+
+A source-based skill with zero exports cannot be meaningfully tested:
+Export Coverage is undefined (division by zero) and downstream scoring
+would yield a vacuous PASS.
+
+Fix one of:
+  - Set `scope.include` in the brief to point at the package's entry point(s)
+  - Add `[EXT:]` citations if this is actually a docs-only skill
+  - Verify the skill's source_path / source_ref resolve to the intended tree
+```
+
+Do not write the Coverage Analysis section. Do not proceed to scoring. This is a true indeterminate state, not a FAIL — no score should be attached.
+
+**If `docs_only_mode == true` and the documented inventory is empty:** HALT with the analogous docs-only message ("docs-only skill declares zero items — no API surface to test").
 
 ### 3. Build Coverage Results
 

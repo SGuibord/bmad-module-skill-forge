@@ -293,8 +293,11 @@
       },
       "totalScore": 95,
       "threshold": 80,
-      "result": "PASS",
-      "weightSum": 100
+      "result": "INCONCLUSIVE",
+      "weightSum": 100,
+      "inconclusiveReasons": [
+        "insufficient evidence: only 1 active category"
+      ]
     }
   },
   {
@@ -782,7 +785,7 @@
       "result": "PASS",
       "weightSum": 100.01,
       "warnings": [
-        "signatureAccuracy score provided (90) but category is skipped — score ignored"
+        "signatureAccuracy score provided (90) but category is skipped \u2014 score ignored"
       ]
     }
   },
@@ -847,8 +850,11 @@
       },
       "totalScore": 80,
       "threshold": 75,
-      "result": "PASS",
-      "weightSum": 100
+      "result": "INCONCLUSIVE",
+      "weightSum": 100,
+      "inconclusiveReasons": [
+        "insufficient evidence: only 1 active category"
+      ]
     }
   }
 ]

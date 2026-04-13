@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-05-score.md'
-outputFile: '{forge_version}/test-report-{skill_name}.md'
+outputFile: '{forge_version}/test-report-{skill_name}-{run_id}.md'
 ---
 
 # Step 4b: External Validators
@@ -60,11 +60,13 @@ npx skill-check -h
 
 If unavailable, record `skill_check_score: N/A` and skip to section 3.
 
-**Run validation:**
+**Run validation (S2 — 120s timeout):**
 
 ```bash
-npx skill-check check {skillDir} --format json --no-security-scan
+timeout 120s npx skill-check check {skillDir} --format json --no-security-scan
 ```
+
+If the command exits non-zero AND the exit code is `124` (GNU timeout's signal for the 120s wall-clock expiring), record `skill_check_score: N/A` with reason `timeout-120s`, log a warning, and skip to section 3. Other non-zero exits fall through to the regular JSON-parse path per the note below.
 
 **Parse JSON output** to extract:
 - `qualityScore` — overall score (0-100)
@@ -87,11 +89,16 @@ npx -y tessl --version
 
 If unavailable, record `tessl_score: N/A` and skip to section 4.
 
-**Run review:**
+**Run review (S2 — 120s timeout; S3 — pinned version):**
 
 ```bash
-npx -y tessl skill review {skillDir}
+# S3: pin tessl to a known-working version. Bump TESSL_PIN here (and only
+# here) when upgrading. Treat regex parse failure below as `tessl_score: N/A`.
+TESSL_PIN="@anthropic/tessl@0.4"
+timeout 120s npx -y "$TESSL_PIN" skill review {skillDir}
 ```
+
+Timeout handling mirrors skill-check: exit `124` → `tessl_score: N/A` with reason `timeout-120s`. If the percentage regex (`/(Description|Content|Review Score):\s*(\d+)%/`) returns fewer than three matches, record `tessl_score: N/A` with reason `parse-failure` and include the first 200 chars of output in evidence-report for debugging.
 
 **Parse the output** to extract:
 - `description_score` — percentage (e.g., 100%)
