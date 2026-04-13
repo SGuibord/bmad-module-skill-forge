@@ -101,7 +101,8 @@ Load structure from `{stackSkillTemplate}` integrations section:
 
 Write `{skill_staging}/context-snippet.md`:
 
-Use the Vercel-aligned indexed format targeting ~80-120 tokens:
+Use the Vercel-aligned indexed format targeting **~80-120 tokens** (M2). Token estimation is heuristic — use `ceil(char_count / 4)` as the working approximation (the standard rule-of-thumb for English text in BPE-style tokenizers; precise counts differ per model). Compute against the rendered snippet body (excluding trailing newline).
+
 ```
 [{project_name}-stack v{version — in code-mode: primary_library_version or 1.0.0; in compose-mode: highest version across constituent skill metadata.json files, or 1.0.0 if none}]|root: skills/{project_name}-stack/
 |IMPORTANT: {project_name}-stack — read SKILL.md before writing integration code. Do NOT rely on training data.
@@ -109,6 +110,17 @@ Use the Vercel-aligned indexed format targeting ~80-120 tokens:
 |integrations: {pattern-1}, {pattern-2}
 |gotchas: {1-2 most critical integration pitfalls}
 ```
+
+**Overflow strategy (M2):** If the estimated token count exceeds **120 tokens**, trim in this fixed order until under budget:
+
+1. **Drop the `gotchas` line first.** Pitfalls live in SKILL.md and references; the snippet's job is discovery, not full warning surface.
+2. **Strip versions from the `stack` line** (`{dep-1}, {dep-2}` instead of `{dep-1}@{v1}`). Versions are recoverable from `metadata.json`.
+3. **Truncate the `stack` list to the top 8 dependencies by import count** (or by export count in compose-mode), appending `, ...+{N} more`.
+4. **Truncate the `integrations` list to the top 5 by file count**, appending `, ...+{N} more`.
+
+If the snippet is still over budget after step 4, log a warning to workflow_warnings (see Workflow Rules in SKILL.md) — do not block the write. The `IMPORTANT:` line is mandatory and never trimmed.
+
+**Underflow note:** Snippets below ~80 tokens are acceptable (small stacks naturally produce short snippets). The lower bound is informational, not enforced.
 
 ### 6. Stage metadata.json
 

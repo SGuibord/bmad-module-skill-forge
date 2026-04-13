@@ -70,13 +70,15 @@ Forge tier: **{tier}**"
 
 ### 5. Display Warnings (Conditional)
 
-**Only display if warnings exist from any step:**
+Read from the `workflow_warnings[]` accumulator defined in the Workflow Rules of `SKILL.md` (M4). Every step that emitted a warning during this run pushed a structured entry there — this section is the single sink that surfaces them.
+
+**Only display if `workflow_warnings[]` is non-empty:**
 
 "**Warnings:**
-{For each warning from steps 04, 05, 07, 08:}
-- {warning_description}"
+{For each entry in workflow_warnings[]:}
+- [{step}/{severity}] {code}: {message}"
 
-**If no warnings:** Skip this section entirely.
+**If `workflow_warnings[]` is empty:** Skip this section entirely.
 
 ### 6. Recommend Next Workflows
 

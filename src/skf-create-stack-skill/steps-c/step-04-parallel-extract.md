@@ -41,7 +41,7 @@ Build a `per_library_extractions[]` entry for each skill with the following fiel
 - `exports`: exports list resolved via the order above
 - `exports_source`: one of `metadata|references|prose` — capture which resolution path was used (so step-07 provenance can record it)
 - `usage_patterns`: usage patterns from the SKILL.md usage section
-- `confidence`: the skill's existing confidence tier (T1, T1-low, T2) — inherited directly
+- `confidence`: the skill's existing confidence tier (one of `T1|T1-low|T2|T3` per `confidence-tiers.md`) — inherited directly. Do not silently drop T3 evidence; carry whatever tier the source skill declared.
 
 Display an extraction summary:
 
@@ -119,7 +119,7 @@ Each subprocess:
   version: "from_manifest",
   exports_found: ["fn1", "fn2", "Type1"],
   usage_patterns: ["pattern description with file:line"],
-  confidence: "T1|T1-low|T2",
+  confidence: "T1|T1-low|T2|T3",
   files_analyzed: count,
   warnings: [],
   temporal: {

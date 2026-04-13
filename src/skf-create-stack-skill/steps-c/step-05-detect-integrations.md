@@ -111,7 +111,12 @@ For each qualifying pair, analyze to classify the integration type (**in compose
 For each detected integration:
 - Identify the top 3 files demonstrating the pattern
 - Extract a brief description of how the libraries connect
-- Assign confidence: T1 if AST-verified, T1-low if source reading
+- **Assign confidence (M1/M3) — derive from per-library tiers + detection-method qualifier (NOT from AST):** integration detection here is grep + co-import (optionally CCC-augmented), never AST. The integration's confidence is the **weaker** of the two libraries' tiers from `per_library_extractions[]` (tie-break: T1-low > T1, T2 > T1-low, T3 > T2 — never overstate). Then append a detection-method qualifier:
+  - `grep-co-import` — the pair qualified via direct co-import grep (the default).
+  - `ccc-augmented` — the pair qualified only after CCC semantic search elevated it (per §2 CCC augmentation), and the post-hoc import verification (H3) confirmed both imports.
+  - `architecture-co-mention` — compose-mode pair qualified via word-boundary co-mention in the architecture document (per §2 H2 guards).
+  - `inferred-shared-domain` — compose-mode pair without an architecture document, inferred from shared `language` or domain keywords.
+  - Render as `{tier} ({qualifier})` — e.g., `T1-low (grep-co-import)`, `T1 (ccc-augmented)`, `T1-low (architecture-co-mention) [composed]`. The `[composed]`/`[inferred from shared domain]` suffix from `compose-mode-rules.md` is appended after the qualifier in compose-mode.
 
 ### 4. Build Integration Graph
 

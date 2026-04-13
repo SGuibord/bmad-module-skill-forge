@@ -120,7 +120,7 @@ Verify context-snippet.md follows Vercel-aligned indexed format:
 - [ ] First line matches: `[{project}-stack v{version}]|root: {prefix}{project}-stack/` where prefix is `skills/` (draft form) or any IDE skill root (`.{dir}/skills/`)
 - [ ] Second line starts with `|IMPORTANT:`
 - [ ] Stack and integrations lines present
-- [ ] Approximate token count is ~80-120 tokens
+- [ ] Approximate token count is ~80-120 tokens (use the `ceil(char_count / 4)` heuristic from step-07 §5; tolerate up to ~150 if the overflow strategy was applied and a workflow_warning was emitted)
 
 Record format violations as **WARNING** findings.
 
