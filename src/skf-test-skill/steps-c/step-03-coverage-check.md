@@ -225,6 +225,25 @@ Load `{scoringRulesFile}` to determine category scores:
 
 Record the denominator source in the Coverage Analysis section as `Denominator: stratified ({effective_denominator | tier_a_include union | scope.include union}, {N} files matched)`. When stratified scope does not apply, use the standard barrel-based denominator and omit the stratified annotation.
 
+**M2 — Record the two non-chosen candidate values alongside the chosen one.**
+Stratified-scope resolution picks ONE of three denominator candidates
+(`stats.effective_denominator`, `tier_a_include` union, `scope.include` union)
+per the priority above. To make the choice auditable, append a
+`Denominator Candidates` block immediately after the `Denominator:` line listing
+all three values — the chosen one explicitly marked and the other two recorded
+as-observed (or `absent` when the candidate was not present for this skill):
+
+```markdown
+**Denominator Candidates** (M2 — stratified-scope audit trail):
+- `stats.effective_denominator`: {N | absent}  {← chosen if priority (1) applied}
+- `scope.tier_a_include` union: {N | absent}    {← chosen if priority (2) applied}
+- `scope.include` union: {N | absent}           {← chosen if priority (3) applied}
+```
+
+Readers can then spot-check whether the chosen denominator is reasonable
+against the other two without re-running the extraction. A future reviewer who
+suspects denominator gaming has the evidence inline.
+
 **State 2 denominator validation:** When using provenance-map as the baseline (State 2), cross-reference the provenance-map entry count against `metadata.json`'s `exports[]` array before computing Export Coverage. If they diverge, use the union as the denominator per the source-access-protocol rules. Log the gap size if any. The stratified-scope rule above takes precedence when both conditions apply — compute the stratified denominator first, then validate the provenance-map entry count against it.
 
 ### 4b. Metadata Export-Count Coherence Cross-Check

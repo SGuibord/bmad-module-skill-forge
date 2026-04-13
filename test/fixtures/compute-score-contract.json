@@ -856,5 +856,306 @@
         "insufficient evidence: only 1 active category"
       ]
     }
+  },
+  {
+    "name": "suite_p_contextual_forge",
+    "input": {
+      "mode": "contextual",
+      "tier": "Forge",
+      "scores": {
+        "exportCoverage": 90,
+        "signatureAccuracy": 88,
+        "typeCoverage": 82,
+        "coherence": 75,
+        "externalValidation": 70
+      }
+    },
+    "expected_output": {
+      "input": {
+        "mode": "contextual",
+        "tier": "Forge",
+        "docsOnly": false,
+        "state2": false,
+        "threshold": 80,
+        "scores": {
+          "exportCoverage": 90,
+          "signatureAccuracy": 88,
+          "typeCoverage": 82,
+          "coherence": 75,
+          "externalValidation": 70
+        }
+      },
+      "activeCategories": [
+        "exportCoverage",
+        "signatureAccuracy",
+        "typeCoverage",
+        "coherence",
+        "externalValidation"
+      ],
+      "skippedCategories": [],
+      "skipReasons": {},
+      "weights": {
+        "exportCoverage": 36.0,
+        "signatureAccuracy": 22.0,
+        "typeCoverage": 14.0,
+        "coherence": 18.0,
+        "externalValidation": 10.0
+      },
+      "weightedScores": {
+        "exportCoverage": 32.4,
+        "signatureAccuracy": 19.36,
+        "typeCoverage": 11.48,
+        "coherence": 13.5,
+        "externalValidation": 7.0
+      },
+      "totalScore": 83.74,
+      "threshold": 80,
+      "result": "PASS",
+      "weightSum": 100.0
+    }
+  },
+  {
+    "name": "suite_q_naive_deep",
+    "input": {
+      "mode": "naive",
+      "tier": "Deep",
+      "scores": {
+        "exportCoverage": 95,
+        "signatureAccuracy": 90,
+        "typeCoverage": 88,
+        "coherence": null,
+        "externalValidation": 85
+      }
+    },
+    "expected_output": {
+      "input": {
+        "mode": "naive",
+        "tier": "Deep",
+        "docsOnly": false,
+        "state2": false,
+        "threshold": 80,
+        "scores": {
+          "exportCoverage": 95,
+          "signatureAccuracy": 90,
+          "typeCoverage": 88,
+          "coherence": null,
+          "externalValidation": 85
+        }
+      },
+      "activeCategories": [
+        "exportCoverage",
+        "signatureAccuracy",
+        "typeCoverage",
+        "externalValidation"
+      ],
+      "skippedCategories": [
+        "coherence"
+      ],
+      "skipReasons": {},
+      "weights": {
+        "exportCoverage": 45.0,
+        "signatureAccuracy": 25.0,
+        "typeCoverage": 20.0,
+        "coherence": 0,
+        "externalValidation": 10.0
+      },
+      "weightedScores": {
+        "exportCoverage": 42.75,
+        "signatureAccuracy": 22.5,
+        "typeCoverage": 17.6,
+        "coherence": 0,
+        "externalValidation": 8.5
+      },
+      "totalScore": 91.35,
+      "threshold": 80,
+      "result": "PASS",
+      "weightSum": 100.0
+    }
+  },
+  {
+    "name": "suite_r_contextual_deep_docsonly",
+    "input": {
+      "mode": "contextual",
+      "tier": "Deep",
+      "docsOnly": true,
+      "scores": {
+        "exportCoverage": 90,
+        "signatureAccuracy": null,
+        "typeCoverage": null,
+        "coherence": 80,
+        "externalValidation": 85
+      }
+    },
+    "expected_output": {
+      "input": {
+        "mode": "contextual",
+        "tier": "Deep",
+        "docsOnly": true,
+        "state2": false,
+        "threshold": 80,
+        "scores": {
+          "exportCoverage": 90,
+          "signatureAccuracy": null,
+          "typeCoverage": null,
+          "coherence": 80,
+          "externalValidation": 85
+        }
+      },
+      "activeCategories": [
+        "exportCoverage",
+        "coherence",
+        "externalValidation"
+      ],
+      "skippedCategories": [
+        "signatureAccuracy",
+        "typeCoverage"
+      ],
+      "skipReasons": {
+        "signatureAccuracy": "docs-only mode",
+        "typeCoverage": "docs-only mode"
+      },
+      "weights": {
+        "exportCoverage": 56.25,
+        "signatureAccuracy": 0,
+        "typeCoverage": 0,
+        "coherence": 28.13,
+        "externalValidation": 15.63
+      },
+      "weightedScores": {
+        "exportCoverage": 50.63,
+        "signatureAccuracy": 0,
+        "typeCoverage": 0,
+        "coherence": 22.5,
+        "externalValidation": 13.29
+      },
+      "totalScore": 86.42,
+      "threshold": 80,
+      "result": "PASS",
+      "weightSum": 100.01
+    }
+  },
+  {
+    "name": "suite_s_naive_deep_docsonly",
+    "input": {
+      "mode": "naive",
+      "tier": "Deep",
+      "docsOnly": true,
+      "scores": {
+        "exportCoverage": 88,
+        "signatureAccuracy": null,
+        "typeCoverage": null,
+        "coherence": null,
+        "externalValidation": 82
+      }
+    },
+    "expected_output": {
+      "input": {
+        "mode": "naive",
+        "tier": "Deep",
+        "docsOnly": true,
+        "state2": false,
+        "threshold": 80,
+        "scores": {
+          "exportCoverage": 88,
+          "signatureAccuracy": null,
+          "typeCoverage": null,
+          "coherence": null,
+          "externalValidation": 82
+        }
+      },
+      "activeCategories": [
+        "exportCoverage",
+        "externalValidation"
+      ],
+      "skippedCategories": [
+        "signatureAccuracy",
+        "typeCoverage",
+        "coherence"
+      ],
+      "skipReasons": {
+        "signatureAccuracy": "docs-only mode",
+        "typeCoverage": "docs-only mode"
+      },
+      "weights": {
+        "exportCoverage": 81.82,
+        "signatureAccuracy": 0,
+        "typeCoverage": 0,
+        "coherence": 0,
+        "externalValidation": 18.18
+      },
+      "weightedScores": {
+        "exportCoverage": 72.0,
+        "signatureAccuracy": 0,
+        "typeCoverage": 0,
+        "coherence": 0,
+        "externalValidation": 14.91
+      },
+      "totalScore": 86.91,
+      "threshold": 80,
+      "result": "PASS",
+      "weightSum": 100.0
+    }
+  },
+  {
+    "name": "suite_t_naive_state2",
+    "input": {
+      "mode": "naive",
+      "tier": "Deep",
+      "state2": true,
+      "scores": {
+        "exportCoverage": 86,
+        "signatureAccuracy": null,
+        "typeCoverage": null,
+        "coherence": null,
+        "externalValidation": 78
+      }
+    },
+    "expected_output": {
+      "input": {
+        "mode": "naive",
+        "tier": "Deep",
+        "docsOnly": false,
+        "state2": true,
+        "threshold": 80,
+        "scores": {
+          "exportCoverage": 86,
+          "signatureAccuracy": null,
+          "typeCoverage": null,
+          "coherence": null,
+          "externalValidation": 78
+        }
+      },
+      "activeCategories": [
+        "exportCoverage",
+        "externalValidation"
+      ],
+      "skippedCategories": [
+        "signatureAccuracy",
+        "typeCoverage",
+        "coherence"
+      ],
+      "skipReasons": {
+        "signatureAccuracy": "State 2 (provenance-map)",
+        "typeCoverage": "State 2 (provenance-map)"
+      },
+      "weights": {
+        "exportCoverage": 81.82,
+        "signatureAccuracy": 0,
+        "typeCoverage": 0,
+        "coherence": 0,
+        "externalValidation": 18.18
+      },
+      "weightedScores": {
+        "exportCoverage": 70.37,
+        "signatureAccuracy": 0,
+        "typeCoverage": 0,
+        "coherence": 0,
+        "externalValidation": 14.18
+      },
+      "totalScore": 84.55,
+      "threshold": 80,
+      "result": "PASS",
+      "weightSum": 100.0
+    }
   }
 ]

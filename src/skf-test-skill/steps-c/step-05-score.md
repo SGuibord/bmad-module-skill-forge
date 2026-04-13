@@ -154,6 +154,19 @@ Based on test result:
 
 **IF PASS:**
 - `nextWorkflow: 'export-skill'` — skill is ready for export
+- **M5 — drift override:** if workflow context carries
+  `allow_workspace_drift: true` (set in step-01 §5b when the user passed
+  `--allow-workspace-drift` AND the workspace HEAD did not match
+  `metadata.source_commit`), the PASS is a **conditional PASS**:
+  - Write `testResult: 'pass-with-drift'` to the output frontmatter instead of
+    bare `'pass'`. The result contract (§4c of step-06) mirrors the same
+    value.
+  - Override `nextWorkflow` to `'update-skill'` — **refuse to recommend
+    `export-skill`**. The drift override weakens the workflow's strongest
+    false-positive guard (we tested against HEAD, not the pinned source); a
+    PASS under drift is not trustworthy enough to promote to export without a
+    clean re-test against the pinned commit.
+  - Record `scoring_notes: workspace drift overridden — PASS is conditional; re-run against pinned commit before export`.
 
 **IF FAIL:**
 - `nextWorkflow: 'update-skill'` — skill needs remediation before export
@@ -207,7 +220,7 @@ If `analysis_confidence` is not `full`, append a degradation notice. **The notic
 ### 7. Update Output Frontmatter
 
 Update `{outputFile}` frontmatter:
-- `testResult: '{pass|fail|inconclusive}'` (lowercase; mirrors script `result`)
+- `testResult: '{pass|pass-with-drift|fail|inconclusive}'` (lowercase; mirrors script `result`, with `pass-with-drift` substituted for `pass` when `allow_workspace_drift` was set and drift was observed — see §5 M5)
 - `score: '{total}%'`
 - `threshold: '{threshold}%'`
 - `analysisConfidence: '{full|degraded|provenance-map|metadata-only|remote-only|docs-only}'`

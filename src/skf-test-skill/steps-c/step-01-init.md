@@ -91,11 +91,16 @@ SKF module (`skf init`) or run from a development checkout with src/ present.
 
 Do not proceed. No partial test report is written.
 
-**3b. Run the validator:**
+**3b. Run the validator (30s timeout — deterministic validator should finish in <1s; the cap only guards against runaway python):**
 
 ```bash
-python3 {frontmatterScript} {resolved_skill_package}/SKILL.md --skill-dir-name {skill_name}
+timeout 30s python3 {frontmatterScript} {resolved_skill_package}/SKILL.md --skill-dir-name {skill_name}
 ```
+
+If the command trips the 30s wall-clock (exit code `124`), set
+`analysis_confidence: degraded` and `toolingStatus: frontmatter-validator-timeout`
+in workflow context, apply the step-05 tooling-degraded cap (score capped at
+`threshold - 1` → auto-FAIL), and record the reason in evidence-report.
 
 Parse the JSON output. Per B2, treat each `status` value explicitly:
 
@@ -149,9 +154,9 @@ Test-skill reads `source_path` during coverage and coherence analysis. If the lo
 
 - Resolve `pinned_commit` from `metadata.source_commit`.
 - **If `pinned_commit` is null, empty, or `"local"`:** skip the guard; log `workspace_drift_check: skipped (no pinned commit)` and continue to section 6.
-- **If `pinned_commit` is a per-repo map (stack skills):** iterate each `{repo_path: commit}` entry — for each repo run `git -C {repo_path} rev-parse HEAD` and compare to its pinned commit (accept full-SHA or short-SHA-prefix match). If ANY repo diverges and the user did not pass `--allow-workspace-drift`, HALT with exit status `halted-for-workspace-drift` listing every mismatched repo. On all-match: log `workspace_drift_check: ok (stack, {N} repos verified)` and continue to section 6. Per B6, this guard MUST iterate every repo — do not skip stack skills.
-- **If `source_path` is not a git working tree** (bare checkout, tarball extract, docs-only source) — detect by `git -C {source_path} rev-parse --is-inside-work-tree`, non-zero exit means skip: log `workspace_drift_check: skipped (not a git working tree)` and continue to section 6.
-- **Otherwise** run `git -C {source_path} rev-parse HEAD` and compare to `pinned_commit`. Accept full-SHA or short-SHA-prefix match (stored pins are often 8-char short hashes — see `src/knowledge/provenance-tracking.md`).
+- **If `pinned_commit` is a per-repo map (stack skills):** iterate each `{repo_path: commit}` entry — for each repo run `git -C "{repo_path}" rev-parse HEAD` and compare to its pinned commit (accept full-SHA or short-SHA-prefix match). If ANY repo diverges and the user did not pass `--allow-workspace-drift`, HALT with exit status `halted-for-workspace-drift` listing every mismatched repo. On all-match: log `workspace_drift_check: ok (stack, {N} repos verified)` and continue to section 6. Per B6, this guard MUST iterate every repo — do not skip stack skills.
+- **If `source_path` is not a git working tree** (bare checkout, tarball extract, docs-only source) — detect by `git -C "{source_path}" rev-parse --is-inside-work-tree`, non-zero exit means skip: log `workspace_drift_check: skipped (not a git working tree)` and continue to section 6.
+- **Otherwise** run `git -C "{source_path}" rev-parse HEAD` and compare to `pinned_commit`. Accept full-SHA or short-SHA-prefix match (stored pins are often 8-char short hashes — see `src/knowledge/provenance-tracking.md`).
   - **On match:** log `workspace_drift_check: ok ({short_sha})` and continue.
   - **On mismatch, AND the user did not pass `--allow-workspace-drift`:** HALT with exit status `halted-for-workspace-drift`. Display:
 
@@ -165,14 +170,14 @@ Test-skill reads `source_path` during coverage and coherence analysis. If the lo
     Test-skill verifies against the source the skill was extracted from.
     Testing against a drifted tree produces false gaps/mismatches. Re-sync:
 
-      git -C {source_path} checkout {source_ref or pinned_commit}
+      git -C "{source_path}" checkout {source_ref or pinned_commit}
 
     Or re-run test-skill with `--allow-workspace-drift` to test against the
     current workspace (accepts that findings reflect HEAD, not the pin).
     ```
 
     Do not proceed. The test report has not been created; no partial writes.
-  - **On mismatch WITH `--allow-workspace-drift`:** log `workspace_drift_check: overridden (pinned={pinned_commit}, head={head_sha})` and carry the warning into the final report frontmatter (`workspaceDrift: overridden`) so downstream readers know the findings reflect HEAD rather than the pinned tree. Continue.
+  - **On mismatch WITH `--allow-workspace-drift`:** log `workspace_drift_check: overridden (pinned={pinned_commit}, head={head_sha})`, carry the warning into the final report frontmatter (`workspaceDrift: overridden`), and set `allow_workspace_drift: true` in workflow context (consumed by step-05 §5 M5 — a PASS under drift is demoted to `pass-with-drift` and `nextWorkflow` is forced to `update-skill`, never `export-skill`). Continue.
 
 ### 6. Create Output Document
 
@@ -194,7 +199,7 @@ testResult: ''
 score: ''
 threshold: ''
 analysisConfidence: '{full|degraded}'
-toolingStatus: '{ok|python3-missing|frontmatter-validator-missing}'
+toolingStatus: '{ok|python3-missing|frontmatter-validator-missing|frontmatter-validator-timeout}'
 workspaceDrift: '{not-checked|ok|overridden}'
 testDate: '{run_id timestamp ISO-8601 UTC}'
 stepsCompleted: ['step-01-init']

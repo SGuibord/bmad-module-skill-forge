@@ -3,6 +3,7 @@ nextStepFile: './step-04b-external-validators.md'
 outputFile: '{forge_version}/test-report-{skill_name}-{run_id}.md'
 outputFormatsFile: 'assets/output-section-formats.md'
 scoringRulesFile: 'references/scoring-rules.md'
+migrationSectionRules: 'references/migration-section-rules.md'
 ---
 
 # Step 4: Coherence Check
@@ -75,24 +76,9 @@ Build the findings list:
 
 ### 2b. Migration/Deprecation Verification (Mode-Independent)
 
-**Gate check:** Execute this section ONLY IF both conditions are met:
-1. Forge tier is **Deep** (tool-gated)
-2. `{forge_data_folder}/{skill_name}/evidence-report.md` exists (data-gated)
-
-If either condition fails, skip silently and proceed to Section 6.
-
-**This check runs regardless of naive/contextual mode.** T2-future annotations are a property of the source code and enrichment data, not the skill type.
-
-Check whether SKILL.md contains a "Migration & Deprecation Warnings" section (Section 4b). Then check the skill's `evidence-report.md` (at `{forge_data_folder}/{skill_name}/evidence-report.md`) for T2-future annotation counts.
-
-**Scope of Section 4b (authoring rule this gate enforces):** Section 4b is scoped to *forward-looking* breaking changes only — what T2-future annotations capture. Current-state signature gotchas (e.g. "this function is sync not async") belong alongside the function in Full API Reference, not here. This scoping is authoritative per `skf-create-skill/assets/skill-sections.md` ("Section 4b (Migration & Deprecation Warnings) is conditional: only emitted for Deep tier when T2-future annotations exist"). Two legitimate exceptions for the `T2-future = 0 AND Section 4b present` case are formalized in the rules below: (a) **historical migration** content — past, shipped package renames or consolidated import paths that remain load-bearing for correcting model training-data drift → Info severity, no justification required; (b) other non-migration content → reviewer may downgrade to Low with inline justification. Do not relax the gate otherwise — that would desync the test workflow from the authoring rule.
-
-- **If T2-future annotations > 0 AND Section 4b is absent:** Flag as Medium severity gap: "Migration section missing — T2-future annotations exist but Section 4b is not present in SKILL.md Tier 1."
-- **If T2-future annotations = 0 AND Section 4b is present AND the content is historical migration:** Flag as **Info** severity (not Medium). Historical migration content covers completed package renames (e.g. `@oldscope/*` → `@newscope/*`), consolidated import paths, and shipped API cutovers that still surface in training-data drift — load-bearing for correcting model knowledge even though no forward-looking change is pending. Recognizable patterns: old-name → new-name rewrites, citations to already-shipped PRs/issues, "migrated in version N" or "consolidated from X to Y" language. Recommend in the gap report that a future skill revision rename Section 4b to "Import Corrections" or "Ecosystem Notes" to free the Migration & Deprecation heading for its forward-looking contract. No inline justification required — the historical-migration classification is itself the rationale.
-- **If T2-future annotations = 0 AND Section 4b is present AND the content is non-migration** (neither forward-looking nor historical migration — e.g. general API notes misfiled under Section 4b): Flag as Medium severity gap: "Migration section unexpected — Section 4b contains non-migration content and no T2-future annotations were produced." Reviewer may downgrade to Low with inline justification on a case-by-case basis.
-- **If evidence-report.md is unavailable:** Skip this check silently. Note: "Section 4b verification skipped — evidence-report.md not found."
-
-Add findings to the coherence analysis results.
+Apply rules from `{migrationSectionRules}`. That file is the single source of
+truth for the gate, scope, and case rules; §5b below applies the same rules on
+the contextual path.
 
 **After Section 2b (naive path) → Skip to Section 6 (Append Results)**
 
@@ -157,24 +143,9 @@ Build integration completeness findings:
 
 ### 5b. Migration/Deprecation Verification (Contextual Path)
 
-**This section shares logic with Section 2b.** If updating the shared logic, ensure both sections remain synchronized. If you are on the contextual mode path (Sections 3-5), execute the migration check here using the same rules as Section 2b:
-
-**Gate check:** Execute ONLY IF both conditions are met:
-1. Forge tier is **Deep** (tool-gated)
-2. `{forge_data_folder}/{skill_name}/evidence-report.md` exists (data-gated)
-
-If either condition fails, skip silently.
-
-Check whether SKILL.md contains a "Migration & Deprecation Warnings" section (Section 4b). Then check the skill's `evidence-report.md` for T2-future annotation counts.
-
-**Scope of Section 4b (authoring rule this gate enforces):** Section 4b is scoped to *forward-looking* breaking changes only — what T2-future annotations capture. Current-state signature gotchas (e.g. "this function is sync not async") belong alongside the function in Full API Reference, not here. This scoping is authoritative per `skf-create-skill/assets/skill-sections.md` ("Section 4b (Migration & Deprecation Warnings) is conditional: only emitted for Deep tier when T2-future annotations exist"). Two legitimate exceptions for the `T2-future = 0 AND Section 4b present` case are formalized in the rules below: (a) **historical migration** content — past, shipped package renames or consolidated import paths that remain load-bearing for correcting model training-data drift → Info severity, no justification required; (b) other non-migration content → reviewer may downgrade to Low with inline justification. Do not relax the gate otherwise — that would desync the test workflow from the authoring rule.
-
-- **If T2-future annotations > 0 AND Section 4b is absent:** Flag as Medium severity gap: "Migration section missing — T2-future annotations exist but Section 4b is not present in SKILL.md Tier 1."
-- **If T2-future annotations = 0 AND Section 4b is present AND the content is historical migration:** Flag as **Info** severity (not Medium). Historical migration content covers completed package renames (e.g. `@oldscope/*` → `@newscope/*`), consolidated import paths, and shipped API cutovers that still surface in training-data drift — load-bearing for correcting model knowledge even though no forward-looking change is pending. Recognizable patterns: old-name → new-name rewrites, citations to already-shipped PRs/issues, "migrated in version N" or "consolidated from X to Y" language. Recommend in the gap report that a future skill revision rename Section 4b to "Import Corrections" or "Ecosystem Notes" to free the Migration & Deprecation heading for its forward-looking contract. No inline justification required — the historical-migration classification is itself the rationale.
-- **If T2-future annotations = 0 AND Section 4b is present AND the content is non-migration** (neither forward-looking nor historical migration — e.g. general API notes misfiled under Section 4b): Flag as Medium severity gap: "Migration section unexpected — Section 4b contains non-migration content and no T2-future annotations were produced." Reviewer may downgrade to Low with inline justification on a case-by-case basis.
-- **If evidence-report.md is unavailable:** Skip this check silently. Note: "Section 4b verification skipped — evidence-report.md not found."
-
-Add findings to the coherence analysis results.
+Apply rules from `{migrationSectionRules}`. Same rules as §2b — the reference
+file is the single source of truth. Append findings to the coherence analysis
+results.
 
 ### 5c. Calculate Coherence Scores
 

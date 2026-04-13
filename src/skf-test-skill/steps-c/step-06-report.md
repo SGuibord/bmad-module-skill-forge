@@ -146,7 +146,7 @@ cat payload.json | python3 {atomicWriteHelper} write --target {forge_version}/sk
 
 Payload contents:
 - `outputs[]` — include the test report path at `{outputFile}` with its `{run_id}` suffix
-- `summary` — `score`, `threshold`, `result` (`"PASS"`, `"FAIL"`, or **`"INCONCLUSIVE"`**), `testMode` (naive/contextual), `activeCategories[]`, `inconclusiveReasons[]` (when present)
+- `summary` — `score`, `threshold`, `result` (`"PASS"`, `"PASS_WITH_DRIFT"`, `"FAIL"`, or **`"INCONCLUSIVE"`**), `testMode` (naive/contextual), `activeCategories[]`, `inconclusiveReasons[]` (when present). `PASS_WITH_DRIFT` is set when the workflow observed workspace drift and the user passed `--allow-workspace-drift` — see step-05 §5 (M5). Downstream consumers MUST treat `PASS_WITH_DRIFT` as a non-exportable result: re-run against the pinned commit before export.
 - `runId` — the workflow's `{run_id}` for downstream correlation
 - `healthCheckDispatched` — boolean, set by §7 after the dispatch decision
 
@@ -168,6 +168,28 @@ The `{forge_version}/.test-skill.lock` acquired in step-01 §6b remains held unt
 
 If any expected entry is missing, HALT with "step completeness violation — missing {list}; workflow state is inconsistent, do not finalize the report". Only append `'step-06-report'` and write back after the check passes.
 
+**M4 — Section anchor presence check (companion to stepsCompleted).** The
+report template ships six canonical H2 anchors — one per populating step. An
+off-sequence run (e.g. a step wrote its section into the wrong anchor, or a
+subagent truncated the file) can leave `stepsCompleted` intact while a section
+is missing. `grep -n` each anchor below against `{outputFile}`; each MUST
+return ≥1 match:
+
+```
+^## Test Summary$
+^## Coverage Analysis$
+^## Coherence Analysis$
+^## External Validation$
+^## Completeness Score$
+^## Gap Report$
+```
+
+On any miss, HALT with "report anchor missing: {anchor} — section was not
+appended by its owning step". Do NOT append `'step-06-report'` and do NOT
+write the result contract. The template in `templates/test-report-template.md`
+declares these anchors as TBD placeholders; a miss means a step silently
+skipped its append.
+
 **INCONCLUSIVE as gate:** if `testResult == 'inconclusive'` (from step-05), the report final presentation (§6) and result contract (§4c) have already been written with that verdict. Do NOT auto-map INCONCLUSIVE to PASS or FAIL. Recommend `manual-review`. The step must still complete (health-check runs unconditionally) — INCONCLUSIVE is a report-time signal, not a workflow abort.
 
 ### 6. Present Final Report
@@ -176,7 +198,7 @@ If any expected entry is missing, HALT with "step completeness violation — mis
 
 ---
 
-**Result:** **{PASS|FAIL|INCONCLUSIVE}** — **{score}%** (threshold: {threshold}%)
+**Result:** **{PASS|PASS_WITH_DRIFT|FAIL|INCONCLUSIVE}** — **{score}%** (threshold: {threshold}%)
 
 **Gaps Found:** {total_gaps}
 - Critical: {N}
@@ -194,6 +216,9 @@ If any expected entry is missing, HALT with "step completeness violation — mis
 {IF PASS:}
 **export-skill** — This skill is ready for export. Run the export-skill workflow to package it for distribution.
 
+{IF PASS_WITH_DRIFT:}
+**update-skill** — The skill scored above threshold, but `--allow-workspace-drift` was in effect: the test ran against workspace HEAD, not `metadata.source_commit`. A conditional PASS is not trustworthy enough to export. Re-sync the source tree to the pinned commit (or re-extract against current HEAD) and re-run test-skill without the drift override before exporting.
+
 {IF FAIL:}
 **update-skill** — This skill needs remediation. Review the gap report above and run the update-skill workflow to address the {N} blocking issues (Critical + High).
 
@@ -210,6 +235,7 @@ If any expected entry is missing, HALT with "step completeness violation — mis
 
 If `{headless_mode}`:
 - `testResult: 'pass'` → `exit 0`
+- `testResult: 'pass-with-drift'` → `exit 4` (distinct from clean pass — orchestrators MUST route to re-test-against-pinned-commit queues and refuse export; never exit 0 under drift override)
 - `testResult: 'fail'` → `exit 2` (after the result contract has been written in §4c — never before)
 - `testResult: 'inconclusive'` → `exit 3` (distinct from fail so orchestrators can route to manual-review queues)
 

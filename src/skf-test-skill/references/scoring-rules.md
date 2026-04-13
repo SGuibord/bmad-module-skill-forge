@@ -88,6 +88,60 @@ Note: When provenance-map entries are predominantly T1 (AST-verified at compilat
 - Full scoring formula with maximum depth
 - **Migration & Deprecation Warnings section:** If T2-future annotations exist in the enrichment data, verify that Section 4b is present in SKILL.md Tier 1 and that each warning traces to a T2 provenance citation. If no T2-future annotations exist, Section 4b should normally be absent (not empty). Presence/absence mismatch is a Medium severity gap — with one Info-severity exception for historical-migration content (completed package renames, consolidated import paths, shipped API cutovers that remain load-bearing for training-data drift remediation). See `steps-c/step-04-coherence-check.md` §2b/§5b for the three-case rule.
 
+## Redistribution Combinations Matrix (M3 — terminology + determinism)
+
+The table below enumerates every `(mode × tier × docsOnly × state2)` cell and
+the redistribution outcome. Two cells map to the same **equivalence class**
+whenever their skip set and base-weight table are identical — the scoring
+script then emits the same `weights` / `activeCategories` / `skippedCategories`
+output regardless of which specific cell produced it. The rightmost column
+cites the representative fixture in
+`test/fixtures/compute-score-contract.json` used to pin the class's math.
+
+| # | mode       | tier     | docsOnly | state2 | Base table     | Skipped (sig/type)    | Skipped (ext if null) | Equiv. class | Representative fixture        |
+|---|------------|----------|----------|--------|----------------|-----------------------|-----------------------|--------------|-------------------------------|
+| 1 | contextual | Deep     | F        | F      | contextual     | —                     | if null               | **A**        | `suite_a_all_active`          |
+| 2 | contextual | Forge+   | F        | F      | contextual     | —                     | if null               | A            | `suite_k_forge_plus`          |
+| 3 | contextual | Forge    | F        | F      | contextual     | —                     | if null               | A            | `suite_p_contextual_forge`    |
+| 4 | contextual | Quick    | F        | F      | contextual     | Quick tier            | if null               | **B**        | `suite_c_quick_tier`          |
+| 5 | contextual | Deep     | T        | F      | contextual     | docs-only             | if null               | B            | `suite_r_contextual_deep_docsonly` |
+| 6 | contextual | Forge+   | T        | F      | contextual     | docs-only             | if null               | B            | (equiv. — see `suite_r_*`)    |
+| 7 | contextual | Forge    | T        | F      | contextual     | docs-only             | if null               | B            | (equiv.)                      |
+| 8 | contextual | Quick    | T        | F      | contextual     | Quick tier + docs-only| if null               | B            | `suite_f_docs_only`           |
+| 9 | contextual | Deep     | F        | T      | contextual     | State 2               | if null               | B            | `suite_g_state2`              |
+| 10| contextual | Forge+   | F        | T      | contextual     | State 2               | if null               | B            | (equiv.)                      |
+| 11| contextual | Forge    | F        | T      | contextual     | State 2               | if null               | B            | (equiv.)                      |
+| 12| contextual | Quick    | F        | T      | contextual     | Quick + State 2       | if null               | B            | (equiv. — Quick+state2)       |
+| 13| contextual | *        | T        | T      | contextual     | docs-only + State 2   | if null               | B            | (equiv.)                      |
+| 14| naive      | Deep     | F        | F      | naive          | —                     | if null               | **C**        | `suite_q_naive_deep`          |
+| 15| naive      | Forge+   | F        | F      | naive          | —                     | if null               | C            | (equiv.)                      |
+| 16| naive      | Forge    | F        | F      | naive          | —                     | if null               | C            | `suite_b_naive`               |
+| 17| naive      | Quick    | F        | F      | naive          | Quick tier            | if null               | **D**        | `suite_e_triple_skip`         |
+| 18| naive      | Deep     | T        | F      | naive          | docs-only             | if null               | D            | `suite_s_naive_deep_docsonly` |
+| 19| naive      | Forge+   | T        | F      | naive          | docs-only             | if null               | D            | (equiv.)                      |
+| 20| naive      | Forge    | T        | F      | naive          | docs-only             | if null               | D            | (equiv.)                      |
+| 21| naive      | Quick    | T        | F      | naive          | Quick + docs-only     | if null               | D            | `suite_o_input_echo`          |
+| 22| naive      | Deep     | F        | T      | naive          | State 2               | if null               | D            | `suite_t_naive_state2`        |
+| 23| naive      | Forge+   | F        | T      | naive          | State 2               | if null               | D            | (equiv.)                      |
+| 24| naive      | Forge    | F        | T      | naive          | State 2               | if null               | D            | (equiv.)                      |
+| 25| naive      | Quick    | F        | T      | naive          | Quick + State 2       | if null               | D            | (equiv.)                      |
+| 26| naive      | *        | T        | T      | naive          | docs-only + State 2   | if null               | D            | (equiv.)                      |
+
+**How to read the matrix.** The four equivalence classes A/B/C/D are
+exhaustive: the scoring script's weight-redistribution output depends ONLY on
+(base table, sig/type skip, ext skip), so every row mapping to class X emits
+the same final weights for identical input scores. "(equiv.)" rows are *not*
+missing coverage — they reduce algebraically to a listed representative. The
+M3 fixture set ships at least one representative per equivalence class and one
+representative per unique skip-reason combination so the `skipReasons` string
+is also pinned (e.g. "Quick tier", "docs-only mode", "State 2
+(provenance-map)", "Quick tier + docs-only mode").
+
+**Quick-tier INCONCLUSIVE interaction.** Rows 4, 8, 12, 17, 21, 25 all force
+the minimum-evidence floor to evaluate "Quick tier + Export Coverage alone"
+cases separately — see `Result Determination` below. The matrix above is the
+pre-floor redistribution only; INCONCLUSIVE verdict determination runs after.
+
 ## Score Calculation
 
 ```
