@@ -88,7 +88,31 @@ Forge tier: **{tier}**"
 
 ### 6b. Result Contract
 
-Write the result contract per `shared/references/output-contract-schema.md`: the per-run record at `{forge_version}/create-stack-skill-result-{YYYYMMDD-HHmmss}.json` (UTC timestamp, resolution to seconds) and a copy at `{forge_version}/create-stack-skill-result-latest.json` (stable path for pipeline consumers — copy, not symlink). Include `SKILL.md`, `context-snippet.md`, and `metadata.json` paths in `outputs`; include `lib_count`, `integration_count`, and confidence distribution in `summary`.
+Write the result contract per `shared/references/output-contract-schema.md` using the shared atomic writer. Two artifacts — both written via `skf-atomic-write.py write`:
+
+**Per-run record (inside the version dir):**
+
+```bash
+<json-content> | python3 {project-root}/src/shared/scripts/skf-atomic-write.py write \
+  --target {forge_version}/create-stack-skill-result-{YYYYMMDD-HHmmss}-{pid}-{rand}.json
+```
+
+- `{YYYYMMDD-HHmmss}` is a UTC timestamp with seconds resolution.
+- Append `-{pid}-{rand}` (process id + short random suffix) to the filename to avoid same-second collisions when multiple runs land in the same second (S16).
+
+**Stable latest pointer (ABOVE the version dir, at the stack group root):**
+
+```bash
+<json-content> | python3 {project-root}/src/shared/scripts/skf-atomic-write.py write \
+  --target {forge_data_folder}/{project_name}-stack/create-stack-skill-result-latest.json
+```
+
+- Note the path: the `-latest.json` lives at `{forge_data_folder}/{project_name}-stack/` (the stack group root), NOT inside `{forge_version}/`. Pipeline consumers read this stable path without knowing the current version.
+- Write the same JSON body as the timestamped record (this is a copy, not a symlink, so pipeline consumers never chase a link across version boundaries).
+
+Include `SKILL.md`, `context-snippet.md`, and `metadata.json` paths in `outputs`; include `lib_count`, `integration_count`, `forge_tier`, `confidence_tier`, and confidence distribution in `summary`.
+
+If either atomic write fails, log the error, leave any prior `-latest.json` untouched, and continue — the report is advisory and should not block the health-check chain.
 
 ### 7. Chain to Health Check
 
