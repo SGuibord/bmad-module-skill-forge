@@ -1,5 +1,9 @@
 # Source Resolution Protocols
 
+## Shell Path Quoting
+
+Every shell snippet in this document uses `{...}` placeholders for paths. **Always wrap path interpolations in double quotes** when emitting the actual command — `git -C "{workspace_repo_path}"`, `rm -rf "{temp_path}"`, `cd "{project-root}"`. SKF's supported platforms are Linux and macOS; user home directories on macOS frequently contain spaces, which break unquoted shell. WSL2 users see the same. Native Windows is untested but the quoting convention is also required there.
+
 ## Tag Resolution
 
 Tag resolution maps a declared version in the brief onto a concrete git ref before cloning, so the skill is built from code matching its declared version. Two paths trigger tag resolution: an **explicit** `brief.target_version` (deliberate user intent) or an **implicit** `brief.version` (auto-populated hint from `brief-skill`). Both apply only when `source_repo` is a remote URL.
@@ -90,28 +94,28 @@ If `source_repo` is a remote URL (GitHub URL or owner/repo format) AND tier is F
 
    ```
    # Ask the remote whether source_ref exists as a tag
-   git -C {workspace_repo_path} ls-remote --tags origin {source_ref} | grep -q "refs/tags/{source_ref}$" && ref_kind=tag || ref_kind=branch
+   git -C "{workspace_repo_path}" ls-remote --tags origin {source_ref} | grep -q "refs/tags/{source_ref}$" && ref_kind=tag || ref_kind=branch
    ```
 
    Fetch using the ref-kind-appropriate invocation so tag refs are written into `refs/tags/*` rather than being dropped by a branch-only fetch:
 
    ```
    if ref_kind == tag:
-     git -C {workspace_repo_path} fetch origin tag {source_ref}
+     git -C "{workspace_repo_path}" fetch origin tag {source_ref}
    else:
-     git -C {workspace_repo_path} fetch origin {source_ref}
+     git -C "{workspace_repo_path}" fetch origin {source_ref}
    ```
 
    Check if checkout is needed — skip if the requested ref is already checked out:
 
    ```
-   current_head = git -C {workspace_repo_path} rev-parse HEAD
-   fetched_head = git -C {workspace_repo_path} rev-parse FETCH_HEAD
+   current_head = git -C "{workspace_repo_path}" rev-parse HEAD
+   fetched_head = git -C "{workspace_repo_path}" rev-parse FETCH_HEAD
    ```
 
    If `current_head != fetched_head`:
    ```
-   git -C {workspace_repo_path} -c advice.detachedHead=false checkout FETCH_HEAD
+   git -C "{workspace_repo_path}" -c advice.detachedHead=false checkout FETCH_HEAD
    ```
 
    If fetch or checkout fails, proceed to the **ephemeral fallback** (step 5).
@@ -142,7 +146,7 @@ If `source_repo` is a remote URL (GitHub URL or owner/repo format) AND tier is F
 
    If clone fails, proceed to the **ephemeral fallback** (step 5).
 
-4. **If workspace resolution succeeds:** Set `source_root = {workspace_repo_path}` — this updates the working source path for all subsequent operations (AST extraction, CCC indexing, artifact generation). Capture the source commit: `git -C {workspace_repo_path} rev-parse HEAD` — store as `source_commit` in context. Proceed with the **Forge/Deep Tier** extraction strategy below. Set context:
+4. **If workspace resolution succeeds:** Set `source_root = {workspace_repo_path}` — this updates the working source path for all subsequent operations (AST extraction, CCC indexing, artifact generation). Capture the source commit: `git -C "{workspace_repo_path}" rev-parse HEAD` — store as `source_commit` in context. Proceed with the **Forge/Deep Tier** extraction strategy below. Set context:
    - `source_root = {workspace_repo_path}`
    - `remote_clone_path = {workspace_repo_path}`
    - `remote_clone_type = "workspace"`
@@ -181,8 +185,8 @@ If `source_repo` is a remote URL (GitHub URL or owner/repo format) AND tier is F
 **Remote clone cleanup:** After extraction is complete for all files in scope (whether successful or partially failed), before presenting the Gate 2 summary (Section 6):
 
 - **If `remote_clone_type == "ephemeral"`:** Cleanup is required.
-  1. **Reset working directory first:** Run `cd {project-root}` using the **absolute path** captured at workflow start.
-  2. **Delete the clone:** `rm -rf {temp_path}`
+  1. **Reset working directory first:** Run `cd "{project-root}"` using the **absolute path** captured at workflow start.
+  2. **Delete the clone:** `rm -rf "{temp_path}"`
   3. **Log:** "Ephemeral source clone cleaned up."
 
   This ensures cleanup runs even if some extractions failed. If any error halts the step before Gate 2, cleanup must still occur.
@@ -197,7 +201,7 @@ If `source_repo` is a remote URL (GitHub URL or owner/repo format) AND tier is F
 
 After the source path is accessible, capture the current commit hash for provenance tracking:
 
-- **Local path:** `git -C {source_root} rev-parse HEAD` — if the path is a git repo
+- **Local path:** `git -C "{source_root}" rev-parse HEAD` — if the path is a git repo
 - **Ephemeral clone (Forge/Deep):** already captured during clone (step 3 above)
 - **Quick tier (remote, no clone):** `gh api repos/{owner}/{repo}/commits/{source_ref} --jq '.sha'`
 

@@ -17,19 +17,19 @@ If `source_root` (from metadata.json) is a remote URL (GitHub URL or owner/repo 
    Fetch and checkout the requested ref. For update-skill, `changed_files_from_manifest` scoping happens at extraction time via file-level filtering — the workspace has a full checkout.
 
    ```
-   git -C {workspace_repo_path} fetch origin {source_ref}
+   git -C "{workspace_repo_path}" fetch origin {source_ref}
    ```
 
    Check if checkout is needed — skip if the requested ref is already checked out:
 
    ```
-   current_head = git -C {workspace_repo_path} rev-parse HEAD
-   fetched_head = git -C {workspace_repo_path} rev-parse FETCH_HEAD
+   current_head = git -C "{workspace_repo_path}" rev-parse HEAD
+   fetched_head = git -C "{workspace_repo_path}" rev-parse FETCH_HEAD
    ```
 
    If `current_head != fetched_head`:
    ```
-   git -C {workspace_repo_path} -c advice.detachedHead=false checkout FETCH_HEAD
+   git -C "{workspace_repo_path}" -c advice.detachedHead=false checkout FETCH_HEAD
    ```
 
    Set `remote_clone_path = {workspace_repo_path}`, `remote_clone_type = "workspace"`.
