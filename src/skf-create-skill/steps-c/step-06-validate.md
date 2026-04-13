@@ -48,10 +48,10 @@ To prevent this, any tool invocation that may touch SKILL.md must run inside the
 
 ### 1. Check Tool Availability
 
-Run: `npx skill-check -h`
+Run: `timeout 30s npx skill-check -h` — the short timeout protects against a cold `npx` download blocking the workflow indefinitely on a slow network.
 
 - If succeeds: Continue to automated validation (section 2)
-- If fails: Perform manual fallback (section 3); add note to evidence-report: "Spec validation performed manually — skill-check tool unavailable". Also set `metadata.validation_status: 'manual-only'` in `metadata.json` (write via `python3 {project-root}/src/shared/scripts/skf-atomic-write.py write --target <staging-skill-dir>/metadata.json`), and in the evidence-report's `Validation Results` section mark Security, Body, and Content Quality (tessl) rows explicitly as `skipped — skill-check unavailable`. Downstream consumers (pipeline, forger, test-skill) check `validation_status` to decide how much weight to put on the artifact; leaving it unset would make a manual-only run look equivalent to a fully automated PASS.
+- If fails or times out: Perform manual fallback (section 3); add note to evidence-report: "Spec validation performed manually — skill-check tool unavailable". Also set `metadata.validation_status: 'manual-only'` in `metadata.json` (write via `python3 {project-root}/src/shared/scripts/skf-atomic-write.py write --target <staging-skill-dir>/metadata.json`), and in the evidence-report's `Validation Results` section mark Security, Body, and Content Quality (tessl) rows explicitly as `skipped — skill-check unavailable`. Downstream consumers (pipeline, forger, test-skill) check `validation_status` to decide how much weight to put on the artifact; leaving it unset would make a manual-only run look equivalent to a fully automated PASS.
 
 **Important:** Do not assume availability — empirical check required.
 
@@ -146,7 +146,7 @@ Record: "Security scan skipped — SNYK_TOKEN not configured"
 
 ### 6. Content Quality Review (tessl)
 
-**If tessl available**, run: `npx -y tessl skill review <staging-skill-dir>`
+**If tessl available**, run: `timeout 120s npx -y tessl skill review <staging-skill-dir>` — the 120s cap matches skf-test-skill's tessl invocation guard and prevents a stalled LLM call in tessl from blocking compilation. On timeout, treat the step as unavailable and record `tessl: timeout — content quality review skipped` in the evidence report.
 
 Parse output for: `description_score`, `content_score`, `review_score`, `validation_result`, `judge_suggestions[]`.
 

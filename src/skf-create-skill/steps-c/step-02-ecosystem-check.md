@@ -26,8 +26,8 @@ To search the agentskills.io ecosystem for an existing official skill matching t
 
 Query the ecosystem using the skill name from the brief:
 - Call the registry API with brief.name — check if an official skill already exists
-- Enforce 5-second timeout — if the query does not return within 5 seconds, treat as no match
-- Cache results for 24 hours (if re-running same skill)
+- Enforce 5-second timeout — if the query does not return within 5 seconds, treat as no match. Rationale: ecosystem check is an opportunistic advisory; a slow or degraded registry must not stall the compilation pipeline, and 5s is well beyond any healthy registry's p99 latency.
+- Cache results for 24 hours (if re-running same skill). Rationale: the agentskills.io registry publishes new official skills in daily batches; a 24-hour TTL balances freshness against redundant network calls during iterative brief refinement.
 
 **If registry API is NOT available (current default):**
 

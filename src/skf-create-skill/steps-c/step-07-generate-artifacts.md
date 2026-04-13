@@ -139,7 +139,7 @@ Index the generated skill artifacts into a QMD collection so that audit-skill an
 ```bash
 qmd collection remove {name}-extraction 2>/dev/null  # no-op if new
 qmd collection add {skill_package} --name {name}-extraction --mask "**/*"
-qmd embed --collection {name}-extraction  # generates vector embeddings for semantic (vec) and HyDE query sub-types; scope to this collection to avoid re-embedding others. If the installed qmd CLI lacks --collection, gate the embed behind a per-skill freshness check (skip when the existing {name}-extraction entry is within 24 hours) and warn in evidence-report.
+qmd embed --collection {name}-extraction  # generates vector embeddings for semantic (vec) and HyDE query sub-types; scope to this collection to avoid re-embedding others. If the installed qmd CLI lacks --collection, gate the embed behind a per-skill freshness check (skip when the existing {name}-extraction entry is within 24 hours — rationale: an unscoped embed re-runs over every collection, which in a populated QMD store can cost minutes of GPU time per create-skill run; 24 hours is long enough to absorb rapid re-forges from the same brief without losing meaningful content freshness) and warn in evidence-report.
 ```
 
 **Registry update:**

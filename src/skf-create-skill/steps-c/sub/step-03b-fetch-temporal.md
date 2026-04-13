@@ -25,7 +25,7 @@ Evaluate the following conditions sequentially. **If ANY condition fails, skip s
 
 1. **Tier is Deep:** If tier is Quick, Forge, or Forge+, skip silently.
 2. **Source is GitHub:** Verify `source_repo` is a GitHub URL (`https://github.com/...`) or `owner/repo` format. If the source is a local path, a non-GitHub URL, or any other format, attempt GitHub remote detection (section 1b) before skipping.
-3. **`gh` CLI is available:** Run `gh auth status` to verify the CLI is installed and authenticated. If it fails, skip silently.
+3. **`gh` CLI is available:** Run `timeout 10s gh auth status` to verify the CLI is installed and authenticated (the short timeout protects against a misconfigured network or hung auth helper blocking the workflow). If it fails or times out, skip silently.
 
 All three conditions must pass to proceed to section 2.
 
@@ -35,9 +35,9 @@ All three conditions must pass to proceed to section 2.
 
 Local repositories that are clones of GitHub repos contain temporal context (issues, PRs, releases) accessible via `gh`. Detect this automatically:
 
-1. Check if the local path is a git repository: `git -C {source_repo} rev-parse --is-inside-work-tree`
+1. Check if the local path is a git repository: `git -C "{source_repo}" rev-parse --is-inside-work-tree`
 2. If not a git repo: skip silently to section 5 (current behavior).
-3. Extract the origin remote: `git -C {source_repo} remote get-url origin`
+3. Extract the origin remote: `git -C "{source_repo}" remote get-url origin`
 4. If the remote URL contains `github.com`:
    - Extract `owner/repo` from the remote URL (strip `.git` suffix, handle both HTTPS and SSH formats)
    - Log: "**Local source with GitHub remote detected:** {owner}/{repo} — fetching temporal context."
@@ -49,7 +49,7 @@ Local repositories that are clones of GitHub repos contain temporal context (iss
 Read `forge-tier.yaml` from the sidecar path.
 
 - Look for a `qmd_collections` entry where `skill_name` matches the current brief AND `type` is `"temporal"`.
-- If found AND `created_at` is within the last **7 days**: the temporal collection is fresh. Display:
+- If found AND `created_at` is within the last **7 days** (rationale: temporal context — issues, PRs, changelogs — rarely changes meaningfully on shorter horizons; a 7-day window balances freshness against re-fetch cost and GitHub rate limits): the temporal collection is fresh. Display:
 
 "**Temporal context: cached.** Collection `{skill-name}-temporal` is fresh ({days} days old). Skipping re-fetch."
 
@@ -65,7 +65,7 @@ Resolve the `owner` and `repo` from `source_repo` (e.g., `acme/toolkit` from `ht
 
 Execute the following fetches, writing output as markdown files to the staging directory. **If any individual fetch fails, log a warning and continue with the others:**
 
-1. **Issues (last 100):**
+1. **Issues (last 100):** (rationale: 100 is `gh issue list`'s default max-per-page; a single paginated call captures recent activity without extra round trips or rate-limit pressure)
 
    ```bash
    gh issue list -R {owner}/{repo} --state all --limit 100 --json number,title,state,labels,createdAt,closedAt,body | ...
@@ -73,7 +73,7 @@ Execute the following fetches, writing output as markdown files to the staging d
 
    Write to `{staging}/issues.md` — format as a markdown document with one section per issue (number, title, state, labels, body summary).
 
-2. **Merged PRs (last 100):**
+2. **Merged PRs (last 100):** (rationale: same 100-per-page convention as issues — captures the most recent merges in one API call)
 
    ```bash
    gh pr list -R {owner}/{repo} --state merged --limit 100 --json number,title,mergedAt,labels,body | ...
@@ -81,7 +81,7 @@ Execute the following fetches, writing output as markdown files to the staging d
 
    Write to `{staging}/prs.md` — format as a markdown document with one section per PR.
 
-3. **Releases (last 10):**
+3. **Releases (last 10):** (rationale: release notes accumulate slowly relative to issues/PRs; the most recent 10 tags cover roughly the last 6-18 months of changelog-relevant history for typical OSS projects, which is enough context for T2-past annotations without fanning out to dozens of `gh release view` calls)
 
    **Note:** `gh release list --json` does **not** support the `body` field. Use a two-step approach: list tags first, then fetch each release individually with `--json` (which IS supported on `gh release view`).
 
@@ -121,12 +121,15 @@ After the generic fetches above, perform **targeted searches** using the top-lev
 
 **Short-circuit on empty `top_exports`:** If `extraction_inventory.top_exports` is missing or `== []` (docs-only mode, or a source extraction that produced zero public exports), skip this sub-section entirely with a one-line log: "No exports in inventory — skipping targeted function searches." The generic fetches from §3 remain in place and continue to provide baseline temporal context.
 
-**Limit:** Search the top **10 function names** maximum to control API call volume and avoid `gh` rate limiting.
+**Limit:** Search the top **10 function names** maximum to control API call volume and avoid `gh` rate limiting. (rationale: 10 targeted searches + generic fetches from §3 stays well under GitHub's unauthenticated search rate limit of 10 requests/minute and authenticated 30/minute; matches the `top_exports[]` size emitted by step-03 §5 so every tracked export gets one search.)
 
 For each function name in `top_exports[]` (up to 10), **sanitize first**: strip every character that is not in `[A-Za-z0-9_]` from `function_name` to produce `safe_name`. This prevents shell injection and `gh` query parser errors when an export name contains punctuation (e.g., `<T>`, `.method`, `::namespace`, quotes). If `safe_name` is empty after sanitization (the original was entirely punctuation — rare but possible for symbol exports), fall back to piping the original name through stdin via `--query-from-file -`-style indirection if your `gh` version supports it; otherwise skip that one entry with a log line — never substitute the unsanitized name back into the shell command.
 
 ```bash
 # safe_name = re.sub(r'[^A-Za-z0-9_]', '', function_name); skip if empty
+# --limit 5: top-5 issues per function keeps signal-to-noise high (most matches
+# below rank 5 are typically keyword coincidences, not targeted discussions) and
+# caps the total response size across 10 function fan-outs at 50 issues.
 gh search issues --repo {owner}/{repo} "{safe_name}" --limit 5 --json number,title,state,body
 ```
 
