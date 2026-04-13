@@ -70,7 +70,7 @@ Display: "**Ecosystem match found — Select an Option:** [P] Proceed with compi
 #### EXECUTION RULES:
 
 - ALWAYS halt and wait for user input after presenting menu
-- **GATE [default: P]** — If `{headless_mode}` and match found: auto-proceed with [P] Proceed, log: "headless: ecosystem match found, auto-proceeding"
+- **GATE [default: P]** — If `{headless_mode}` and match found: auto-proceed with [P] Proceed, log: "headless: ecosystem match found, auto-proceeding", AND append an entry to the in-context `headless_decisions[]` list: `{step: "step-02-ecosystem-check", gate: "ecosystem-match", decision: "P", rationale: "headless mode — match found, auto-proceed with user's own compilation", timestamp: {ISO}}`. Step-05 §7 (evidence-report assembly) reads `headless_decisions[]` and emits an "Auto-Decisions" section into evidence-report.md.
 - This menu ONLY appears when an ecosystem match is found
 - If no match, timeout, or tool unavailable — auto-proceed with no menu
 

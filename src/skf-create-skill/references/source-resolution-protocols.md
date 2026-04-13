@@ -39,7 +39,7 @@ When `brief.target_version` is absent but `brief.version` is present AND `source
 3. **Resolution outcomes:**
    - **Single match:** Store the matched tag as `source_ref`. Use it as `{branch}` in all subsequent clone/API commands. Do not warn — this is the expected path.
    - **Multiple matches:** Present the matching tags to the user — "Multiple tags match `brief.version` ({brief.version}): {list}. Which one should I use, or fall back to HEAD?" Wait for selection.
-   - **Zero matches:** ⚠️ Warn: "No git tag found matching `brief.version` ({brief.version}). Falling back to default branch — **extracted code may not match the declared version.** If you intended to pin a specific version, set `target_version` explicitly in the brief." Set `source_ref` to `HEAD` and proceed with default branch.
+   - **Zero matches:** ⚠️ Warn: "No git tag found matching `brief.version` ({brief.version}). Falling back to default branch — **extracted code may not match the declared version.** If you intended to pin a specific version, set `target_version` explicitly in the brief." Set `source_ref` to `HEAD` and proceed with default branch. Append `tag_resolution: {status: "fallback-head", requested: "{brief.version}", reason: "no-matching-tag"}` to the in-context evidence-report payload so step-05 §7 surfaces the fallback in the evidence report. This turns the warning into a persistent audit trail a reviewer can grep later, not just a one-shot stderr line.
 
 4. **Do not halt on zero matches.** Unlike the explicit path, implicit resolution never blocks compilation — `brief.version` is an auto-populated hint, and some repositories simply do not tag releases. The warning is sufficient notice; the evidence report in step-08 will surface the HEAD fallback for reviewers.
 
@@ -80,12 +80,26 @@ If `source_repo` is a remote URL (GitHub URL or owner/repo format) AND tier is F
 
 3. **Workspace check — resolve the source locally:**
 
+   **Concurrency guard:** all of the operations below (fetch, checkout, rev-parse, and the extraction read that follows in step-03) must be wrapped in an exclusive `flock` on `{workspace_repo_path}/.skf-workspace.lock`. Acquire the lock before the workspace-hit check, hold it across fetch + checkout + rev-parse, AND keep holding it through the extraction-time read of the working tree. Two concurrent batch runs that target the same workspace clone but different `source_ref` values would otherwise race — one would `checkout` while the other was reading files mid-extraction, corrupting the inventory. The lock makes the per-workspace-repo unit of work serial. Use `flock -x {lockfile} -c "..."` or `fcntl.flock(LOCK_EX)`. If `flock` is unavailable, log a warning ("Concurrency guard unavailable — concurrent forges against the same workspace repo may produce inconsistent extraction inventories") and proceed.
+
    **If `{workspace_repo_path}/.git/` exists (workspace hit):**
 
-   The repo was previously cloned into the workspace. Fetch updates and checkout the requested ref:
+   The repo was previously cloned into the workspace. Fetch updates and checkout the requested ref.
+
+   **Detect tag vs branch for `source_ref`** (skipped when `source_ref` is `HEAD` — in that case fetch default branch without a ref argument):
 
    ```
-   git -C {workspace_repo_path} fetch origin {source_ref}
+   # Ask the remote whether source_ref exists as a tag
+   git -C {workspace_repo_path} ls-remote --tags origin {source_ref} | grep -q "refs/tags/{source_ref}$" && ref_kind=tag || ref_kind=branch
+   ```
+
+   Fetch using the ref-kind-appropriate invocation so tag refs are written into `refs/tags/*` rather than being dropped by a branch-only fetch:
+
+   ```
+   if ref_kind == tag:
+     git -C {workspace_repo_path} fetch origin tag {source_ref}
+   else:
+     git -C {workspace_repo_path} fetch origin {source_ref}
    ```
 
    Check if checkout is needed — skip if the requested ref is already checked out:
@@ -110,17 +124,17 @@ If `source_repo` is a remote URL (GitHub URL or owner/repo format) AND tier is F
    mkdir -p "{workspace_root}/repos/{host}/{owner}/"
    ```
 
-   Clone with the appropriate branch flag — `--branch` is only valid for real branch/tag names, not for `HEAD`:
+   Clone with the appropriate branch flag — `--branch` is only valid for real branch/tag names, not for `HEAD`. **Do NOT pass `--single-branch`** here: workspace clones are persistent and re-used for future forges with different `source_ref` values (a later run may target a different tag or branch). A single-branch workspace clone would force every re-forge with a new ref to fall through to ephemeral cloning, defeating the workspace cache:
 
    ```
    # If source_ref is a real branch or tag (not HEAD/null):
-   git clone --depth 1 --branch {source_ref} --single-branch {source_repo} {workspace_repo_path}
+   git clone --depth 1 --branch {source_ref} {source_repo} {workspace_repo_path}
 
    # If source_ref is HEAD or not set (default branch):
-   git clone --depth 1 --single-branch {source_repo} {workspace_repo_path}
+   git clone --depth 1 {source_repo} {workspace_repo_path}
    ```
 
-   **Note:** No `--filter=blob:none` — blobs for the current tree are needed for indexing and the cost is amortized across all future forges. No sparse-checkout — a full checkout serves all consumers (different briefs with different include/exclude patterns) without configuration conflicts.
+   **Note:** No `--filter=blob:none` — blobs for the current tree are needed for indexing and the cost is amortized across all future forges. No sparse-checkout — a full checkout serves all consumers (different briefs with different include/exclude patterns) without configuration conflicts. `--single-branch` is reserved for ephemeral clones (step 5); workspace clones keep all branches available so re-forges against different refs can fetch + checkout without re-cloning.
 
    If this is the **first repo** in the workspace (workspace root was just created), print an informational message:
 

@@ -97,9 +97,13 @@ Execute the following fetches, writing output as markdown files to the staging d
    gh release view {tagName} -R {owner}/{repo} --json tagName,name,publishedAt,body
    ```
 
-   Iterate over every `tagName` from Step 1's JSON array. If `gh release view` fails for a specific tag, log a warning and skip that release — continue with remaining tags. If a rate limit (HTTP 429) is hit, stop the release loop, keep results collected so far, and log: "Release fetch stopped at tag {N}/{total} due to rate limiting."
+   Iterate over every `tagName` from Step 1's JSON array. **Append each release to `{staging}/releases.md` immediately after its `gh release view` call returns** — do not buffer the entire loop in memory and write once at the end. The append-per-release pattern guarantees that a mid-loop abort (rate limit, network drop, user interrupt) leaves a partial but well-formed `releases.md` with every release fetched so far, rather than discarding all of them because the loop didn't reach its final write.
 
-   Write to `{staging}/releases.md` — format as a markdown document with one section per release (tag, name, date, body).
+   Write an empty `{staging}/releases.md` with a header (`# Releases (partial if interrupted)`) before the loop, then append one `## {tagName} — {name} ({publishedAt})` section per successful fetch. Failed individual fetches get a one-line placeholder: `## {tagName} — fetch failed: {error}`.
+
+   If `gh release view` fails for a specific tag, log a warning and skip that release — continue with remaining tags. If a rate limit (HTTP 429) is hit, stop the release loop, keep the partial `releases.md` file in place (do NOT delete it), and log: "Release fetch stopped at tag {N}/{total} due to rate limiting — partial releases.md retained."
+
+   Format each section as a markdown block with tag, name, date, and body.
 
 4. **Changelog (if exists):**
 
@@ -115,12 +119,15 @@ Execute the following fetches, writing output as markdown files to the staging d
 
 After the generic fetches above, perform **targeted searches** using the top-level public API function names from `extraction_inventory.top_exports[]`. This produces high-signal results that generic list fetches miss.
 
+**Short-circuit on empty `top_exports`:** If `extraction_inventory.top_exports` is missing or `== []` (docs-only mode, or a source extraction that produced zero public exports), skip this sub-section entirely with a one-line log: "No exports in inventory — skipping targeted function searches." The generic fetches from §3 remain in place and continue to provide baseline temporal context.
+
 **Limit:** Search the top **10 function names** maximum to control API call volume and avoid `gh` rate limiting.
 
-For each function name in `top_exports[]` (up to 10):
+For each function name in `top_exports[]` (up to 10), **sanitize first**: strip every character that is not in `[A-Za-z0-9_]` from `function_name` to produce `safe_name`. This prevents shell injection and `gh` query parser errors when an export name contains punctuation (e.g., `<T>`, `.method`, `::namespace`, quotes). If `safe_name` is empty after sanitization (the original was entirely punctuation — rare but possible for symbol exports), fall back to piping the original name through stdin via `--query-from-file -`-style indirection if your `gh` version supports it; otherwise skip that one entry with a log line — never substitute the unsanitized name back into the shell command.
 
 ```bash
-gh search issues --repo {owner}/{repo} "{function_name}" --limit 5 --json number,title,state,body
+# safe_name = re.sub(r'[^A-Za-z0-9_]', '', function_name); skip if empty
+gh search issues --repo {owner}/{repo} "{safe_name}" --limit 5 --json number,title,state,body
 ```
 
 Aggregate all targeted search results into a single file: `{staging}/targeted-issues.md`. Format as a markdown document with one section per function name, listing the matching issues/PRs found.
@@ -135,17 +142,36 @@ Aggregate all targeted search results into a single file: `{staging}/targeted-is
 
 **Index the staging directory:**
 
-If a `{skill-name}-temporal` collection already exists, remove and recreate for atomic replace:
+If a `{skill-name}-temporal` collection already exists, remove and recreate for atomic replace. **Wrap the remove + add pair with rollback on `add` failure** — a `remove` that succeeds followed by an `add` that fails must not leave the registry claiming a collection that no longer exists in QMD:
 
 ```bash
 qmd collection remove {skill-name}-temporal
-qmd collection add {project-root}/_bmad-output/{skill-name}-temporal/ --name {skill-name}-temporal --mask "*.md"
-qmd embed
+if ! qmd collection add {project-root}/_bmad-output/{skill-name}-temporal/ --name {skill-name}-temporal --mask "*.md"; then
+  # add failed after remove succeeded — the collection is gone from QMD. Clean the registry too.
+  # Remove any {skill-name}-temporal entry from forge-tier.yaml qmd_collections[].
+  # Warn the user, do not fail the workflow (temporal enrichment degrades gracefully).
+  echo "WARN: qmd add failed after remove — registry entry for {skill-name}-temporal removed to keep forge-tier.yaml consistent with QMD state."
+  # [skip the embed step]
+else
+  qmd embed --collection {skill-name}-temporal
+fi
 ```
 
-**Note:** `qmd embed` generates vector embeddings required for `vector_search` and `deep_search`. Without it, only BM25 keyword `search` works. Run it after every `qmd collection add`.
+**Rollback rule:** if the `qmd collection add` step fails (non-zero exit, network error, parse error) AND the prior `remove` succeeded, the canonical registry entry in `forge-tier.yaml` MUST be removed to match QMD's actual state. A dangling registry entry that points at a non-existent QMD collection poisons subsequent cache-hit checks in §2. Emit a warning in evidence-report and skip the embed — enrichment degrades to no-QMD for this run.
 
-**Update the registry** in `forge-tier.yaml`:
+**Scope the embed:** Always pass `--collection {skill-name}-temporal` to `qmd embed`. An unscoped `qmd embed` re-embeds every collection in the QMD store, which can take minutes per run in batch mode and generates wasteful GPU/API cost. If the installed `qmd` CLI does not accept `--collection` (older upstream versions), gate the embed behind a per-skill check: if a previous `{skill-name}-temporal` entry already exists in `qmd_collections` and its `created_at` is within 24 hours, skip the embed entirely and warn "qmd embed skipped — upstream qmd lacks --collection scope; re-embedding all collections would be wasteful in batch mode". Log the skip in the evidence report.
+
+**Note:** `qmd embed` generates vector embeddings required for semantic (`type:'vec'`) and HyDE (`type:'hyde'`) sub-queries inside the QMD `query` tool. Without embeddings, only BM25 (`type:'lex'`) keyword search works. Run `qmd embed` after every `qmd collection add`.
+
+**Update the registry** in `forge-tier.yaml` under a file lock to prevent concurrent batch runs from clobbering each other's entries:
+
+1. Acquire an exclusive `flock` on `{sidecar_path}/forge-tier.yaml.lock` (create the lock file if absent). Use `flock -x {lockfile} -c "..."` or an equivalent `fcntl.flock(LOCK_EX)` guard.
+2. Read the current `forge-tier.yaml`, capturing its `st_mtime` as `mtime_before`.
+3. Perform the read-modify-write below.
+4. Write via `python3 {project-root}/src/shared/scripts/skf-atomic-write.py write --target {sidecar_path}/forge-tier.yaml`.
+5. Release the flock.
+
+**Fallback when `flock` is unavailable:** re-stat the file after the write; if the on-disk `st_mtime` is newer than `mtime_before` by more than this run's own write timestamp, halt with "forge-tier.yaml modified mid-update by another process — refusing to clobber. Re-run after the other run completes." This read-CAS-by-mtime is the belt-and-braces safety net for environments without `flock`.
 
 If an entry with `name: "{skill-name}-temporal"` already exists in `qmd_collections`, replace it. Otherwise, append:
 
