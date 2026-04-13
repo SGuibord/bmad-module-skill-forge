@@ -73,7 +73,7 @@ Consumers grep for `## Integration Verdicts` to locate the pair table. The table
 - Set `schemaVersion: "1.0"` in frontmatter.
 - Never emit a verdict token outside the defined set.
 - When Check 4 (documentation cross-reference) produces weak/missing evidence, cap the per-pair verdict at `Plausible`.
-- When `coverage_percentage == 0`, force `overallVerdict: NOT_FEASIBLE` regardless of pair results.
+- When `coveragePercentage == 0`, force `overallVerdict: NOT_FEASIBLE` regardless of pair results.
 
 ## Consumer obligations (skf-create-stack-skill)
 

@@ -16,7 +16,7 @@ When `brief.target_version` is present AND `source_repo` is a remote URL, resolv
 
 1. **List available tags:**
    - `gh api repos/{owner}/{repo}/tags --paginate --jq '.[].name'`
-   - Fallback: `git ls-remote --tags {source_repo} | sed 's|.*refs/tags/||'`
+   - Fallback: `git ls-remote --tags "{source_repo}" | sed 's|.*refs/tags/||'`
 
 2. **Match `target_version` against tags** in priority order:
    - **Exact match:** `{target_version}` (e.g., `0.5.0`)
@@ -132,10 +132,10 @@ If `source_repo` is a remote URL (GitHub URL or owner/repo format) AND tier is F
 
    ```
    # If source_ref is a real branch or tag (not HEAD/null):
-   git clone --depth 1 --branch {source_ref} {source_repo} {workspace_repo_path}
+   git clone --depth 1 --branch {source_ref} "{source_repo}" "{workspace_repo_path}"
 
    # If source_ref is HEAD or not set (default branch):
-   git clone --depth 1 {source_repo} {workspace_repo_path}
+   git clone --depth 1 "{source_repo}" "{workspace_repo_path}"
    ```
 
    **Note:** No `--filter=blob:none` — blobs for the current tree are needed for indexing and the cost is amortized across all future forges. No sparse-checkout — a full checkout serves all consumers (different briefs with different include/exclude patterns) without configuration conflicts. `--single-branch` is reserved for ephemeral clones (step 5); workspace clones keep all branches available so re-forges against different refs can fetch + checkout without re-cloning.
@@ -161,10 +161,10 @@ If `source_repo` is a remote URL (GitHub URL or owner/repo format) AND tier is F
    temp_path = {system_temp}/skf-ephemeral-{skill-name}-{timestamp}/
 
    # If source_ref is a real branch or tag (not HEAD/null):
-   git clone --depth 1 --branch {source_ref} --single-branch --filter=blob:none {source_repo} {temp_path}
+   git clone --depth 1 --branch {source_ref} --single-branch --filter=blob:none "{source_repo}" "{temp_path}"
 
    # If source_ref is HEAD or not set (default branch):
-   git clone --depth 1 --single-branch --filter=blob:none {source_repo} {temp_path}
+   git clone --depth 1 --single-branch --filter=blob:none "{source_repo}" "{temp_path}"
    ```
 
    If ephemeral clone succeeds: Set `source_root = {temp_path}`. Capture `source_commit`. Set context:
