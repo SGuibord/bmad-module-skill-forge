@@ -25,8 +25,10 @@ Subcommands:
              the `ln -sfn tmp && mv -Tf tmp link` pattern (or equivalent via
              os.replace on the link path). Holds an flock on <link>.lock.
 
-All subcommands are POSIX-focused. Windows is out of scope for v1.0 (declared
-Linux/Mac-only in README).
+Cross-platform: locking branches between fcntl (POSIX) and msvcrt
+(Windows). Symlink semantics on Windows require dev mode or admin —
+flip-link surfaces a clear error rather than silently falling back.
+Native Windows is untested in CI; the supported path is WSL2.
 
 Exit codes:
   0 on success
@@ -44,12 +46,47 @@ from __future__ import annotations
 
 import argparse
 import errno
-import fcntl
 import json
 import os
 import shutil
 import sys
 from pathlib import Path
+
+if os.name == "nt":
+    import msvcrt
+else:
+    import fcntl
+
+
+def _acquire_lock(fd: int) -> None:
+    """Acquire an exclusive non-blocking lock on fd (auto-released on close/exit)."""
+    if os.name == "nt":
+        try:
+            msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+        except OSError as e:
+            if e.errno in (errno.EAGAIN, errno.EACCES, errno.EDEADLK):
+                raise OSError(errno.EAGAIN, "lock held") from e
+            raise
+    else:
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError as e:
+            if e.errno in (errno.EAGAIN, errno.EACCES):
+                raise OSError(errno.EAGAIN, "lock held") from e
+            raise
+
+
+def _release_lock(fd: int) -> None:
+    if os.name == "nt":
+        try:
+            msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+        except OSError:
+            pass
+    else:
+        try:
+            fcntl.flock(fd, fcntl.LOCK_UN)
+        except OSError:
+            pass
 
 
 def _die(code: int, message: str) -> None:
@@ -148,6 +185,10 @@ def cmd_flip_link(link: Path, target: str) -> None:
 
     target is the value of the symlink (may be relative, as is convention
     for `active -> 1.0.0`). Held lock on <link>.lock prevents concurrent flips.
+
+    On Windows, os.symlink requires Developer Mode or admin. If the symlink
+    creation fails with permission/privilege errors, surface a clear error
+    rather than fall back silently — callers expect symlink semantics.
     """
     lock_path = link.with_name(link.name + ".skf-lock")
     link.parent.mkdir(parents=True, exist_ok=True)
@@ -159,22 +200,24 @@ def cmd_flip_link(link: Path, target: str) -> None:
     lock_fd = os.open(lock_path, os.O_WRONLY | os.O_CREAT, 0o644)
     try:
         try:
-            fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            _acquire_lock(lock_fd)
         except OSError as e:
-            if e.errno in (errno.EAGAIN, errno.EACCES):
+            if e.errno == errno.EAGAIN:
                 _die(2, f"another process holds flip lock on {link}")
             raise
 
         tmp_link = link.with_name(link.name + ".skf-tmp-link")
         if tmp_link.exists() or tmp_link.is_symlink():
             tmp_link.unlink()
-        os.symlink(target, tmp_link)
+        try:
+            os.symlink(target, tmp_link)
+        except OSError as e:
+            if os.name == "nt" and e.winerror in (1314, 5):  # PRIVILEGE_NOT_HELD or ACCESS_DENIED
+                _die(2, "symlink creation requires Windows Developer Mode or admin; use WSL2")
+            raise
         os.replace(tmp_link, link)
     finally:
-        try:
-            fcntl.flock(lock_fd, fcntl.LOCK_UN)
-        except OSError:
-            pass
+        _release_lock(lock_fd)
         os.close(lock_fd)
 
     _ok({"link": str(link), "points_to": target})

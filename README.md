@@ -82,7 +82,7 @@ If it doesn't, that's a bug — open an issue and SKF will republish with a new 
 
 ## Install
 
-**Supported platforms:** Linux and macOS. Windows is not supported in v1.0 — shell tooling, symlink handling, and path quoting assume POSIX semantics. WSL2 works well as a Windows workaround.
+**Supported platforms:** Linux and macOS (tested in CI). The atomic-write helper and shell snippets cross-compile to Windows but native Windows is not exercised by CI yet — the supported path on Windows is **WSL2**. Native Windows works in principle (path quoting, portable file locking, Developer Mode for symlinks) but ships unverified for v1.0; see [CONTRIBUTING.md](./CONTRIBUTING.md) if you want to help test it.
 
 Requires [Node.js](https://nodejs.org/) >= 22, [Python](https://www.python.org/) >= 3.10, and [uv](https://docs.astral.sh/uv/) (Python package runner).
 
