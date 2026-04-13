@@ -16,7 +16,9 @@ Persistent clones + CCC indexes preserved across forges, projects, and sessions.
 
 ### Layer 1 — Registry Intelligence *(triggered)*
 
-Ship when real users cache 5+ repos, disk complaints arrive, concurrent forge failures surface, or users start asking "what's in my workspace?" Scope: `registry.json` with `schema_version`, staleness thresholds, disk budget + LRU eviction, PID-based locking, CLI (`skf workspace list/remove/clean/migrate`), cross-platform hardening (Windows long paths, case-sensitivity detection, file-lock retry), and recovery paths (self-healing registry, git health check, auth-failure degradation).
+Ship when real users cache 5+ repos, disk complaints arrive, concurrent forge failures surface, or users start asking "what's in my workspace?"
+
+**Registry:** `registry.json` with `schema_version`, staleness thresholds, disk budget + LRU eviction, and PID-based locking. **CLI:** `skf workspace list/remove/clean/migrate`. **Cross-platform hardening:** Windows long paths, case-sensitivity detection, file-lock retry. **Recovery paths:** self-healing registry, git health check, auth-failure degradation.
 
 ### Layer 2 — Tool Tenants *(triggered)*
 

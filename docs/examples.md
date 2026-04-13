@@ -5,7 +5,7 @@ description: Real-world scenarios, tips, and troubleshooting for Skill Forge
 
 ## What the Output Looks Like
 
-When SKF generates a skill, you get a `SKILL.md` file with machine-readable frontmatter and provenance-backed instructions. Here's a trimmed example from the real [`oms-cognee` SKILL.md](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/oms-cognee/1.0.0/oms-cognee/SKILL.md) generated for [cognee](https://github.com/topoteretes/cognee) (full portfolio at [oh-my-skills](https://github.com/armelhbobdad/oh-my-skills)):
+When SKF generates a skill, you get a `SKILL.md` file with machine-readable frontmatter and provenance-backed instructions. Below is a trimmed example from the real [`oms-cognee` SKILL.md](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/oms-cognee/1.0.0/oms-cognee/SKILL.md) generated for [cognee](https://github.com/topoteretes/cognee) (full portfolio at [oh-my-skills](https://github.com/armelhbobdad/oh-my-skills)):
 
 **Frontmatter (tells AI agents when to load this skill):**
 
@@ -88,7 +88,7 @@ Developer adds [cognee](https://github.com/topoteretes/cognee) to a Python proje
 @Ferris QS https://github.com/topoteretes/cognee
 ```
 
-Ferris reads the repository, extracts the public API, and validates against the agentskills.io spec. The skill is written to `skills/cognee/<version>/cognee/` (auto-detected from the source manifest). Agent stops hallucinating.
+Ferris reads the repository, extracts the public API, and validates against the agentskills.io spec. The skill is written to `skills/cognee/<version>/cognee/` (auto-detected from the source manifest). The agent now reads the real signatures from the skill instead of guessing.
 
 Need a specific version? Append `@version`:
 
@@ -101,21 +101,21 @@ Need a specific version? Append `@version`:
 Alex's team adopts BMAD for 10 microservices (TypeScript, Go, Rust).
 
 ```
-@Ferris SF          # Setup — Deep mode detected
+@Ferris SF          # Setup — Deep tier detected
 # — clear session —
 @Ferris onboard     # Analyze → Create → Test → Export in one pipeline
 ```
 
 Or one workflow per session:
 ```
-@Ferris SF          # Setup — Deep mode detected
+@Ferris SF          # Setup — Deep tier detected
 # — clear session —
 @Ferris AN          # Analyze — 10 services mapped
 # — clear session —
 @Ferris CS --batch  # Create — batch generation
 ```
 
-10 individual skills + 1 platform stack skill. [BMM](../bmad-synergy/#skf-and-bmm-phase-by-phase-playbook) architect navigates cross-service flows with verified knowledge.
+10 individual skills + 1 platform stack skill. The [BMM](../bmad-synergy/#skf-and-bmm-phase-by-phase-playbook) architect then navigates cross-service flows using verified knowledge.
 
 ### Release Prep — Trust Builder
 
@@ -136,7 +136,7 @@ Or one workflow per session:
 @Ferris EX    # Export — package for npm release
 ```
 
-Ships with npm release. Consumers upgrade — their agents use the correct function names. Zero hallucination tickets.
+Ships with the npm release. Consumers upgrade and their agents use the correct function names — no more "wrong signature" support tickets.
 
 ### Stack Skill — Integration Intelligence
 
@@ -146,7 +146,7 @@ Armel's full-stack project: Next.js + Serwist + SpacetimeDB + better-auth.
 @Ferris SS
 ```
 
-Ferris detects 8 significant dependencies, finds 5 co-import integration points. Generates a consolidated stack skill. The agent now knows: "When you modify the auth flow, update the Serwist cache exclusion at `src/sw.ts:L23`." Integration intelligence no other tool provides.
+Ferris detects 8 significant dependencies, finds 5 co-import integration points. Generates a consolidated stack skill. The agent now knows: "When you modify the auth flow, update the Serwist cache exclusion at `src/sw.ts:L23`." That integration detail isn't available from any other tool in the [comparison table](../how-it-works/#how-skf-compares-to-product-alternatives).
 
 ### Pre-Code Architecture Verification — Greenfield Confidence
 
@@ -161,7 +161,7 @@ Gery is designing a new TypeScript backend with Hono + Drizzle + SpacetimeDB. Ar
 @Ferris SS               # Stack Skill — compose-mode (no codebase needed)
 ```
 
-VS finds a Risky integration between Drizzle and SpacetimeDB (incompatible query models) and returns CONDITIONALLY FEASIBLE. Jordan adds a bridge layer to the architecture, re-runs VS → FEASIBLE. RA fills in verified API signatures. SS compose-mode synthesizes the stack skill from existing skills + refined architecture. The agent now has integration intelligence for a project that doesn't have code yet.
+VS flags the Drizzle↔SpacetimeDB integration as incompatible (query-model mismatch) and returns CONDITIONALLY FEASIBLE. Gery adds a bridge layer to the architecture, re-runs VS → FEASIBLE. RA fills in verified API signatures. SS compose-mode synthesizes the stack skill from existing skills + refined architecture. The agent now has integration intelligence for a project that doesn't have code yet.
 
 ---
 
@@ -178,7 +178,7 @@ BMAD user starts a new project. [BMM](../bmad-synergy/#skf-and-bmm-phase-by-phas
 @Ferris EX    # Export — inject into platform context files
 ```
 
-Skills accumulate over sprints. Agent gets smarter every iteration.
+Skills accumulate over sprints. The agent's coverage improves each iteration.
 
 ### Scenario B: Multi-Repo Platform
 
@@ -251,11 +251,11 @@ Version 0.6.0 remains active. Version 0.5.0 is untouched. The managed sections i
 
 ### Skip Permissions for Faster Forging
 
-> **Tip from Armel:** When forging skills with Claude Code, I run `claude --dangerously-skip-permissions` to bypass all permission prompts. SKF workflows only read source code, write to `skills/` and `forge-data/`, and call local tools (ast-grep, qmd, gh) — every step is auditable in the [open source](https://github.com/armelhbobdad/bmad-module-skill-forge). Skipping permissions drastically reduces forge time: I start a pipeline, go [grab one of those coffees ☕ you keep offering](https://buymeacoffee.com/armelhbobdad), and come back to a completed workflow. Review the output at the end, not at every gate.
+See the canonical [Tip from Armel](../concepts/#best-practices) in Concepts — same recommendation applies across every workflow.
 
 ### Progressive Capability
 
-Start with Quick mode (no setup required), upgrade to Forge (install ast-grep), then Forge+ (install cocoindex-code for semantic discovery), then Deep (install QMD). Each tier builds on the previous — you never lose capability.
+Start with the Quick tier (no setup required), upgrade to Forge (install ast-grep), then Forge+ (install cocoindex-code for semantic discovery), then Deep (install QMD). Each tier builds on the previous — you never lose capability.
 
 ### Batch Operations
 
@@ -296,7 +296,7 @@ Every SKF workflow ends with a shared **health check** step where Ferris reflect
 ### Common Issues
 
 **Forge reports ast-grep is unavailable**
-If setup reports that ast-grep was not detected, install it to unlock Forge mode: <https://ast-grep.github.io>
+If setup reports that ast-grep was not detected, install it to unlock the Forge tier: <https://ast-grep.github.io>
 
 **"No brief found"**
 Run `@Ferris BS` first to create a skill brief, or use `@Ferris QS` for brief-less generation.
@@ -304,17 +304,17 @@ Run `@Ferris BS` first to create a skill brief, or use `@Ferris QS` for brief-le
 **"Ecosystem check: official skill exists"**
 An official skill already exists for this package. Consider installing it with `npx skills add` instead of generating your own.
 
-**Quick mode skills have lower confidence**
-Quick mode reads source without AST analysis. Install ast-grep to upgrade to Forge mode for structural truth (T1 confidence).
+**Quick tier skills have lower confidence**
+Quick tier reads source without AST analysis. Install ast-grep to upgrade to the Forge tier for AST-verified signatures (T1 confidence).
 
 **Want semantic discovery for large codebases?**
-Install [cocoindex-code](https://github.com/cocoindex-io/cocoindex-code) to unlock Forge+ mode. CCC indexes your codebase and pre-ranks files by semantic relevance before AST extraction, improving coverage on projects with 500+ files.
+Install [cocoindex-code](https://github.com/cocoindex-io/cocoindex-code) to unlock the Forge+ tier. CCC indexes your codebase and pre-ranks files by semantic relevance before AST extraction, improving coverage on projects with 500+ files.
 
 ---
 
 ## Getting More Help
 
-- Run `/bmad-help` — analyzes your current state and suggests what to do next
+- Run `/bmad-help` — it analyzes your current state and suggests what to do next
   (e.g. `/bmad-help my batch creation failed halfway, how do I resume?`)
   *Provided by the [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) — not available in standalone SKF installations.*
 - Run `@Ferris SF` to check your current tier and tool availability

@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.10.0] - Unreleased
+## [1.0.0] - 2026-04-13
+
+### First Major Release
+
+First major release of Skill Forge (SKF). Introduces the `INCONCLUSIVE` test verdict, atomic stack-skill writes, a shared feasibility schema across VS/RA/SS, and formalizes Linux/macOS-only support. Sets the stable contract for subsequent 1.x releases.
 
 ### Initial Release
 
@@ -12,8 +16,8 @@ Skill Forge (SKF) — an agent skill compiler that transforms code repositories,
 
 - **1 agent** — Ferris (Skill Architect & Integrity Guardian) with 5 workflow-driven modes
 - **14 workflows** — full lifecycle from source analysis to ecosystem-ready export, with pre-code architecture verification
-- **Progressive capability model** — Quick (gh), Forge (+ast-grep), Forge+ (+ccc), Deep (+QMD)
-- **Zero hallucination tolerance** — every instruction traces to source code with provenance citations
+- **Progressive capability tiers** — Quick (baseline), Forge (+ast-grep), Forge+ (+ccc), Deep (+gh+qmd)
+- **Source-traced instructions** — every documented symbol cites an upstream file and line
 - **Dual-output strategy** — active skills (SKILL.md) + passive context (context-snippet.md) in ADR-L v2 format
 - **CLI installer** — `npx bmad-module-skill-forge install` with skill directory installation for 23 IDEs
 - **14 knowledge fragments** — curated cross-cutting principles loaded just-in-time by workflows
@@ -28,9 +32,9 @@ Skill Forge (SKF) — an agent skill compiler that transforms code repositories,
 | CS | Create Skill | Compile a skill from brief with AST extraction |
 | QS | Quick Skill | Fast skill from package name or GitHub URL |
 | SS | Stack Skill | Consolidated project stack skill with integration patterns |
-| US | Update Skill | Smart regeneration preserving manual sections |
+| US | Update Skill | Regenerate a skill while preserving manual sections |
 | AS | Audit Skill | Drift detection between skill and current source |
-| TS | Test Skill | Cognitive completeness verification |
+| TS | Test Skill | Verify whether a skill covers its target completely and accurately |
 | VS | Verify Stack | Pre-code stack feasibility verification against architecture |
 | RA | Refine Architecture | Improve architecture doc using verified skill data |
 | EX | Export Skill | Package for distribution, inject into CLAUDE.md |
@@ -39,7 +43,7 @@ Skill Forge (SKF) — an agent skill compiler that transforms code repositories,
 
 ### Confidence Tiers
 
-- **T1** — AST-verified structural truth (Forge/Forge+/Deep)
+- **T1** — AST-verified signatures (Forge/Forge+/Deep)
 - **T1-low** — Source reading without structural verification (Quick)
 - **T2** — QMD-enriched temporal context (Deep)
 - **T3** — External documentation, quarantined as untrusted
