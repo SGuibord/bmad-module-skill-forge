@@ -62,10 +62,10 @@ flowchart LR
 4. **Step-by-step execution** — Only the current step file is in context (just-in-time loading). Each step explicitly names the next one. The LLM reads, executes, saves output, then loads the next step. No future steps are ever preloaded.
 5. **Sub-agent delegation** — When a step needs to process large files (full `SKILL.md` documents, multiple `references/*.md` files, parallel per-library extraction), it spawns sub-agents via the Agent tool instead of loading the content into the parent context. Each sub-agent receives a file path, extracts a compact JSON summary, and returns it. Up to 8 sub-agents run concurrently. The parent collects JSON summaries without ever loading the full source — context isolation by design, preventing one step's data from bloating the window for the next. Used in TS (coverage check), RA (gap analysis), VS (integration verification), AS (structural diff), and SS (parallel extraction).
 6. **Knowledge injection** — Steps consult `skf-knowledge-index.csv` and selectively load fragments from `knowledge/` by tags and relevance. Cross-cutting principles (zero hallucination, confidence tiers, provenance) are loaded only when a step directs — not preloaded.
-6. **Reference and asset injection** — Steps read `references/*.md` and `assets/*.md` files as needed (rules, patterns, schemas, heuristics). This is deliberate context engineering: only the data relevant to the current step enters the context window.
-7. **Script execution** — Steps invoke deterministic Python scripts (`scripts/*.py`, `shared/scripts/*.py`) via `uv run` for computation that must be reproducible: scoring, structural diffing, manifest operations, frontmatter validation. The LLM prepares inputs, the script computes, the LLM uses the output. Same inputs always produce the same result.
-8. **Templates** — When a step produces output (e.g., a skill brief or test report), it reads the template file and fills in placeholders with computed results. The template provides consistent structure; the step provides the content.
-9. **Progress tracking** — Each step appends to an output file with state tracking. Resume mode reads this state and routes to the next incomplete step.
+7. **Reference and asset injection** — Steps read `references/*.md` and `assets/*.md` files as needed (rules, patterns, schemas, heuristics). This is deliberate context engineering: only the data relevant to the current step enters the context window.
+8. **Script execution** — Steps invoke deterministic Python scripts (`scripts/*.py`, `shared/scripts/*.py`) via `uv run` for computation that must be reproducible: scoring, structural diffing, manifest operations, frontmatter validation. The LLM prepares inputs, the script computes, the LLM uses the output. Same inputs always produce the same result.
+9. **Templates** — When a step produces output (e.g., a skill brief or test report), it reads the template file and fills in placeholders with computed results. The template provides consistent structure; the step provides the content.
+10. **Progress tracking** — Each step appends to an output file with state tracking. Resume mode reads this state and routes to the next incomplete step.
 
 ### Ferris Operating Modes
 
@@ -99,18 +99,7 @@ SKF takes a different approach: it mechanically extracts function signatures, ty
 
 ### How SKF Compares to Product Alternatives
 
-Techniques aside, a skeptical reader is probably already comparing SKF to one of these products:
-
-|                            | **Skill Forge**                           | MCP doc servers    | Hand-edited `.cursorrules` | awesome-\* lists |
-| -------------------------- | ----------------------------------------- | ------------------ | -------------------------- | ---------------- |
-| Reproducible from source   | AST extraction + pinned commit            | varies; opaque     | whatever you wrote         | none             |
-| Version-pinned & immutable | yes — per-version directories             | runtime-dependent  | rots silently              | no               |
-| Audit trail                | `provenance-map.json` + test + evidence   | depends on server  | none                       | none             |
-| Runtime cost               | zero (markdown + JSON)                    | a running process  | zero                       | zero             |
-| Lifecycle tooling          | rename, drop, update, export transactions | varies             | file surgery               | none             |
-| Falsifiable                | yes — three steps, 60 seconds             | rarely             | no                         | no               |
-
-The others aren't bad. They solve different problems. **SKF solves exactly one:** the claim your agent is reading about a library was true at a specific commit on a specific day, and you can prove it in under a minute. See [Verifying a Skill](../verifying-a-skill/) for the three-step audit recipe.
+See [README — How SKF Compares](../README.md#how-skf-compares) for a comparison against alternatives. The short version: SKF solves exactly one problem — the claim your agent is reading about a library was true at a specific commit on a specific day, and you can prove it in under a minute. See [Verifying a Skill](../verifying-a-skill/) for the three-step audit recipe.
 
 ---
 
@@ -253,106 +242,7 @@ Your forge tier limits what authority claims a skill can make:
 
 ## Completeness Scoring
 
-The Test Skill workflow (`@Ferris TS`) calculates a **completeness score** — a weighted measure of how thoroughly and accurately a skill documents its target. This score is the quality gate: pass and the skill is ready for export; fail and it routes to update-skill for remediation.
-
-### Categories & Weights
-
-The score is the weighted sum of five categories:
-
-| Category | Weight | What It Measures |
-|----------|--------|------------------|
-| **Export Coverage** | 36% | Percentage of source exports documented in SKILL.md |
-| **Signature Accuracy** | 22% | Documented function signatures match actual source signatures (parameter names, types, order, return types) |
-| **Type Coverage** | 14% | Types and interfaces referenced in exports are fully documented |
-| **Coherence** | 18% | Cross-references resolve, integration patterns are complete (contextual mode only) |
-| **External Validation** | 10% | Average of skill-check quality score (0-100) and tessl content score (0-100%) |
-
-### Formula
-
-```
-total_score = sum(category_weight × category_score)
-```
-
-Each category score is a percentage: `(items_passing / items_total) × 100`.
-
-**Coherence** (contextual mode) combines two sub-scores:
-
-```
-coherence = (reference_validity × 0.6) + (integration_completeness × 0.4)
-```
-
-If no integration patterns exist, coherence equals reference validity alone.
-
-**External validation** averages the two tools when both are available. When only one tool is available, that tool's score is used. When neither is available, the 10% weight is redistributed proportionally to the other active categories.
-
-### Deterministic Scoring
-
-The weight redistribution and score aggregation are computed by a deterministic Python script ([`compute-score.py`](https://github.com/armelhbobdad/bmad-module-skill-forge/blob/main/src/skf-test-skill/scripts/compute-score.py)). The LLM extracts category scores from the test report, constructs a JSON input, invokes the script, and uses its output for the final score. This ensures reproducible results — the same inputs always produce the same score. If the script is unavailable, the LLM falls back to manual calculation using the same formulas.
-
-### Naive vs Contextual Mode
-
-Test Skill runs in one of two modes, detected automatically:
-
-- **Contextual mode** (stack skills) — All five categories scored with the default weights above.
-- **Naive mode** (individual skills) — Coherence is not scored. Its 18% weight is redistributed:
-
-| Category | Naive Weight |
-|----------|-------------|
-| Export Coverage | 45% |
-| Signature Accuracy | 25% |
-| Type Coverage | 20% |
-| External Validation | 10% |
-
-### Tier Adjustments
-
-Your forge tier determines which categories can be scored:
-
-| Tier | Skipped Categories | Reason |
-|------|-------------------|--------|
-| **Quick** | Signature Accuracy, Type Coverage | No AST parsing available |
-| **Docs-only** | Signature Accuracy, Type Coverage | No source code to compare against |
-| **Provenance-map** (State 2) | Signature Accuracy, Type Coverage | String comparison only, no semantic AST verification |
-| **Forge / Forge+ / Deep** | None | Full AST-backed scoring |
-
-When categories are skipped, their combined weight (36%) is redistributed proportionally to the remaining active categories. A Quick-tier skill and a Deep-tier skill both pass at the same 80% threshold — the score reflects what your tier can actually measure.
-
-### Pass/Fail
-
-```
-threshold = custom_threshold OR 80% (default)
-
-score >= threshold  →  PASS  →  Recommend export-skill
-score <  threshold  →  FAIL  →  Recommend update-skill
-```
-
-The default is 80%. You can override it by specifying a custom threshold when invoking the workflow (e.g., "test this skill with a 70% threshold").
-
-### Gap Severities
-
-When the score is calculated, each finding is classified by severity to guide remediation:
-
-| Severity | Examples |
-|----------|----------|
-| **Critical** | Missing exported function/class documentation |
-| **High** | Signature mismatch between source and SKILL.md |
-| **Medium** | Missing type/interface documentation; scripts/assets directory inconsistencies |
-| **Low** | Missing optional metadata or examples; description optimization opportunities |
-| **Info** | Style suggestions; discovery testing recommendations |
-
-### Score Report Output
-
-The test report includes a score breakdown table showing each category's raw score, weight, and weighted contribution:
-
-| Category | Score | Weight | Weighted |
-|----------|-------|--------|----------|
-| Export Coverage | 92% | 36% | 33.1% |
-| Signature Accuracy | 85% | 22% | 18.7% |
-| Type Coverage | 100% | 14% | 14.0% |
-| Coherence | 80% | 18% | 14.4% |
-| External Validation | 78% | 10% | 7.8% |
-| **Total** | | **100%** | **88.0%** |
-
-The report also records `analysisConfidence` (full, provenance-map, metadata-only, remote-only, or docs-only) and includes a degradation notice when source access was limited.
+Skills are graded on a 0–100 completeness scale; see [verifying-a-skill.md](./verifying-a-skill.md#how-the-score-is-computed) for the formula.
 
 ---
 

@@ -91,7 +91,7 @@ class TestReplaceSection:
             fp = f.name
         r = mod.cmd_replace(fp, "New snippet content here.")
         assert r["status"] == "ok"
-        updated = Path(fp).read_text()
+        updated = Path(fp).read_text(encoding="utf-8")
         assert "New snippet content here." in updated
         assert "Old skill snippets" not in updated
         assert "Some user content here." in updated
@@ -107,7 +107,7 @@ class TestReplaceSection:
             fp = f.name
         r = mod.cmd_replace(fp, "New snippet content here.")
         assert r["status"] == "ok"
-        updated = Path(fp).read_text()
+        updated = Path(fp).read_text(encoding="utf-8")
         assert "New snippet content here." in updated
         assert "<!-- SKF:BEGIN updated:" in updated
         Path(fp).unlink()
@@ -122,7 +122,7 @@ class TestClearSection:
             fp = f.name
         r = mod.cmd_clear(fp)
         assert r["status"] == "ok"
-        cleared = Path(fp).read_text()
+        cleared = Path(fp).read_text(encoding="utf-8")
         assert "<!-- SKF:BEGIN" not in cleared
         assert "Some user content here." in cleared
         assert "More user content" in cleared
@@ -138,7 +138,7 @@ class TestInsertSection:
             fp = f.name
         r = mod.cmd_insert(fp, "Inserted skill snippets.")
         assert r["status"] == "ok"
-        inserted = Path(fp).read_text()
+        inserted = Path(fp).read_text(encoding="utf-8")
         assert "<!-- SKF:BEGIN updated:" in inserted
         assert "Inserted skill snippets." in inserted
         assert "Existing content." in inserted

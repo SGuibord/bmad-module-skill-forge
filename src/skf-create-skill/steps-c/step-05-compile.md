@@ -160,6 +160,18 @@ Each `file_entries[]` row has the same shape regardless of `file_type`: `{file_n
 
 Compilation audit trail: generation date, forge tier, source info, tool versions, extraction summary (files/exports/confidence), warnings. For validation-specific fields (Schema, Body, Security, Content Quality, tessl, Metadata), insert the placeholder text `[PENDING — populated by step-06]`. Step-06 will replace these placeholders with actual results. See `{skillSectionsData}` for full template. Use the same `{skf_version}` value resolved in section 4 when populating the Tool Versions block.
 
+**Auto-Decisions section (headless buffer flush):** read the in-context `headless_decisions[]` list (populated by step-01 tier-override handling, step-02 ecosystem gate, and any future step that auto-resolves a gate under `{headless_mode}`). Emit an `## Auto-Decisions` section with one row per entry:
+
+```
+## Auto-Decisions
+
+| Step | Gate | Decision | Rationale | Timestamp |
+|------|------|----------|-----------|-----------|
+| {step} | {gate} | {decision}{value?} | {rationale} | {timestamp} |
+```
+
+If `headless_decisions[]` is empty, emit the section header with a single line: `No auto-decisions — workflow ran interactively (or all gates had no match to auto-resolve).` This guarantees the section is always present so reviewers can tell "zero auto-decisions" apart from "section missing".
+
 ### 8. Menu Handling Logic
 
 **Auto-proceed step — no user interaction.**

@@ -57,7 +57,7 @@ Trigger workflows by typing commands to [Ferris](../agents/). See [Concepts](../
 
 **Command:** `@Ferris US`
 
-**Purpose:** Smart regeneration preserving `[MANUAL]` sections. Detects individual vs stack internally.
+**Purpose:** Regenerates the skill while preserving `[MANUAL]` sections. Detects individual vs stack internally.
 
 **When to Use:** After source code changes when an existing skill needs updating.
 
@@ -103,7 +103,7 @@ Trigger workflows by typing commands to [Ferris](../agents/). See [Concepts](../
 
 **Command:** `@Ferris AN`
 
-**Purpose:** Decomposition engine — discover what to skill, recommend stack skill.
+**Purpose:** Decomposes a repo to discover what's worth skilling, and recommends a stack skill.
 
 **When to Use:** Brownfield onboarding of large repos or multi-service projects.
 
@@ -135,7 +135,7 @@ Trigger workflows by typing commands to [Ferris](../agents/). See [Concepts](../
 
 **Command:** `@Ferris TS`
 
-**Purpose:** Cognitive completeness verification. Naive and contextual modes. Quality gate before export.
+**Purpose:** Verifies whether a skill covers its target completely and accurately. Naive and contextual modes. Quality gate before export.
 
 **When to Use:** After creating or updating a skill, before exporting.
 
@@ -167,7 +167,7 @@ Trigger workflows by typing commands to [Ferris](../agents/). See [Concepts](../
 
 **Command:** `@Ferris RA`
 
-**Purpose:** Evidence-backed architecture improvement. Takes the original architecture doc + generated skills + optional VS report, fills gaps, flags contradictions, and suggests improvements — all citing specific APIs.
+**Purpose:** Improves an architecture document using verified skill data as evidence. Takes the original architecture doc + generated skills + optional VS report, fills gaps, flags contradictions, and suggests improvements — all citing specific APIs.
 
 **When to Use:** After VS confirms feasibility, before running SS in compose-mode. Produces a refined architecture ready for stack skill composition.
 
@@ -341,7 +341,7 @@ You can also set `headless_mode: true` in your forge preferences (`_bmad/_memory
 
 ## Terminal Step: Health Check
 
-All 14 workflows above share the same final step — a **health check** defined in [`src/shared/health-check.md`](https://github.com/armelhbobdad/bmad-module-skill-forge/blob/main/src/shared/health-check.md). This isn't a workflow you invoke directly; there's no command code and no menu entry. Each workflow ends with a dedicated local `step-NN-health-check.md` whose `nextStepFile` points at the shared file, so the health check fires automatically once the main work is done. After the main work is done, Ferris silently reflects on the execution:
+All 14 workflows above share the same final step — a **health check** defined in [`src/shared/health-check.md`](https://github.com/armelhbobdad/bmad-module-skill-forge/blob/main/src/shared/health-check.md). This isn't a workflow you invoke directly; there's no command code and no menu entry. Each workflow ends with a dedicated local `step-NN-health-check.md` whose `nextStepFile` points at the shared file, so the health check fires automatically once the main work is done. After the main work is done, Ferris reflects internally on the execution:
 
 - Did any step instruction lead the agent astray or cause unnecessary back-and-forth?
 - Was any step ambiguous, forcing the agent to guess?

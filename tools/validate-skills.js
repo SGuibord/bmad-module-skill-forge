@@ -165,7 +165,10 @@ function stripQuotes(value) {
  */
 function safeReadFile(filePath, findings, relFile) {
   try {
-    return fs.readFileSync(filePath, 'utf-8');
+    // Normalize CRLF → LF so downstream parsers (frontmatter delimiter
+    // searches use the literal '\n---\n') work on Windows checkouts that
+    // haven't yet been refreshed against the LF-enforcing .gitattributes.
+    return fs.readFileSync(filePath, 'utf-8').replaceAll('\r\n', '\n');
   } catch (error) {
     findings.push({
       rule: 'READ-ERR',

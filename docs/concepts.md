@@ -5,7 +5,7 @@ description: Plain-English definitions of key Skill Forge terms — agent skills
 
 ## Agent Skills
 
-An agent skill is an instruction file that tells an AI agent how to use your code. Instead of the agent guessing your API from its training data, it reads the skill and gets real function names, real parameter types, and real usage patterns.
+An agent skill is an instruction file that tells an AI agent how to use your code. Instead of guessing your API from its training data, the agent reads the skill and gets the actual function names, parameter types, and usage patterns.
 
 Skills follow the [agentskills.io](https://agentskills.io) open standard, so they work across Claude, Cursor, Copilot, and other AI tools.
 
@@ -29,9 +29,9 @@ Provenance means every instruction in a skill traces back to where it came from.
 
 Each piece of information in a skill carries a confidence level based on where it came from:
 
-- **T1 — AST extraction:** Pulled directly from source code via AST parsing. This is structural truth — the function signature actually exists in the code right now. Cited as `[AST:file:Lnn]`.
+- **T1 — AST extraction:** Pulled directly from source code via AST parsing. The function signature exists in the code at the pinned commit. Cited as `[AST:file:Lnn]`.
 - **T1-low — Source reading:** Found by reading source files directly without AST parsing. The location is correct but the type signature may be inferred. Produced by Quick tier and by Forge/Forge+/Deep when ast-grep cannot parse a specific file. Cited as `[SRC:file:Lnn]`.
-- **T2 — Evidence (Deep tier only):** Surfaced by QMD knowledge search from issues, PRs, changelogs, or documentation within the repository. Available only when QMD is installed (Deep tier). Reliable context, but not as definitive as code. Cited as `[QMD:collection:document]`. T2 has two temporal subtypes:
+- **T2 — Evidence (Deep tier only):** Surfaced by QMD knowledge search from issues, PRs, changelogs, or documentation within the repository. Available only when QMD is installed (Deep tier). Reliable context, but less definitive than source code itself. Cited as `[QMD:collection:document]`. T2 has two temporal subtypes:
   - **T2-past** — Historical context (closed issues, merged PRs, changelogs) explaining API design decisions. Surfaces in the skill's `references/` directory.
   - **T2-future** — Forward-looking context (open PRs, deprecation warnings, RFCs) about upcoming changes. Surfaces in SKILL.md Section 4b (Migration & Deprecation Warnings) and `references/`.
 - **T3 — External:** Pulled from external documentation or websites. Treated with caution and clearly marked. Cited as `[EXT:url]`.
@@ -47,7 +47,7 @@ See the [Provenance](#provenance) examples above for real citations at each tier
 Your capability tier depends on which tools you have installed. Each tier builds on the previous one:
 
 - **Quick** — No tools required. SKF reads source files and builds best-effort skills. Works in under a minute. GitHub CLI used when available.
-- **Forge** — Adds [ast-grep](https://ast-grep.github.io). SKF uses AST parsing for structural truth. Instructions are verified against the actual code structure.
+- **Forge** — Adds [ast-grep](https://ast-grep.github.io). SKF uses AST parsing to verify instructions against the actual code structure.
 - **Forge+** — Adds [cocoindex-code](https://github.com/cocoindex-io/cocoindex-code). SKF uses semantic code search to discover relevant source regions before AST extraction, improving coverage on large codebases.
 - **Deep** — Full pipeline: requires [ast-grep](https://ast-grep.github.io) + [GitHub CLI](https://cli.github.com) + [QMD](https://github.com/tobi/qmd) (all three). SKF indexes knowledge for semantic search and performs GitHub repository exploration. Skills get enriched with historical context, deprecation warnings, and cross-reference intelligence. CCC (cocoindex-code) enhances Deep tier when installed — ast-grep + gh + qmd + ccc gives maximum capability.
 
@@ -57,7 +57,7 @@ You don't need all tools to start. SKF detects what you have and sets your tier 
 
 ## Drift
 
-Drift happens when the source code changes but the skill instructions haven't been updated to match. A skill might still reference a function that was renamed, removed, or had its signature changed.
+Drift happens when the source code changes but the skill instructions haven't been updated to match. A skill might still reference a function that was renamed, removed, or had its signature changed upstream.
 
 SKF detects drift by comparing the skill's recorded provenance against the current code. The `audit-skill` workflow (`@Ferris AS`) scans for these mismatches — for both individual skills and stack skills. Stack skills track per-library provenance and, in compose-mode, constituent freshness via metadata hash comparison.
 
@@ -117,11 +117,11 @@ Ferris switches between five modes depending on which workflow is active: Archit
 
 ---
 
-## Zero Hallucination
+## Every Claim Cites a Source
 
-SKF's core principle: if an instruction can't be traced back to actual source code, it doesn't get included in the skill. This is the opposite of how most AI tools work — they generate plausible-sounding content from training data. SKF only includes what it can verify.
+SKF's core principle: if an instruction can't be traced back to an upstream file and line, it doesn't get included in the skill. This is the opposite of how most AI tools work — they generate plausible-sounding content from training data. SKF only includes what it can cite.
 
-This doesn't mean skills are perfect. Quick-tier skills read source files without AST verification, so they rely on best-effort extraction. But even Quick skills cite their sources, and no tier includes invented information.
+This doesn't mean skills are perfect. Quick-tier skills read source files without AST verification, so they rely on best-effort extraction. But even Quick skills cite their sources, and no content ships without a citation.
 
 ---
 
@@ -167,6 +167,6 @@ SKF integrates skill authoring best practices from the Claude platform and commu
 
 - **One workflow per session** — clear context between workflows to prevent stale state from affecting results
 - **Multiple skills per target** — compile different skills from the same repo or docs for different use cases and audiences
-- **Progressive capability** — start with Quick mode, upgrade tiers as you install more tools
+- **Progressive capability** — start with the Quick tier, upgrade tiers as you install more tools
 
 > **Tip from Armel:** When forging skills with Claude Code, I run `claude --dangerously-skip-permissions` to bypass all permission prompts. SKF workflows only read source code, write to `skills/` and `forge-data/`, and call local tools (ast-grep, qmd, gh) — every step is auditable in the [open source](https://github.com/armelhbobdad/bmad-module-skill-forge). Skipping permissions drastically reduces forge time: I start a pipeline, go [grab one of those coffees ☕ you keep offering](https://buymeacoffee.com/armelhbobdad), and come back to a completed workflow. Review the output at the end, not at every gate.
