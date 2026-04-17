@@ -30,7 +30,7 @@ Resolve `{version}` from the extraction inventory's detected version, defaulting
 
 If `{skill_package}` already exists, confirm with user before overwriting:
 
-"**Directory `{skill_package}` already exists.** Overwrite existing files? [Y/N]"
+"**Directory `{skill_package}` already exists.** Overwrite will replace the prior compiled output; validation results, result contracts, and any manual tweaks from the previous run will not be preserved. Overwrite existing files? [Y/N]"
 
 - **If user selects Y:** Proceed to section 2.
 - **If user selects N:** Halt with: "Overwrite cancelled. Existing skill preserved. Run [QS] with a different skill name or remove the existing directory manually."

@@ -20,6 +20,8 @@ To finalize the skill by creating the active-version pointer, displaying the com
 
 ### 1. Create Active Pointer (atomic flip, Windows-safe)
 
+`{skill_group}` and `{skill_package}` were computed in step-05 §1 from `{skills_output_folder}`, `{repo_name}`, and `{version}`; `{version}` was resolved from the extraction inventory. Reuse the same values here — do not recompute.
+
 Create or update the `active` pointer at `{skill_group}/active` pointing to `{version}` using the shared atomic-flip helper. The helper acquires an `flock` on `{skill_group}/active.skf-lock`, refuses to replace a non-link at `{skill_group}/active` (protecting against accidental `rm -rf` of a real directory), and uses a rename-over-symlink pattern so the update is atomic from a concurrent reader's perspective. On Windows the helper automatically falls back to a directory junction (`mklink /J`) when `os.symlink` fails with `PRIVILEGE_NOT_HELD` / `ACCESS_DENIED` — junctions require no admin elevation and resolve identically for `skf-skill-inventory`'s consumers:
 
 ```bash
