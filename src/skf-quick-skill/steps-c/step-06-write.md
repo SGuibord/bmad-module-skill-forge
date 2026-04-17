@@ -64,17 +64,21 @@ Write the metadata JSON to:
 
 Confirm: "Written: metadata.json"
 
-### 4b. Create Active Symlink
+### 4b. Create Active Pointer (atomic flip, Windows-safe)
 
-Create or update the `active` symlink at `{skill_group}/active` pointing to `{version}`:
+Create or update the `active` pointer at `{skill_group}/active` pointing to `{version}` using the shared atomic-flip helper. The helper acquires an `flock` on `{skill_group}/active.skf-lock`, refuses to replace a non-link at `{skill_group}/active` (protecting against accidental `rm -rf` of a real directory), and uses a rename-over-symlink pattern so the update is atomic from a concurrent reader's perspective. On Windows the helper automatically falls back to a directory junction (`mklink /J`) when `os.symlink` fails with `PRIVILEGE_NOT_HELD` / `ACCESS_DENIED` — junctions require no admin elevation and resolve identically for `skf-skill-inventory`'s consumers:
 
+```bash
+python3 {project-root}/src/shared/scripts/skf-atomic-write.py flip-link \
+  --link {skill_group}/active \
+  --target {version}
 ```
-{skill_group}/active -> {version}
-```
 
-If the symlink already exists, remove it first and recreate.
+The helper returns non-zero (exit 2) if `{skill_group}/active` already exists as a real directory or file rather than a link — in that case, halt with: "Refusing to flip `{skill_group}/active` — existing path is not a symlink or junction. Investigate manually; expected a link pointing at a version directory." A common cause on Windows is a prior run that executed `ln -s` under git-bash without Developer Mode enabled, which silently wrote a full directory copy; remove that copy and retry.
 
-Confirm: "Symlink: {skill_group}/active -> {version}"
+**Never `rm` + `ln -s` the active pointer manually.** The bare-rm pattern has two failure modes: (1) a concurrent reader sees a missing `active` mid-flip, and (2) a bug or typo that replaces `{skill_group}/active` with a plain directory turns the next manual `rm -rf {skill_group}/active` into data loss. The helper encapsulates both guards and the Windows junction fallback.
+
+Confirm: "Active pointer: {skill_group}/active -> {version} ({kind})" where `{kind}` is `symlink` or `junction` as returned by the helper.
 
 ### 5. Handle Write Failures
 
