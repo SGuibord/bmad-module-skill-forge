@@ -109,7 +109,7 @@ SKF extracts real function signatures, types, and patterns from code, docs, and 
 2. **Lifecycle tooling** — rename skills and drop deprecated versions without manual file surgery. Destructive operations are transactional.
 3. **Follows an open standard** — skills comply with the [agentskills.io](https://agentskills.io) spec and work across Claude, Cursor, Copilot, and other AI agents
 
-> **Every skill ships two files — `SKILL.md` (the full instruction set, loaded on trigger) and `context-snippet.md` (an 80–120 token always-on index injected into `CLAUDE.md` / `AGENTS.md` / `.cursorrules`). Why both?** Per Vercel's agent evals, passive context achieves a **100% pass rate vs. 79% for active skills loaded alone** (see [How It Works → Dual-Output Strategy](https://armelhbobdad.github.io/bmad-module-skill-forge/how-it-works/#dual-output-strategy)).
+> **Every skill ships two files — `SKILL.md` (the full instruction set, loaded on trigger) and `context-snippet.md` (an 80–120 token always-on index injected into `CLAUDE.md` / `AGENTS.md` / `.cursorrules`). Why both?** Per Vercel's agent evals, passive context achieves a **100% pass rate vs. 79% for active skills loaded alone** (see [Skill Model → Dual-Output Strategy](https://armelhbobdad.github.io/bmad-module-skill-forge/skill-model/#dual-output-strategy)).
 
 ## Verifying a Skill
 
@@ -129,13 +129,28 @@ Workflows end with a health check that can file bug or friction reports as GitHu
 
 ## Learn More
 
-- **[Getting Started](https://armelhbobdad.github.io/bmad-module-skill-forge/getting-started/)** — Installation, prerequisites, and your first skill
-- **[Concepts](https://armelhbobdad.github.io/bmad-module-skill-forge/concepts/)** — Plain-English definitions of all key terms
-- **[How It Works](https://armelhbobdad.github.io/bmad-module-skill-forge/how-it-works/)** — Architecture, capability tiers, output format, and design decisions
-- **[Workflows](https://armelhbobdad.github.io/bmad-module-skill-forge/workflows/)** — All available workflows with commands and connection diagrams
-- **[Agents](https://armelhbobdad.github.io/bmad-module-skill-forge/agents/)** — Ferris: the AI agent that runs all SKF workflows
-- **[Examples](https://armelhbobdad.github.io/bmad-module-skill-forge/examples/)** — Real-world scenarios, tips, and troubleshooting
-- **[BMAD Synergy](https://armelhbobdad.github.io/bmad-module-skill-forge/bmad-synergy/)** — How SKF workflows pair with BMAD CORE phases and optional modules
+The docs are organized into three buckets — **Why** (start here), **Try** (do stuff), and **Reference** (look things up):
+
+**Why**
+
+- **[Why Skill Forge?](https://armelhbobdad.github.io/bmad-module-skill-forge/why-skf/)** — The JTBD pitch, persona router, and the honest anti-pitch
+- **[Verifying a Skill](https://armelhbobdad.github.io/bmad-module-skill-forge/verifying-a-skill/)** — The 60-second audit recipe and scoring formula
+
+**Try**
+
+- **[Getting Started](https://armelhbobdad.github.io/bmad-module-skill-forge/getting-started/)** — Install, first skill, prereqs, and config
+- **[How It Works](https://armelhbobdad.github.io/bmad-module-skill-forge/how-it-works/)** — Plain-English walkthrough of one skill being built, end to end
+- **[Examples](https://armelhbobdad.github.io/bmad-module-skill-forge/examples/)** — Real-world scenarios with full command transcripts
+- **[Workflows](https://armelhbobdad.github.io/bmad-module-skill-forge/workflows/)** — All 14 workflows with commands and connection diagrams
+
+**Reference**
+
+- **[Concepts](https://armelhbobdad.github.io/bmad-module-skill-forge/concepts/)** — Seven load-bearing terms: provenance, confidence tiers, drift, and more
+- **[Architecture](https://armelhbobdad.github.io/bmad-module-skill-forge/architecture/)** — Runtime flow, 7 tools, workspace artifacts, security, and the design decisions behind them
+- **[Skill Model](https://armelhbobdad.github.io/bmad-module-skill-forge/skill-model/)** — Capability tiers, confidence tiers, output format, dual-output strategy, ownership model
+- **[Agents](https://armelhbobdad.github.io/bmad-module-skill-forge/agents/)** — Ferris: the single AI agent that runs every SKF workflow
+- **[BMAD Synergy](https://armelhbobdad.github.io/bmad-module-skill-forge/bmad-synergy/)** — How SKF pairs with BMAD CORE phases and optional modules (TEA, BMB, GDS, CIS)
+- **[Troubleshooting](https://armelhbobdad.github.io/bmad-module-skill-forge/troubleshooting/)** — Common errors (forge setup, ecosystem checks, tier confidence) and how to resolve them
 
 ## Acknowledgements
 
