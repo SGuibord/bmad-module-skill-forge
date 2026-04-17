@@ -1,25 +1,33 @@
 ---
 title: Getting Started
-description: Installation, prerequisites, first steps, and common use cases for Skill Forge
+description: Install Skill Forge and generate your first verified skill in under a minute.
 ---
 
-## What This Module Does
+## In 60 seconds
 
-Skill Forge analyzes code repositories, documentation websites, and developer discourse to build verified instruction files ("skills") for AI agents. Instead of your agent guessing API calls from training data, it follows instructions where every function, type, and pattern traces back to its source — a file and line for code, a URL for documentation, an issue or PR for discourse. Skills comply with the [agentskills.io](https://agentskills.io) open standard and work across Claude, Cursor, Copilot, and other AI tools. See the [Concepts](../concepts/) page for definitions of key terms.
+One command. One verified skill. Here's a real snippet from a cognee skill SKF compiled:
+
+```python
+await cognee.search(  # [AST:cognee/api/v1/search/search.py:L26]
+    query_text="What does Cognee do?"
+)
+```
+
+Every instruction carries a receipt — a file, a line, and a commit SHA from the upstream repo. Your AI reads these instead of guessing from training data, and you can open the source at the pinned commit to confirm the function exists. Nothing is made up; everything is falsifiable.
+
+Want to see the full audit on a real shipped skill before you install anything? → [Verifying a Skill](../verifying-a-skill/).
 
 ---
 
-## Installation
+## Install
 
-There are three ways to install SKF, depending on your setup.
-
-### Standalone (recommended for trying SKF)
+One command, on any platform. Requires Node.js ≥ 22, Python ≥ 3.10, and `uv` ([full tool matrix below](#prerequisites-full-reference)).
 
 ```bash
 npx bmad-module-skill-forge install
 ```
 
-Installs SKF on its own. You'll be prompted for project name, output folders, and which IDEs to configure. The installer copies skill directories to each IDE's skills folder (e.g. `.claude/skills/`, `.cursor/skills/`) so skills are available natively.
+You'll be prompted for project name, output folders, and which IDEs to configure. The installer copies skill directories to each IDE's skills folder (e.g. `.claude/skills/`, `.cursor/skills/`) so skills are available natively.
 
 ### As a custom module during BMAD Method installation
 
@@ -69,49 +77,9 @@ The installer reads the installed version from your manifest and shows the delta
 
 ---
 
-## Prerequisites
+## Your first skill
 
-| Tool                                                                   | Required For                                                                          | Install                                                   |
-|------------------------------------------------------------------------|---------------------------------------------------------------------------------------|-----------------------------------------------------------|
-| `Node.js` >= 22                                                        | Installation, npx commands                                                            | <https://nodejs.org>                                      |
-| `Python` >= 3.10                                                       | Deterministic scoring, validation, and utility scripts                                | <https://www.python.org>                                  |
-| `uv` (Python package runner)                                           | Running Python scripts with automatic dependency management                           | <https://docs.astral.sh/uv/getting-started/installation/> |
-| `gh` (GitHub CLI)                                                      | Required for Deep mode. Optional convenience in Quick/Forge/Forge+ for source access. | <https://cli.github.com>                                  |
-| `ast-grep`  (CLI tool for code structural search, lint, and rewriting) | Forge + Deep modes                                                                    | <https://ast-grep.github.io>                              |
-| `ast-grep` MCP server (recommended alongside CLI)                      | Forge + Deep modes                                                                    | <https://github.com/ast-grep/ast-grep-mcp>                |
-| `ccc` (cocoindex-code semantic code search)                            | Forge+ mode                                                                           | <https://github.com/cocoindex-io/cocoindex-code>          |
-| `qmd` (local hybrid search engine for project files)                   | Deep mode                                                                             | <https://github.com/tobi/qmd>                             |
-| `SNYK_TOKEN` (Snyk API token — **Enterprise plan required**)           | Optional security scan                                                                | <https://docs.snyk.io/snyk-api/authentication-for-api>    |
-
-Node.js, Python, and uv are required for all tiers. Don't worry about the rest — SKF detects what's available and sets your tier automatically. Security scanning via Snyk is optional and requires an Enterprise plan; it does not affect your tier level.
-
-### Platform support
-
-**Linux and Windows** are exercised in CI on every PR (`ubuntu-latest` + `windows-latest` matrix on `validate` and `python` jobs). **macOS** works in practice — POSIX-equivalent to Linux — but isn't CI-gated; if you hit a macOS-specific bug, please [file an issue](https://github.com/armelhbobdad/bmad-module-skill-forge/issues).
-
-On Windows, SKF transparently falls back to NTFS junctions when symlink privilege isn't held, so no Developer Mode or admin rights are required. Git Bash (bundled with [Git for Windows](https://git-scm.com/download/win)), PowerShell, and WSL2 all work.
-
----
-
-## Configuration
-
-SKF has two install-time variables (defined in `src/module.yaml`), one Core Config variable inherited from BMAD, and one runtime preference:
-
-| Variable               | Purpose                                                                                                  | Default                     |
-|------------------------|----------------------------------------------------------------------------------------------------------|-----------------------------|
-| `skills_output_folder` | Where generated skills are saved                                                                         | `{project-root}/skills`     |
-| `forge_data_folder`    | Where workspace artifacts are stored (VS reports, evidence)                                              | `{project-root}/forge-data` |
-| `output_folder`        | Where refined architecture documents are saved (used by RA workflow). *Inherited from BMAD Core Config.* | Defined by BMAD Core Config |
-| `tier_override`        | Force a specific tier for comparison or testing (in `_bmad/_memory/forger-sidecar/preferences.yaml`)     | `~` (auto-detect)           |
-| `headless_mode`        | Skip confirmation gates in all workflows (in `_bmad/_memory/forger-sidecar/preferences.yaml`)            | `false`                     |
-
-Runtime configuration (tool detection, tier, and collection state) is managed by the `setup` workflow and persisted in `forge-tier.yaml`.
-
----
-
-## First Steps
-
-### 1. Setup Your Forge
+### 1. Setup your forge
 
 ```
 @Ferris SF
@@ -119,7 +87,7 @@ Runtime configuration (tool detection, tier, and collection state) is managed by
 
 This detects your tools, sets your capability tier, and initializes the forge environment. You only need to do this once per project.
 
-### 2. Generate Your First Skill
+### 2. Generate your first skill
 
 **Fastest path (Quick Skill):**
 ```
@@ -151,9 +119,9 @@ Or one workflow per session:
 @Ferris EX    # Export — package for distribution
 ```
 
-> Pipeline mode chains all workflows automatically with headless mode. For manual control, start a fresh conversation before each workflow — SKF workflows load significant context. See [Session Context](../concepts/#session-context).
+> **One workflow per session.** Each SKF workflow loads step files, knowledge fragments, and extraction data into the LLM's context as it executes. Running a second workflow in the same session can cause leftover context to interfere — stale references, mode confusion, or degraded output. Clear your session (start a new conversation) before invoking a new workflow. Pipeline mode chains workflows automatically with headless mode; for manual control, start fresh between each one. Sidecar state (forge tier, preferences) persists across sessions, so no configuration is lost.
 
-### 3. Stack Skill (for full projects)
+### 3. Stack skill (for full projects)
 
 ```
 @Ferris SS
@@ -165,21 +133,63 @@ Analyzes your project's dependencies and generates a consolidated stack skill wi
 
 ---
 
-## Common Use Cases
+## Common use cases
 
 > **Looking for end-to-end examples?** See [Examples](../examples/) for eleven real-world scenarios with full command transcripts — from Quick Skill under a minute, to brownfield onboarding, stack verification, release-prep drift remediation, and SaaS docs-only skills.
 
 ---
 
-## What's Next?
+## Prerequisites (full reference)
 
-- Check out the [Agents Reference](../agents/) to learn about Ferris
-- Browse the [Workflows Reference](../workflows/) to see all available commands
-- See [Examples](../examples/) for real-world usage scenarios
+Most users only need Node.js, Python, and `uv` — the rest unlock additional capabilities but SKF detects what's available and sets your tier automatically. You can install them later; your tier upgrades when you do.
+
+| Tool                                                                   | Required For                                                                          | Install                                                   |
+|------------------------------------------------------------------------|---------------------------------------------------------------------------------------|-----------------------------------------------------------|
+| `Node.js` >= 22                                                        | Installation, npx commands                                                            | <https://nodejs.org>                                      |
+| `Python` >= 3.10                                                       | Deterministic scoring, validation, and utility scripts                                | <https://www.python.org>                                  |
+| `uv` (Python package runner)                                           | Running Python scripts with automatic dependency management                           | <https://docs.astral.sh/uv/getting-started/installation/> |
+| `gh` (GitHub CLI)                                                      | Required for Deep mode. Optional convenience in Quick/Forge/Forge+ for source access. | <https://cli.github.com>                                  |
+| `ast-grep`  (CLI tool for code structural search, lint, and rewriting) | Forge + Deep modes                                                                    | <https://ast-grep.github.io>                              |
+| `ast-grep` MCP server (recommended alongside CLI)                      | Forge + Deep modes                                                                    | <https://github.com/ast-grep/ast-grep-mcp>                |
+| `ccc` (cocoindex-code semantic code search)                            | Forge+ mode                                                                           | <https://github.com/cocoindex-io/cocoindex-code>          |
+| `qmd` (local hybrid search engine for project files)                   | Deep mode                                                                             | <https://github.com/tobi/qmd>                             |
+| `SNYK_TOKEN` (Snyk API token — **Enterprise plan required**)           | Optional security scan                                                                | <https://docs.snyk.io/snyk-api/authentication-for-api>    |
+
+Security scanning via Snyk is optional and requires an Enterprise plan; it does not affect your tier level.
+
+### Platform support
+
+**Linux and Windows** are exercised in CI on every PR (`ubuntu-latest` + `windows-latest` matrix on `validate` and `python` jobs). **macOS** works in practice — POSIX-equivalent to Linux — but isn't CI-gated; if you hit a macOS-specific bug, please [file an issue](https://github.com/armelhbobdad/bmad-module-skill-forge/issues).
+
+On Windows, SKF transparently falls back to NTFS junctions when symlink privilege isn't held, so no Developer Mode or admin rights are required. Git Bash (bundled with [Git for Windows](https://git-scm.com/download/win)), PowerShell, and WSL2 all work.
 
 ---
 
-## Need Help?
+## Configuration
+
+SKF has two install-time variables (defined in `src/module.yaml`), one Core Config variable inherited from BMAD, and one runtime preference:
+
+| Variable               | Purpose                                                                                                  | Default                     |
+|------------------------|----------------------------------------------------------------------------------------------------------|-----------------------------|
+| `skills_output_folder` | Where generated skills are saved                                                                         | `{project-root}/skills`     |
+| `forge_data_folder`    | Where workspace artifacts are stored (VS reports, evidence)                                              | `{project-root}/forge-data` |
+| `output_folder`        | Where refined architecture documents are saved (used by RA workflow). *Inherited from BMAD Core Config.* | Defined by BMAD Core Config |
+| `tier_override`        | Force a specific tier for comparison or testing (in `_bmad/_memory/forger-sidecar/preferences.yaml`)     | `~` (auto-detect)           |
+| `headless_mode`        | Skip confirmation gates in all workflows (in `_bmad/_memory/forger-sidecar/preferences.yaml`)            | `false`                     |
+
+Runtime configuration (tool detection, tier, and collection state) is managed by the `setup` workflow and persisted in `forge-tier.yaml`.
+
+---
+
+## What's next?
+
+- [Agents](../agents/) — learn about Ferris
+- [Workflows](../workflows/) — the full command reference
+- [Examples](../examples/) — real-world scenarios with transcripts
+
+---
+
+## Need help?
 
 If you run into issues:
 1. Run `/bmad-help` — analyzes your current state and suggests what to do next
