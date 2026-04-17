@@ -65,6 +65,126 @@
 }
 
 /* ============================================
+   HERO (splash template) — wedge-forward
+   ============================================ */
+.hero .tagline {
+  font-size: clamp(1.25rem, 2.4vw, 1.875rem);
+  line-height: 1.35;
+  max-width: 52ch;
+  font-weight: 500;
+  color: var(--sl-color-gray-1);
+  text-wrap: balance;
+}
+
+:root[data-theme='dark'] .hero .tagline {
+  color: var(--sl-color-gray-2);
+}
+
+/* ============================================
+   RECEIPT CHIP — "what a citation looks like"
+   ============================================ */
+.receipt-sample {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+  margin: 1.5rem 0 1.75rem;
+  padding: 0.875rem 1.125rem;
+  border: 1px solid var(--sl-color-hairline);
+  border-left: 3px solid var(--sl-color-accent);
+  border-radius: 8px;
+  background-color: rgba(245, 158, 11, 0.04);
+}
+
+.receipt-sample__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+}
+
+.receipt-sample__chip {
+  font-family: ui-monospace, 'SFMono-Regular', 'Cascadia Code', 'Roboto Mono', Menlo, Consolas, monospace;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background-color: var(--sl-color-bg-inline-code);
+  color: var(--sl-color-accent-high);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.receipt-sample__check {
+  color: #10b981;
+  font-weight: 700;
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+:root[data-theme='dark'] .receipt-sample__check {
+  color: #34d399;
+}
+
+/* ============================================
+   CTA PILL — prominent inline call-to-action
+   ============================================ */
+.cta-pill {
+  margin: 1.75rem 0;
+}
+
+.cta-pill a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.375rem;
+  border-radius: 999px;
+  background-color: var(--sl-color-accent);
+  color: #1b1b1d !important;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  text-decoration: none !important;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+  box-shadow: 0 1px 2px rgba(217, 119, 6, 0.25);
+}
+
+.cta-pill a:hover {
+  transform: translateY(-1px);
+  background-color: var(--sl-color-accent-high);
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+}
+
+:root[data-theme='dark'] .cta-pill a {
+  color: #1b1b1d !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+:root[data-theme='dark'] .cta-pill a:hover {
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
+}
+
+/* ============================================
+   COMPARISON TABLE — highlight SKF (last) row
+   (scoped to .comparison-table wrapper to avoid
+   affecting other tables across the site)
+   ============================================ */
+.comparison-table table tbody tr:last-child {
+  background-color: rgba(245, 158, 11, 0.08);
+  position: relative;
+}
+
+.comparison-table table tbody tr:last-child td {
+  border-top: 2px solid var(--sl-color-accent);
+}
+
+:root[data-theme='dark'] .comparison-table table tbody tr:last-child {
+  background-color: rgba(245, 158, 11, 0.1);
+}
+
+/* ============================================
    TYPOGRAPHY
    ============================================ */
 .sl-markdown-content h1 {
@@ -98,12 +218,28 @@
   border-radius: 4px;
 }
 
-/* Top-level sidebar items */
-.sidebar-content > ul > li > details > summary,
-.sidebar-content > ul > li > a {
-  font-weight: 700;
-  font-size: 0.9375rem;
+/* Group headers (Why / Try / Reference) — classic docs-site treatment */
+.sidebar-content summary {
   padding: 0.5rem 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.sidebar-content ul li:first-child > details > summary {
+  margin-top: 0.25rem;
+}
+
+.sidebar-content summary .group-label,
+.sidebar-content summary .large {
+  font-weight: 700;
+  font-size: 0.6875rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--sl-color-gray-3);
+}
+
+:root[data-theme='dark'] .sidebar-content summary .group-label,
+:root[data-theme='dark'] .sidebar-content summary .large {
+  color: var(--sl-color-gray-4);
 }
 
 /* Active state - thin left accent bar */
