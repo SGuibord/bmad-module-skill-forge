@@ -29,18 +29,18 @@ const shouldRenderSearch =
 <div class="header sl-flex">
 	<div class="title-wrapper sl-flex">
 		<SiteTitle {...Astro.props} />
-	</div>
-	<div class="sl-flex print:hidden">
-		{shouldRenderSearch && <Search {...Astro.props} />}
-	</div>
-	<div class="sl-hidden md:sl-flex print:hidden right-group">
 		<a
-			class="version-badge"
+			class="version-ref"
 			href={`https://www.npmjs.com/package/bmad-module-skill-forge/v/${version}`}
 			target="_blank"
 			rel="noopener"
 			aria-label={`Skill Forge ${version} on npm`}
 		>v{version}</a>
+	</div>
+	<div class="sl-flex print:hidden">
+		{shouldRenderSearch && <Search {...Astro.props} />}
+	</div>
+	<div class="sl-hidden md:sl-flex print:hidden right-group">
 		<div class="sl-flex social-icons">
 			<SocialIcons {...Astro.props} />
 		</div>
@@ -66,28 +66,33 @@ const shouldRenderSearch =
 		min-width: 0;
 	}
 
-	.version-badge {
-		display: inline-flex;
-		align-items: center;
-		padding: 0.15rem 0.5rem;
-		border-radius: 999px;
+	.version-ref {
+		display: none;
+		align-self: flex-end;
+		margin-inline-start: 0.5rem;
+		padding-bottom: 0.4rem;
+		font-family: ui-monospace, 'SFMono-Regular', 'Cascadia Code', 'Roboto Mono', Menlo, Consolas, monospace;
 		font-size: var(--sl-text-xs);
 		font-weight: 500;
 		line-height: 1;
 		white-space: nowrap;
-		color: var(--sl-color-text);
-		background: var(--sl-color-gray-6);
-		border: 1px solid var(--sl-color-gray-5);
+		color: var(--sl-color-gray-3);
 		text-decoration: none;
-		transition:
-			background-color 0.15s ease,
-			border-color 0.15s ease;
+		transition: color 0.15s ease;
 	}
 
-	.version-badge:hover,
-	.version-badge:focus-visible {
-		background: var(--sl-color-gray-5);
-		border-color: var(--sl-color-gray-4);
+	@media (min-width: 50rem) {
+		.version-ref {
+			display: inline-block;
+		}
+	}
+
+	.version-ref:hover,
+	.version-ref:focus-visible {
+		color: var(--sl-color-text);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		text-decoration-thickness: 1px;
 	}
 
 	.right-group,
