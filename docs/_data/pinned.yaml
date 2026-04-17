@@ -36,12 +36,12 @@ oh_my_skills_path: "../oh-my-skills"
 skills:
   oms-cognee:
     library: cognee
-    version: "0.5.8"
+    version: "1.0.0"
     source_repo: "https://github.com/topoteretes/cognee"
-    source_commit: "b51dcce1d273d47ce864cd6c5e44a7a82f7f8dce"
-    source_ref: "v0.5.8"
-    upstream_commit_date: "2026-04-08"
-    test_score: 99.45
+    source_commit: "3c048aa4147776f14d4546704f986242554a9ef3"
+    source_ref: "v1.0.0"
+    upstream_commit_date: "2026-04-11"
+    test_score: 99.00
     test_mode: "naive"
     confidence_tier: "Deep"
     source_authority: "community"

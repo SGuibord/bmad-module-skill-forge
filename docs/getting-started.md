@@ -124,7 +124,7 @@ Ferris reads the repository, extracts the public API, and generates a skill in u
 
 **Targeting a specific version:** Append `@version` to pin the skill to a library version:
 ```
-@Ferris QS cognee@0.5.8
+@Ferris QS cognee@1.0.0
 ```
 
 **Full quality path (pipeline mode):**
@@ -161,104 +161,7 @@ Analyzes your project's dependencies and generates a consolidated stack skill wi
 
 ## Common Use Cases
 
-### My agent keeps hallucinating API calls
-
-Your agent invents function signatures that don't exist. Generate a verified skill so it works from structural truth instead of guessing.
-
-```
-@Ferris QS https://github.com/org/library
-```
-
-The skill pins every function to its actual source location. Hallucinations stop.
-
-### I'm adopting a new library and need my agent to use it correctly
-
-You added a dependency but your agent doesn't know its API yet. Quick Skill resolves package names across npm, PyPI, and crates.io.
-
-```
-@Ferris QS cognee
-```
-
-Ferris resolves the package to its GitHub repo, extracts the public API, and generates a skill your agent can reference immediately.
-
-### I want my agent to understand my entire project stack
-
-Individual skills cover single libraries. Stack Skill maps how your dependencies interact — shared types, co-import patterns, integration points.
-
-```
-@Ferris SS
-```
-
-Ferris detects your manifests, ranks dependencies by significance, and generates a consolidated skill with cross-library integration patterns.
-
-> **Want to try this quickly?** Scaffold a full-stack project in seconds with [better-fullstack.dev](https://better-fullstack.dev/new?view=command&file=) or [better-t-stack.dev](https://www.better-t-stack.dev/new), then run `@Ferris SS` on the generated project to see Stack Skill in action.
-
-### I'm onboarding a large existing codebase
-
-A brownfield repo with dozens of modules. You need to know what's worth skilling before you start.
-
-```
-@Ferris AN
-```
-
-Analyze Source scans the project, identifies skillable units, maps exports, and generates recommended briefs you can batch-create with `@Ferris CS --batch`.
-
-### I want the highest accuracy possible
-
-Each tier builds on the previous one. Quick mode reads source files directly. Forge adds `ast-grep` for AST-verified structural truth. Forge+ adds `ccc` (cocoindex-code) to semantically rank source regions before AST extraction — on large codebases, this ensures the most relevant exports are discovered first. Deep adds `gh` + `qmd` for GitHub exploration and QMD knowledge search with historical context enrichment.
-
-```
-@Ferris SF    # Setup detects your tools and sets tier automatically
-```
-
-Ferris detects your tools and sets the highest tier where all required tools pass verification. With `ast-grep` + `gh` + `qmd`, you get Deep mode — every skill gets AST-verified signatures (T1) enriched with temporal context from issues, PRs, and changelogs (T2). Add `ccc` alongside those three for maximum capability: semantic discovery plus full knowledge search.
-
-### I maintain an OSS library and want official skills
-
-You want maximum quality with full provenance for distribution. Use the full pipeline with Deep mode for the richest output.
-
-```
-@Ferris BS    # Scope and design the skill
-@Ferris CS    # Compile — AST extraction + QMD enrichment (Deep)
-@Ferris TS    # Verify completeness before publishing
-@Ferris EX    # Package for distribution
-```
-
-Export with `source_authority: official`. Consumers get verified skills that update with each release.
-
-### I'm planning a new project and want to verify my tech stack works together
-
-You have an architecture document and want to verify feasibility before writing code. Generate skills for each library, run Verify Stack to check compatibility, refine the architecture with skill evidence, then compose a stack skill.
-
-```
-@Ferris CS    # or QS — generate a skill per library
-@Ferris VS    # Verify Stack — feasibility check against architecture
-@Ferris RA    # Refine Architecture — fill gaps with API evidence
-@Ferris SS    # Stack Skill — compose-mode activates automatically
-```
-
-VS produces a feasibility report (FEASIBLE / CONDITIONALLY FEASIBLE / NOT FEASIBLE). RA enriches your architecture doc with verified API details. SS compose-mode synthesizes a stack skill from existing skills + architecture — no codebase needed.
-
-### A dependency shipped breaking changes
-
-Your existing skill is now out of date. Audit detects the drift, Update regenerates while preserving your manual additions.
-
-```
-@Ferris AS    # Find what changed
-@Ferris US    # Regenerate — [MANUAL] sections survive
-@Ferris TS    # Verify the update
-```
-
-### I want scripts and assets included in my skills
-
-Your source repo has CLI tools, setup scripts, or config templates that agents should use. SKF detects and packages them automatically.
-
-```
-@Ferris BS    # Brief — scripts/assets auto-detected by default
-@Ferris CS    # Create — scripts/ and assets/ auto-detected
-```
-
-Scripts from `scripts/`, `bin/`, `tools/`, and `cli/` directories are copied with provenance. Config templates and schemas from `assets/`, `templates/`, `schemas/`, `configs/`, and `examples/` are included. Custom files you add to `scripts/[MANUAL]/` survive updates.
+> **Looking for end-to-end examples?** See [Examples](../examples/) for eleven real-world scenarios with full command transcripts — from Quick Skill under a minute, to brownfield onboarding, stack verification, release-prep drift remediation, and SaaS docs-only skills.
 
 ---
 

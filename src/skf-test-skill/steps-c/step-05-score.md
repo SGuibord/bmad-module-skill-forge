@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-06-report.md'
-outputFile: '{forge_version}/test-report-{skill_name}.md'
+outputFile: '{forge_version}/test-report-{skill_name}-{run_id}.md'
 scoringRulesFile: 'references/scoring-rules.md'
 sourceAccessProtocol: 'references/source-access-protocol.md'
 scoringScript: 'scripts/compute-score.py'
@@ -53,6 +53,16 @@ Read `{outputFile}` and extract the category scores calculated in previous steps
 
 **Read testMode from {outputFile} frontmatter.**
 
+#### 2b. Apply S9 State 2 Undercount Deduction (pre-script)
+
+If `analysis_confidence == 'provenance-map'` (State 2) AND step-03 recorded a provenance vs metadata divergence > 5% (see §4b in step-03), apply a 10-point deduction to `exportCoverage` BEFORE building the scoring input:
+
+```
+exportCoverage_adjusted = max(0, exportCoverage - 10)
+```
+
+Record in the report: `scoring_notes: State 2 undercount risk acknowledged — 10% deduction applied to Export Coverage (raw: {N}%, adjusted: {M}%)`. Use the adjusted value as the `exportCoverage` field in §3a below. The deduction is deterministic and does not change category weights or active-category counting.
+
 #### 3a. Construct Scoring Input JSON
 
 Build a JSON object from the data gathered in steps 1-2:
@@ -89,13 +99,14 @@ Parse the JSON output. The script returns:
 - `weightedScores` — weighted contribution per category
 - `totalScore` — the overall completeness score
 - `threshold` — the threshold used
-- `result` — `"PASS"` or `"FAIL"`
+- `result` — `"PASS"`, `"FAIL"`, or **`"INCONCLUSIVE"`** (minimum-evidence floor — see `{scoringRulesFile}`)
 - `activeCategories` — list of categories that were scored
 - `skippedCategories` — list of categories that were skipped
 - `skipReasons` — why each category was skipped
 - `weightSum` — sum of final weights (should be ~100)
+- `inconclusiveReasons` — only present when `result == "INCONCLUSIVE"`; explains which floor clause tripped
 
-Use these values for Section 4 (pass/fail) and Section 6 (output formatting).
+Use these values for Section 4 (pass/fail/inconclusive) and Section 6 (output formatting). **Never override the script's `result` value** — floor enforcement is centralized in the script for determinism.
 
 #### 3c. Fallback (if script execution fails)
 
@@ -111,15 +122,31 @@ If the script is unavailable or returns an error, fall back to manual calculatio
 
 Report: "**Note:** Scoring script unavailable — calculated manually per scoring-rules.md."
 
-### 4. Determine Pass/Fail
+### 3d. Apply Post-Score Caps (BEFORE PASS/FAIL determination)
+
+The scoring script returns `totalScore` and a preliminary `result`. Two caps may override the script's PASS into FAIL — applied in this order, and ONLY if the script did NOT return INCONCLUSIVE (floor always takes precedence):
+
+**Cap 1 — Tooling degraded (B3):** if `analysisConfidence == "degraded"` or `toolingStatus` indicates a missing helper (`python3-missing`, `frontmatter-validator-missing`), set `effective_score = min(totalScore, threshold - 1)` and record `scoring_notes: tooling degraded — capped below threshold until helper restored`.
+
+**Cap 2 — Docs-only without external validators (S4):** if `docsOnly == true` AND `externalValidation` score was null (neither skill-check nor tessl ran), set `effective_score = min(effective_score, threshold - 1)` and record `scoring_notes: docs-only without external validators — capped below threshold per S4`.
+
+If either cap fired and `result` was `PASS`, change it to `FAIL`. If `result` was already `INCONCLUSIVE`, leave it — the evidence-floor verdict is never overridden by a cap.
+
+### 4. Determine Result (PASS / FAIL / INCONCLUSIVE)
+
+The scoring script enforces the minimum-evidence floor BEFORE comparing score vs threshold. Three possible outcomes:
 
 ```
-threshold = custom_threshold OR default_threshold (80%)
-score = sum of weighted category scores
-
-IF score >= threshold → PASS
-IF score < threshold → FAIL
+IF result == "INCONCLUSIVE" — minimum-evidence floor tripped; not PASS, not FAIL
+IF score >= threshold       → PASS
+IF score < threshold        → FAIL
 ```
+
+**INCONCLUSIVE floor clauses** (see `{scoringRulesFile}`):
+- `active_categories < 2` (after all redistribution), OR
+- `tier == "Quick"` AND Export Coverage is the sole scoring contributor
+
+**Tooling-degraded cap (B3):** If the `analysisConfidence` in output frontmatter is `degraded` (python3 missing, frontmatter validator missing, or other degraded state flagged in step-01), the step MUST cap the score at `threshold - 1` BEFORE the PASS/FAIL comparison. This forces a deterministic FAIL until tooling is restored. Do NOT override an INCONCLUSIVE result with the cap — INCONCLUSIVE remains the verdict.
 
 ### 5. Determine Next Workflow Recommendation
 
@@ -127,9 +154,25 @@ Based on test result:
 
 **IF PASS:**
 - `nextWorkflow: 'export-skill'` — skill is ready for export
+- **M5 — drift override:** if workflow context carries
+  `allow_workspace_drift: true` (set in step-01 §5b when the user passed
+  `--allow-workspace-drift` AND the workspace HEAD did not match
+  `metadata.source_commit`), the PASS is a **conditional PASS**:
+  - Write `testResult: 'pass-with-drift'` to the output frontmatter instead of
+    bare `'pass'`. The result contract (§4c of step-06) mirrors the same
+    value.
+  - Override `nextWorkflow` to `'update-skill'` — **refuse to recommend
+    `export-skill`**. The drift override weakens the workflow's strongest
+    false-positive guard (we tested against HEAD, not the pinned source); a
+    PASS under drift is not trustworthy enough to promote to export without a
+    clean re-test against the pinned commit.
+  - Record `scoring_notes: workspace drift overridden — PASS is conditional; re-run against pinned commit before export`.
 
 **IF FAIL:**
 - `nextWorkflow: 'update-skill'` — skill needs remediation before export
+
+**IF INCONCLUSIVE:**
+- `nextWorkflow: 'manual-review'` — evidence base is insufficient to grade the skill automatically. The test report records `inconclusiveReasons` from the scoring script. Surface to the user — do not auto-recommend export or update.
 
 ### 6. Append Completeness Score to Output
 
@@ -153,7 +196,10 @@ Append the **Completeness Score** section to `{outputFile}`:
 
 **Score:** {total}%
 **Threshold:** {threshold}%
-**Result:** **{PASS|FAIL}**
+**Result:** **{PASS|FAIL|INCONCLUSIVE}**
+{If INCONCLUSIVE:}
+**Inconclusive Reasons:**
+{bulleted list from script `inconclusiveReasons`}
 
 **Weight Distribution:** {naive (redistributed) | contextual (full)}
 **Tier Adjustment:** {none | Quick tier — signature and type coverage not scored}
@@ -174,11 +220,11 @@ If `analysis_confidence` is not `full`, append a degradation notice. **The notic
 ### 7. Update Output Frontmatter
 
 Update `{outputFile}` frontmatter:
-- `testResult: '{pass|fail}'`
+- `testResult: '{pass|pass-with-drift|fail|inconclusive}'` (lowercase; mirrors script `result`, with `pass-with-drift` substituted for `pass` when `allow_workspace_drift` was set and drift was observed — see §5 M5)
 - `score: '{total}%'`
 - `threshold: '{threshold}%'`
-- `analysisConfidence: '{analysis_confidence}'`
-- `nextWorkflow: '{export-skill|update-skill}'`
+- `analysisConfidence: '{full|degraded|provenance-map|metadata-only|remote-only|docs-only}'`
+- `nextWorkflow: '{export-skill|update-skill|manual-review}'`
 - Append `'step-05-score'` to `stepsCompleted`
 
 ### 8. Report Score

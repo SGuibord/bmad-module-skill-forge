@@ -1,268 +1,133 @@
-# Contributing to BMAD
+# Contributing to Skill Forge
 
-Thank you for considering contributing to the BMAD project! We believe in **Human Amplification, Not Replacement** - bringing out the best thinking in both humans and AI through guided collaboration.
+SKF turns code and docs into verified agent skills. Every instruction traces back to a real line of source. See [README.md](README.md) for the pitch; this file covers how to land changes without setting the test suite on fire.
 
-💬 **Discord Community**: Join our [Discord server](https://discord.gg/gk8jAdXWmj) for real-time discussions:
+SKF is a [BMAD](https://github.com/bmad-code-org/BMAD-METHOD) module. For BMAD philosophy, framework conventions, and module-authoring patterns in general, start at [docs.bmad-method.org](https://docs.bmad-method.org). This doc stays scoped to what's SKF-specific.
 
-- **#bmad-development** - Technical discussions and development questions
-- **#suggestions-feedback** - Feature ideas and suggestions
-- **#report-bugs-and-issues** - Bug reports and issue discussions
+## What You Can Contribute
 
-## Our Philosophy
+- **Workflows** (`src/skf-*/`) — new skill-compilation or lifecycle flows. Example: a `skf-diff-skill` that compares two versions of the same skill and emits a migration note.
+- **Knowledge fragments** (`src/knowledge/`) — cross-workflow principles Ferris loads just-in-time. Example: a new `security-review.md` that captures rules reused by CS, QS, and AS.
+- **Forger assets** (`src/forger/`, `src/shared/`) — shared agent memory, preferences, or helpers (e.g. tier detection, health-check templates).
+- **Validators** (`tools/validate-*.js`) — deterministic checks that run in `npm run quality`. Example: a new validator that flags `{installed_path}` leaks in step files.
+- **Docs** (`docs/`, `website/`) — tutorial / reference / explanation content surfaced at [armelhbobdad.github.io/bmad-module-skill-forge](https://armelhbobdad.github.io/bmad-module-skill-forge/).
+- **Ecosystem integrations** — new tool bridges (ast-grep, cocoindex, QMD, tessl, Snyk, graphify-style indexers) wired through the tier-aware discovery path.
+- **Bug reports** — always useful, especially if they come in via the workflow health-check loop (see below).
 
-### BMAD Core™: Universal Foundation
+If you're not sure where a change belongs, open an issue and ask before writing code.
 
-BMAD Core empowers humans and AI agents working together in true partnership across any domain through our **C.O.R.E. Framework** (Collaboration Optimized Reflection Engine):
+## Local Setup
 
-- **Collaboration**: Human-AI partnership where both contribute unique strengths
-- **Optimized**: The collaborative process refined for maximum effectiveness
-- **Reflection**: Guided thinking that helps discover better solutions and insights
-- **Engine**: The powerful framework that orchestrates specialized agents and workflows
+**Platforms:** Linux and macOS. Windows is not supported (POSIX-only shell tooling, symlinks, path quoting). WSL2 works.
 
-### BMAD Method™: Agile AI-Driven Development
+**Prerequisites:**
 
-The BMAD Method is the flagship bmad module for agile AI-driven software development. It emphasizes thorough planning and solid architectural foundations to provide detailed context for developer agents, mirroring real-world agile best practices.
+- [Node.js](https://nodejs.org/) >= 22 (see `.nvmrc`)
+- [Python](https://www.python.org/) >= 3.10
+- [uv](https://docs.astral.sh/uv/) — runs the Python test suite
+- `git`, `gh` — used by several workflows and by the health-check loop
 
-### Core Principles
-
-**Partnership Over Automation** - AI agents act as expert coaches, mentors, and collaborators who amplify human capability rather than replace it.
-
-**Bidirectional Guidance** - Agents guide users through structured workflows while users push agents with advanced prompting. Both sides actively work to extract better information from each other.
-
-**Systems of Workflows** - BMAD Core builds comprehensive systems of guided workflows with specialized agent teams for any domain.
-
-**Tool-Agnostic Foundation** - BMAD Core remains tool-agnostic, providing stable, extensible groundwork that adapts to any domain.
-
-## What Makes a Good Contribution?
-
-Every contribution should strengthen human-AI collaboration. Ask yourself: **"Does this make humans and AI better together?"**
-
-**✅ Contributions that align:**
-
-- Enhance universal collaboration patterns
-- Improve agent personas and workflows
-- Strengthen planning and context continuity
-- Increase cross-domain accessibility
-- Add domain-specific modules leveraging BMAD Core
-
-**❌ What detracts from our mission:**
-
-- Purely automated solutions that sideline humans
-- Tools that don't improve the partnership
-- Complexity that creates barriers to adoption
-- Features that fragment BMAD Core's foundation
-
-## Before You Contribute
-
-### Reporting Bugs
-
-1. **Check existing issues** first to avoid duplicates
-2. **Consider discussing in Discord** (#report-bugs-and-issues channel) for quick help
-3. **Use the bug report template** when creating a new issue - it guides you through providing:
-   - Clear bug description
-   - Steps to reproduce
-   - Expected vs actual behavior
-   - Model/IDE/BMAD version details
-   - Screenshots or links if applicable
-4. **Indicate if you're working on a fix** to avoid duplicate efforts
-
-### Suggesting Features or New Modules
-
-1. **Discuss first in Discord** (#suggestions-feedback channel) - the feature request template asks if you've done this
-2. **Check existing issues and discussions** to avoid duplicates
-3. **Use the feature request template** when creating an issue
-4. **Be specific** about why this feature would benefit the BMAD community and strengthen human-AI collaboration
-
-### Before Starting Work
-
-⚠️ **Required before submitting PRs:**
-
-1. **For bugs**: Check if an issue exists (create one using the bug template if not)
-2. **For features**: Discuss in Discord (#suggestions-feedback) AND create a feature request issue
-3. **For large changes**: Always open an issue first to discuss alignment
-
-Please propose small, granular changes! For large or significant changes, discuss in Discord and open an issue first. This prevents wasted effort on PRs that may not align with planned changes.
-
-## Pull Request Guidelines
-
-### Which Branch?
-
-**Submit PR's to `main` branch** (critical only):
-
-- 🚨 Critical bug fixes that break basic functionality
-- 🔒 Security patches
-- 📚 Fixing dangerously incorrect documentation
-- 🐛 Bugs preventing installation or basic usage
-
-### PR Size Guidelines
-
-- **Ideal PR size**: 200-400 lines of code changes
-- **Maximum PR size**: 800 lines (excluding generated files)
-- **One feature/fix per PR**: Each PR should address a single issue or add one feature
-- **If your change is larger**: Break it into multiple smaller PRs that can be reviewed independently
-- **Related changes**: Even related changes should be separate PRs if they deliver independent value
-
-### Breaking Down Large PRs
-
-If your change exceeds 800 lines, use this checklist to split it:
-
-- [ ] Can I separate the refactoring from the feature implementation?
-- [ ] Can I introduce the new API/interface in one PR and implementation in another?
-- [ ] Can I split by file or module?
-- [ ] Can I create a base PR with shared utilities first?
-- [ ] Can I separate test additions from implementation?
-- [ ] Even if changes are related, can they deliver value independently?
-- [ ] Can these changes be merged in any order without breaking things?
-
-Example breakdown:
-
-1. PR #1: Add utility functions and types (100 lines)
-2. PR #2: Refactor existing code to use utilities (200 lines)
-3. PR #3: Implement new feature using refactored code (300 lines)
-4. PR #4: Add comprehensive tests (200 lines)
-
-**Note**: PRs #1 and #4 could be submitted simultaneously since they deliver independent value.
-
-### Pull Request Process
-
-#### New to Pull Requests?
-
-If you're new to GitHub or pull requests, here's a quick guide:
-
-1. **Fork the repository** - Click the "Fork" button on GitHub to create your own copy
-2. **Clone your fork** - `git clone https://github.com/YOUR-USERNAME/bmad-module-skill-forge.git`
-3. **Create a new branch** - Never work on `main` directly!
-   ```bash
-   git checkout -b fix/description
-   # or
-   git checkout -b feature/description
-   ```
-4. **Make your changes** - Edit files, keeping changes small and focused
-5. **Commit your changes** - Use clear, descriptive commit messages
-   ```bash
-   git add .
-   git commit -m "fix: correct typo in README"
-   ```
-6. **Push to your fork** - `git push origin fix/description`
-7. **Create the Pull Request** - Go to your fork on GitHub and click "Compare & pull request"
-
-### PR Description Template
-
-Keep your PR description concise and focused. Use this template:
-
-```markdown
-## What
-
-[1-2 sentences describing WHAT changed]
-
-## Why
-
-[1-2 sentences explaining WHY this change is needed]
-Fixes #[issue number] (if applicable)
-
-## How
-
-## [2-3 bullets listing HOW you implemented it]
-
--
--
-
-## Testing
-
-[1-2 sentences on how you tested this]
+```bash
+git clone https://github.com/armelhbobdad/bmad-module-skill-forge.git
+cd bmad-module-skill-forge
+npm install           # also wires husky pre-commit hooks via "prepare"
+npm run quality       # run the full local pre-flight
 ```
 
-**Maximum PR description length: 200 words** (excluding code examples if needed)
+The `npm run quality` script is your contract with CI. It runs:
 
-### Good vs Bad PR Descriptions
+- `format:check` (Prettier), `lint` (ESLint), `lint:md` (markdownlint)
+- `test:schemas`, `test:install`, `test:cli`, `test:workflow`, `test:python`, `test:knowledge`
+- `validate:schemas`, `validate:skills`, `validate:refs`
+- `docs:validate-drift` — SKF docs vs. the canonical [oh-my-skills](https://github.com/armelhbobdad/oh-my-skills) output
 
-❌ **Bad Example:**
+If `npm run quality` passes locally, CI should too. The same steps run in [`.github/workflows/quality.yaml`](.github/workflows/quality.yaml) on every pull request.
 
-> This revolutionary PR introduces a paradigm-shifting enhancement to the system's architecture by implementing a state-of-the-art solution that leverages cutting-edge methodologies to optimize performance metrics...
+## Workflow for Changes
 
-✅ **Good Example:**
+1. **Branch from `main`.** Name it like the commit scope: `fix/skf-test-skill-...`, `feat/health-check-...`, `docs/...`.
+2. **Match the commit-message convention from the git log.** SKF uses conventional-commit prefixes with a scoped subsystem:
+   - `feat(skf-create-skill): ...`
+   - `fix(health-check): ...`
+   - `docs(readme): ...`
+   - `ci(health-check): ...`
+   - `refactor(skf-create-skill): ...`
+   - `chore: ...` (no scope needed)
 
-> **What:** Added validation for agent dependency resolution
-> **Why:** Build was failing silently when agents had circular dependencies
-> **How:**
->
-> - Added cycle detection in dependency-resolver.js
-> - Throws clear error with dependency chain
->   **Testing:** Tested with circular deps between 3 agents
+   `git log --oneline -20` is the authoritative style guide. Match what you see.
+3. **Reference issues with `Fixes #NNN`** in the PR body (and optionally in the commit trailer). Use **same-repo GitHub issue numbers only** — do not reference internal IDs under `_bmad-output/todo/` or elsewhere; those are author notes, not public contracts.
+4. **Pre-commit hooks run automatically** via husky + lint-staged: `eslint --fix`, `prettier --write`, and `markdownlint-cli2` on `.md` files. They run on staged files only.
+5. **PR description:** explain *why*. What was broken, what does this change, and how did you verify it? Keep it honest and short. The template in [.github/](.github/) is a starting point; ignore the sections that don't apply.
+6. **If you used Claude (or any AI assistant)** to help write a non-trivial chunk of the change, add a `Co-Authored-By:` trailer to the commit — SKF's recent history uses the format:
 
-### Commit Message Convention
+   ```
+   Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+   ```
 
-Use conventional commits format:
+   Not mandatory, but we prefer accurate attribution over silent ghostwriting.
 
-- `feat:` New feature
-- `fix:` Bug fix
-- `docs:` Documentation only
-- `refactor:` Code change that neither fixes a bug nor adds a feature
-- `test:` Adding missing tests
-- `chore:` Changes to build process or auxiliary tools
+## The Quality Gate
 
-Keep commit messages under 72 characters.
+`npm run quality` must pass before you push. If it fails:
 
-### Atomic Commits
+- **Fix the root cause.** Do not `git commit --no-verify`. Do not disable a rule to make the linter shut up. If a hook is wrong, fix the hook in a separate PR.
+- **If a Python test fails on your machine but not in CI,** check your `uv` version and re-run `npm run test:python` from a clean shell.
+- **If `docs:validate-drift` fails,** you either touched a pinned version/commit SHA that no longer resolves in [oh-my-skills](https://github.com/armelhbobdad/oh-my-skills), or you added a library reference the whitelist doesn't cover. Fix the reference; don't relax the validator unless the fix is clearly out of scope.
 
-Each commit should represent one logical change:
+CI re-runs everything on the PR. A green local run and a red CI run means either (a) you have uncommitted files, or (b) your Node/uv versions drift from `.nvmrc` / `test:python`. Check both before filing a CI bug.
 
-- **Do:** One bug fix per commit
-- **Do:** One feature addition per commit
-- **Don't:** Mix refactoring with bug fixes
-- **Don't:** Combine unrelated changes
+## Adding a New Workflow Skill
 
-## What Makes a Good Pull Request?
+The `src/skf-*/` directories each follow the same shape:
 
-✅ **Good PRs:**
+```
+src/skf-<name>/
+  SKILL.md            # frontmatter (name, description, "Use when ..."), stages table
+  steps-c/            # one file per step, loaded one-at-a-time by Ferris
+  references/         # step-scoped rules, protocols, decision tables
+  assets/             # step-scoped templates, schemas, output formats
+```
 
-- Change one thing at a time
-- Have clear, descriptive titles
-- Explain what and why in the description
-- Include only the files that need to change
-- Reference related issue numbers
+- **Start from an existing skill** with similar shape — `skf-quick-skill` is the simplest, `skf-create-skill` is the reference for the full pipeline.
+- **Or scaffold with BMAD tooling** — the `bmad-workflow-builder` skill builds / edits / converts workflows interactively; `@Ferris CS` (skf-create-skill) is the content-extraction pattern SKF uses for its own skills in the wild.
+- **Frontmatter matters.** `validate:skills` enforces SKILL-01 through STEP-07 (see [`tools/validate-skills.js`](tools/validate-skills.js)): SKILL.md must have `name` + `description` with a "Use when" / "Use if" trigger; step files must not have `name`/`description`; step count must be 2–10; step filenames must match `step-NN-<slug>.md`.
+- **Manifest.** Agent-facing skills (e.g. `skf-forger`) require a `bmad-skill-manifest.yaml`. Copy the one from `src/skf-forger/` and adapt.
+- **Knowledge JiT.** If your workflow shares a principle with others, factor it into `src/knowledge/` and load it from the step rather than inlining the rule.
+- **Quality review.** Before shipping, run a [tessl](https://tessl.io) skill review pass on the SKILL.md content — SKF uses tessl for actionability scoring and AI-judge evaluation (see the references under `src/skf-create-skill/assets/`).
+- **Register the workflow** in `src/module-help.csv` (ordering / after / before fields) and in the `docs/workflows.md` reference table.
 
-❌ **Avoid:**
+## Adding Knowledge Fragments
 
-- Changing formatting of entire files
-- Multiple unrelated changes in one PR
-- Copying your entire project/repo into the PR
-- Changes without explanation
-- Working directly on `main` branch
+Knowledge lives in [`src/knowledge/`](src/knowledge/) and is loaded just-in-time by workflow steps — never preloaded.
 
-## Common Mistakes to Avoid
+- Keep each file single-concern: zero-hallucination, confidence-tiers, provenance-tracking, version-paths, etc.
+- Add the new file to the **Knowledge Map** table in [`src/knowledge/overview.md`](src/knowledge/overview.md) with its purpose and the workflow codes (CS, QS, US, ...) that consume it.
+- Reference it from the step that needs it with a `Load:` directive (see any `steps-c/step-*.md` for the pattern).
+- If the principle cuts across ≥2 workflows, it belongs in `knowledge/`. If it's step-scoped, it belongs in the workflow's `references/` instead.
 
-1. **Don't reformat entire files** - only change what's necessary
-2. **Don't include unrelated changes** - stick to one fix/feature per PR
-3. **Don't paste code in issues** - create a proper PR instead
-4. **Don't submit your whole project** - contribute specific improvements
+Forger-sidecar (`src/forger/`) is Ferris's own memory: `preferences.yaml` and `forge-tier.yaml`. Changes here should be rare and tied to a real behavioural change in a workflow.
 
-## Prompt & Agent Guidelines
+## Reporting Bugs
 
-- Keep dev agents lean - they need context for coding, not documentation
-- Web/planning agents can be larger with more complex tasks
-- Everything is natural language (markdown) - no code in core framework
-- Use bmad modules for domain-specific features
-- Validate YAML schemas with `npm run validate:schemas` before committing
+- **Normal bugs:** open a GitHub issue with a reproducer — input (URL / package / brief), SKF version (`npm ls bmad-module-skill-forge`), capability tier Ferris reported at setup, the error or wrong output, and what you expected. The bug-report template in [`.github/ISSUE_TEMPLATE/`](.github/ISSUE_TEMPLATE/) prompts you for the rest.
+- **Workflow friction:** every SKF workflow ends with a health-check reflection step that can file a GitHub issue on your behalf. Reports are **auto-deduped by fingerprint** — the [`.github/workflows/health-check-dedup.yaml`](.github/workflows/health-check-dedup.yaml) Action extracts the `fp-XXXXXXX` label on a new issue, finds any earlier open issue with the same fingerprint, comments "duplicate of #N", upvotes the canonical issue to preserve the signal count, and closes the duplicate. Re-reporting is safe. If you skipped the terminal step in-session, ask Ferris: `@Ferris please run the workflow health check for this session`.
+- **Provenance failures are always bugs.** If an AST citation in a SKF-compiled skill doesn't resolve to the claimed line at the claimed commit, that's the whole deal breaking — please file it.
 
-## Code of Conduct
+## What We Don't Accept
 
-By participating in this project, you agree to abide by our Code of Conduct. We foster a collaborative, respectful environment focused on building better human-AI partnerships.
+- **Features that fork core BMAD conventions.** SKF is a module; it follows the framework. If your idea needs BMAD to behave differently, take it upstream to [bmad-code-org/BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD) first.
+- **Tests that mock the database / the real extraction pipeline.** SKF's validation is meaningful because it runs against real extraction output and real oh-my-skills skills. Mocks that hide that contract don't buy us anything.
+- **Changes that bypass `npm run quality`** — skipping hooks, excluding files from linters, loosening a validator to make a PR green. Fix the underlying issue instead.
+- **Documentation that duplicates external canonical sources.** Link out to [docs.bmad-method.org](https://docs.bmad-method.org), [agentskills.io](https://agentskills.io), tool docs, etc., rather than restating them. SKF docs are for what's unique to SKF.
+- **Emoji in source files and docs.** Project standard. (Badges and contributor avatars in the README are the exceptions.)
+- **Drive-by reformats.** Please don't reflow whole files or rename things you didn't touch.
 
-## Need Help?
+## Code of Conduct and License
 
-- 💬 Join our [Discord Community](https://discord.gg/gk8jAdXWmj):
-  - **#bmad-development** - Technical questions and discussions
-  - **#suggestions-feedback** - Feature ideas and suggestions
-  - **#report-bugs-and-issues** - Get help with bugs before filing issues
-- 🐛 Report bugs using the [bug report template](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/new?template=bug_report.md)
-- 💡 Suggest features using the [feature request template](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/new?template=feature_request.md)
-- 📖 Browse the [GitHub Discussions](https://github.com/armelhbobdad/bmad-module-skill-forge/discussions)
+By participating, you agree to the [Code of Conduct](.github/CODE_OF_CONDUCT.md). Be decent; assume good faith; disagree with the argument, not the person.
 
----
+Contributions are licensed under the project's [MIT License](LICENSE).
 
-**Remember**: We're here to help! Don't be afraid to ask questions. Every expert was once a beginner. Together, we're building a future where humans and AI work better together.
+## Acknowledgement
 
-## License
-
-By contributing to this project, you agree that your contributions will be licensed under the same license as the project.
+SKF is maintained in spare hours. Good issues, small focused PRs, and willingness to iterate on review are the most useful things you can send. If SKF saved you an afternoon, a ⭐ or a [coffee](https://buymeacoffee.com/armelhbobdad) keeps the forge lit.

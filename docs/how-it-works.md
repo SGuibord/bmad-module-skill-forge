@@ -62,10 +62,10 @@ flowchart LR
 4. **Step-by-step execution** — Only the current step file is in context (just-in-time loading). Each step explicitly names the next one. The LLM reads, executes, saves output, then loads the next step. No future steps are ever preloaded.
 5. **Sub-agent delegation** — When a step needs to process large files (full `SKILL.md` documents, multiple `references/*.md` files, parallel per-library extraction), it spawns sub-agents via the Agent tool instead of loading the content into the parent context. Each sub-agent receives a file path, extracts a compact JSON summary, and returns it. Up to 8 sub-agents run concurrently. The parent collects JSON summaries without ever loading the full source — context isolation by design, preventing one step's data from bloating the window for the next. Used in TS (coverage check), RA (gap analysis), VS (integration verification), AS (structural diff), and SS (parallel extraction).
 6. **Knowledge injection** — Steps consult `skf-knowledge-index.csv` and selectively load fragments from `knowledge/` by tags and relevance. Cross-cutting principles (zero hallucination, confidence tiers, provenance) are loaded only when a step directs — not preloaded.
-6. **Reference and asset injection** — Steps read `references/*.md` and `assets/*.md` files as needed (rules, patterns, schemas, heuristics). This is deliberate context engineering: only the data relevant to the current step enters the context window.
-7. **Script execution** — Steps invoke deterministic Python scripts (`scripts/*.py`, `shared/scripts/*.py`) via `uv run` for computation that must be reproducible: scoring, structural diffing, manifest operations, frontmatter validation. The LLM prepares inputs, the script computes, the LLM uses the output. Same inputs always produce the same result.
-8. **Templates** — When a step produces output (e.g., a skill brief or test report), it reads the template file and fills in placeholders with computed results. The template provides consistent structure; the step provides the content.
-9. **Progress tracking** — Each step appends to an output file with state tracking. Resume mode reads this state and routes to the next incomplete step.
+7. **Reference and asset injection** — Steps read `references/*.md` and `assets/*.md` files as needed (rules, patterns, schemas, heuristics). This is deliberate context engineering: only the data relevant to the current step enters the context window.
+8. **Script execution** — Steps invoke deterministic Python scripts (`scripts/*.py`, `shared/scripts/*.py`) via `uv run` for computation that must be reproducible: scoring, structural diffing, manifest operations, frontmatter validation. The LLM prepares inputs, the script computes, the LLM uses the output. Same inputs always produce the same result.
+9. **Templates** — When a step produces output (e.g., a skill brief or test report), it reads the template file and fills in placeholders with computed results. The template provides consistent structure; the step provides the content.
+10. **Progress tracking** — Each step appends to an output file with state tracking. Resume mode reads this state and routes to the next incomplete step.
 
 ### Ferris Operating Modes
 
@@ -99,18 +99,7 @@ SKF takes a different approach: it mechanically extracts function signatures, ty
 
 ### How SKF Compares to Product Alternatives
 
-Techniques aside, a skeptical reader is probably already comparing SKF to one of these products:
-
-|                            | **Skill Forge**                           | MCP doc servers    | Hand-edited `.cursorrules` | awesome-\* lists |
-| -------------------------- | ----------------------------------------- | ------------------ | -------------------------- | ---------------- |
-| Reproducible from source   | AST extraction + pinned commit            | varies; opaque     | whatever you wrote         | none             |
-| Version-pinned & immutable | yes — per-version directories             | runtime-dependent  | rots silently              | no               |
-| Audit trail                | `provenance-map.json` + test + evidence   | depends on server  | none                       | none             |
-| Runtime cost               | zero (markdown + JSON)                    | a running process  | zero                       | zero             |
-| Lifecycle tooling          | rename, drop, update, export transactions | varies             | file surgery               | none             |
-| Falsifiable                | yes — three steps, 60 seconds             | rarely             | no                         | no               |
-
-The others aren't bad. They solve different problems. **SKF solves exactly one:** the claim your agent is reading about a library was true at a specific commit on a specific day, and you can prove it in under a minute. See [Verifying a Skill](../verifying-a-skill/) for the three-step audit recipe.
+See [README — How SKF Compares](../README.md#how-skf-compares) for a comparison against alternatives. The short version: SKF solves exactly one problem — the claim your agent is reading about a library was true at a specific commit on a specific day, and you can prove it in under a minute. See [Verifying a Skill](../verifying-a-skill/) for the three-step audit recipe.
 
 ---
 
@@ -253,106 +242,7 @@ Your forge tier limits what authority claims a skill can make:
 
 ## Completeness Scoring
 
-The Test Skill workflow (`@Ferris TS`) calculates a **completeness score** — a weighted measure of how thoroughly and accurately a skill documents its target. This score is the quality gate: pass and the skill is ready for export; fail and it routes to update-skill for remediation.
-
-### Categories & Weights
-
-The score is the weighted sum of five categories:
-
-| Category | Weight | What It Measures |
-|----------|--------|------------------|
-| **Export Coverage** | 36% | Percentage of source exports documented in SKILL.md |
-| **Signature Accuracy** | 22% | Documented function signatures match actual source signatures (parameter names, types, order, return types) |
-| **Type Coverage** | 14% | Types and interfaces referenced in exports are fully documented |
-| **Coherence** | 18% | Cross-references resolve, integration patterns are complete (contextual mode only) |
-| **External Validation** | 10% | Average of skill-check quality score (0-100) and tessl content score (0-100%) |
-
-### Formula
-
-```
-total_score = sum(category_weight × category_score)
-```
-
-Each category score is a percentage: `(items_passing / items_total) × 100`.
-
-**Coherence** (contextual mode) combines two sub-scores:
-
-```
-coherence = (reference_validity × 0.6) + (integration_completeness × 0.4)
-```
-
-If no integration patterns exist, coherence equals reference validity alone.
-
-**External validation** averages the two tools when both are available. When only one tool is available, that tool's score is used. When neither is available, the 10% weight is redistributed proportionally to the other active categories.
-
-### Deterministic Scoring
-
-The weight redistribution and score aggregation are computed by a deterministic Python script ([`compute-score.py`](https://github.com/armelhbobdad/bmad-module-skill-forge/blob/main/src/skf-test-skill/scripts/compute-score.py)). The LLM extracts category scores from the test report, constructs a JSON input, invokes the script, and uses its output for the final score. This ensures reproducible results — the same inputs always produce the same score. If the script is unavailable, the LLM falls back to manual calculation using the same formulas.
-
-### Naive vs Contextual Mode
-
-Test Skill runs in one of two modes, detected automatically:
-
-- **Contextual mode** (stack skills) — All five categories scored with the default weights above.
-- **Naive mode** (individual skills) — Coherence is not scored. Its 18% weight is redistributed:
-
-| Category | Naive Weight |
-|----------|-------------|
-| Export Coverage | 45% |
-| Signature Accuracy | 25% |
-| Type Coverage | 20% |
-| External Validation | 10% |
-
-### Tier Adjustments
-
-Your forge tier determines which categories can be scored:
-
-| Tier | Skipped Categories | Reason |
-|------|-------------------|--------|
-| **Quick** | Signature Accuracy, Type Coverage | No AST parsing available |
-| **Docs-only** | Signature Accuracy, Type Coverage | No source code to compare against |
-| **Provenance-map** (State 2) | Signature Accuracy, Type Coverage | String comparison only, no semantic AST verification |
-| **Forge / Forge+ / Deep** | None | Full AST-backed scoring |
-
-When categories are skipped, their combined weight (36%) is redistributed proportionally to the remaining active categories. A Quick-tier skill and a Deep-tier skill both pass at the same 80% threshold — the score reflects what your tier can actually measure.
-
-### Pass/Fail
-
-```
-threshold = custom_threshold OR 80% (default)
-
-score >= threshold  →  PASS  →  Recommend export-skill
-score <  threshold  →  FAIL  →  Recommend update-skill
-```
-
-The default is 80%. You can override it by specifying a custom threshold when invoking the workflow (e.g., "test this skill with a 70% threshold").
-
-### Gap Severities
-
-When the score is calculated, each finding is classified by severity to guide remediation:
-
-| Severity | Examples |
-|----------|----------|
-| **Critical** | Missing exported function/class documentation |
-| **High** | Signature mismatch between source and SKILL.md |
-| **Medium** | Missing type/interface documentation; scripts/assets directory inconsistencies |
-| **Low** | Missing optional metadata or examples; description optimization opportunities |
-| **Info** | Style suggestions; discovery testing recommendations |
-
-### Score Report Output
-
-The test report includes a score breakdown table showing each category's raw score, weight, and weighted contribution:
-
-| Category | Score | Weight | Weighted |
-|----------|-------|--------|----------|
-| Export Coverage | 92% | 36% | 33.1% |
-| Signature Accuracy | 85% | 22% | 18.7% |
-| Type Coverage | 100% | 14% | 14.0% |
-| Coherence | 80% | 18% | 14.4% |
-| External Validation | 78% | 10% | 7.8% |
-| **Total** | | **100%** | **88.0%** |
-
-The report also records `analysisConfidence` (full, provenance-map, metadata-only, remote-only, or docs-only) and includes a degradation notice when source access was limited.
+Skills are graded on a 0–100 completeness scale; see [verifying-a-skill.md](./verifying-a-skill.md#how-the-score-is-computed) for the formula.
 
 ---
 
@@ -392,27 +282,27 @@ Skills follow the [agentskills.io specification](https://agentskills.io/specific
 
 ```yaml
 ---
-name: cognee
+name: oms-cognee
 description: >
-  Builds apps on top of cognee v0.5.8, the knowledge-graph memory engine for AI agents.
-  Use when ingesting text/files/URLs into persistent agent memory, building knowledge
-  graphs with entities and relationships, searching graph-backed memory with multiple
-  search modes (GRAPH_COMPLETION, CHUNKS, SUMMARIES, TEMPORAL, CYPHER, CODING_RULES),
-  enriching existing graphs with memify, scoping memory with datasets and node_sets,
-  configuring LLM/embedding/graph/vector backends, running custom task pipelines,
-  tracing cognee operations, or visualizing the resulting graph. Covers the top-level
-  exports from cognee/__init__.py: add, cognify, search, memify, datasets, prune,
-  update, run_custom_pipeline, config, SearchType, visualize_graph, and the tracing
-  API. Do NOT use for: cognee internals (cognify task implementation, graph adapters),
-  the HTTP REST API (use cognee-mcp or the FastAPI server instead), non-cognee memory
-  or RAG libraries.
+  Builds apps on top of cognee v1.0.0, the knowledge-graph memory engine for AI agents.
+  Use when ingesting text/files/URLs into persistent memory, building knowledge graphs,
+  searching graph-backed memory with multiple SearchType modes, enriching graphs with
+  memify/improve, scoping memory with datasets and node_sets, configuring LLM/embedding/
+  graph/vector backends, running custom task pipelines, tracing operations, decorating
+  agent entrypoints with `agent_memory`, connecting to Cognee Cloud with `serve`, or
+  visualizing the graph. Covers cognee/__init__.py exports: the V1 API (add, cognify,
+  search, memify, datasets, prune, update, run_custom_pipeline, config, SearchType,
+  visualize_graph, pipelines, Drop, run_startup_migrations, tracing) and the V2
+  memory-oriented API (remember, RememberResult, recall, improve, forget, serve,
+  disconnect, visualize, agent_memory). Do NOT use for: cognee internals, the HTTP
+  REST API (use cognee-mcp or the FastAPI server), non-cognee memory/RAG libraries.
 ---
 ```
 
 Every instruction in the body traces to source:
 
 ```python
-await cognee.search(  # [AST:cognee/api/v1/search/search.py:L27]
+await cognee.search(  # [AST:cognee/api/v1/search/search.py:L26]
     query_text="What does Cognee do?"
 )
 ```
@@ -421,40 +311,40 @@ await cognee.search(  # [AST:cognee/api/v1/search/search.py:L27]
 
 Machine-readable provenance for every skill:
 
-This is a trimmed excerpt from the real [`oms-cognee/0.5.8/metadata.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/oms-cognee/0.5.8/oms-cognee/metadata.json) shipped with the oh-my-skills canonical output. Every value below is verbatim from the file — not illustrative.
+This is a trimmed excerpt from the real [`oms-cognee/1.0.0/metadata.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/oms-cognee/1.0.0/oms-cognee/metadata.json) shipped with the oh-my-skills canonical output. Every value below is verbatim from the file — not illustrative.
 
 ```json
 {
   "name": "oms-cognee",
-  "version": "0.5.8",
+  "version": "1.0.0",
   "skill_type": "single",
   "source_authority": "community",
   "source_repo": "https://github.com/topoteretes/cognee",
-  "source_commit": "b51dcce1d273d47ce864cd6c5e44a7a82f7f8dce",
-  "source_ref": "v0.5.8",
+  "source_commit": "3c048aa4147776f14d4546704f986242554a9ef3",
+  "source_ref": "v1.0.0",
   "confidence_tier": "Deep",
   "spec_version": "1.3",
-  "generation_date": "2026-04-10T21:18:00Z",
+  "generation_date": "2026-04-13T00:00:00Z",
   "language": "python",
-  "ast_node_count": 25,
+  "ast_node_count": 34,
   "confidence_distribution": {
-    "t1": 25,
+    "t1": 34,
     "t1_low": 0,
-    "t2": 4,
+    "t2": 11,
     "t3": 15
   },
   "stats": {
-    "exports_documented": 25,
-    "exports_public_api": 25,
+    "exports_documented": 34,
+    "exports_public_api": 34,
     "exports_internal": 0,
-    "exports_total": 25,
+    "exports_total": 34,
     "public_api_coverage": 1.0,
     "total_coverage": 1.0
   }
 }
 ```
 
-Fields omitted from this excerpt for brevity: `description`, `exports[]`, `tool_versions`, `dependencies`, `compatibility`, `last_update`, `generated_by`. The full 83-line file lives at [`oh-my-skills/skills/oms-cognee/0.5.8/oms-cognee/metadata.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/oms-cognee/0.5.8/oms-cognee/metadata.json).
+Fields omitted from this excerpt for brevity: `description`, `exports[]`, `tool_versions`, `dependencies`, `compatibility`, `last_update`, `generated_by`. The full 93-line file lives at [`oh-my-skills/skills/oms-cognee/1.0.0/oms-cognee/metadata.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/oms-cognee/1.0.0/oms-cognee/metadata.json).
 
 `scripts` and `assets` arrays are optional — omitted entirely (not empty) when the source has no scripts or assets.
 
@@ -502,17 +392,18 @@ Export injects a managed section between markers:
 The block below is the real managed section currently in [`oh-my-skills/CLAUDE.md`](https://github.com/armelhbobdad/oh-my-skills/blob/main/CLAUDE.md), showing one of its four compiled skills. Every line is verbatim from the file:
 
 ```markdown
-<!-- SKF:BEGIN updated:2026-04-12 -->
+<!-- SKF:BEGIN updated:2026-04-13 -->
 [SKF Skills]|4 skills|0 stack
 |IMPORTANT: Prefer documented APIs over training data.
 |When using a listed library, read its SKILL.md before writing code.
 |
-|[oms-cognee v0.5.8]|root: .claude/skills/oms-cognee/
-|IMPORTANT: oms-cognee v0.5.8 — read SKILL.md before writing cognee code. Do NOT rely on training data.
+|[oms-cognee v1.0.0]|root: .claude/skills/oms-cognee/
+|IMPORTANT: oms-cognee v1.0.0 — read SKILL.md before writing cognee code. Do NOT rely on training data.
 |quick-start:SKILL.md#quick-start
-|api: add(), cognify(), search(), memify(), update(), run_custom_pipeline(), visualize_graph(), datasets, prune, SearchType
-|key-types:SKILL.md#key-types — SearchType: GRAPH_COMPLETION (default), RAG_COMPLETION, CHUNKS, CHUNKS_LEXICAL, SUMMARIES, TEMPORAL, CODING_RULES, CYPHER, FEELING_LUCKY (+5 more); Task, DataPoint, 5 Cognee* exceptions
-|gotchas: cognee.delete is DEPRECATED since v0.3.9 (use cognee.datasets.delete_data); cognee.start_ui is sync (not async) and needs pid_callback arg; cognee.start_visualization_server is a module, call .visualization_server(port) on it; all add/cognify/search/memify are async — always await.
+|api-v1: add(), cognify(), search(), memify(), update(), run_custom_pipeline(), visualize_graph(), datasets, prune, config, SearchType, pipelines, Drop, run_startup_migrations(), session, tracing
+|api-v2: remember()→RememberResult, recall(), improve(), forget(), serve()/disconnect(), visualize(), @agent_memory
+|key-types:SKILL.md#key-types — SearchType: GRAPH_COMPLETION (default), RAG_COMPLETION, CHUNKS, CHUNKS_LEXICAL, SUMMARIES, TEMPORAL, CODING_RULES, CYPHER, FEELING_LUCKY, GRAPH_COMPLETION_DECOMPOSITION (+5 more); Task, Drop, RememberResult, DataPoint, 5 Cognee* exceptions
+|gotchas: cognee.low_level REMOVED from public API in v1.0.0 (import from cognee.infrastructure.engine directly); cognee.run_migrations REPLACED by cognee.run_startup_migrations (relational + vector); cognee.delete is DEPRECATED since v0.3.9 (use cognee.datasets.delete_data or cognee.forget); cognee.pipelines restructured in v1.0.0 (package with Drop + lazy re-exports); cognee.agent_memory requires async function; cognee.serve() without url triggers Auth0 Device Code Flow; cognee.start_ui is sync and needs pid_callback arg; all add/cognify/search/memify/remember/recall/improve/forget/serve are async — always await.
 |
 |(three more skills — oms-cocoindex, oms-storybook-react-vite, oms-uitripled — omitted here for brevity; see the full file)
 <!-- SKF:END -->

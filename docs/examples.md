@@ -5,25 +5,25 @@ description: Real-world scenarios, tips, and troubleshooting for Skill Forge
 
 ## What the Output Looks Like
 
-When SKF generates a skill, you get a `SKILL.md` file with machine-readable frontmatter and provenance-backed instructions. Here's a trimmed example from the real [`oms-cognee` SKILL.md](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/oms-cognee/0.5.8/oms-cognee/SKILL.md) generated for [cognee](https://github.com/topoteretes/cognee) (full portfolio at [oh-my-skills](https://github.com/armelhbobdad/oh-my-skills)):
+When SKF generates a skill, you get a `SKILL.md` file with machine-readable frontmatter and provenance-backed instructions. Below is a trimmed example from the real [`oms-cognee` SKILL.md](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/oms-cognee/1.0.0/oms-cognee/SKILL.md) generated for [cognee](https://github.com/topoteretes/cognee) (full portfolio at [oh-my-skills](https://github.com/armelhbobdad/oh-my-skills)):
 
 **Frontmatter (tells AI agents when to load this skill):**
 
 ```yaml
-name: cognee
+name: oms-cognee
 description: >
-  Builds apps on top of cognee v0.5.8, the knowledge-graph memory engine for AI agents.
-  Use when ingesting text/files/URLs into persistent agent memory, building knowledge
-  graphs with entities and relationships, searching graph-backed memory with multiple
-  search modes (GRAPH_COMPLETION, CHUNKS, SUMMARIES, TEMPORAL, CYPHER, CODING_RULES),
-  enriching existing graphs with memify, scoping memory with datasets and node_sets,
-  configuring LLM/embedding/graph/vector backends, running custom task pipelines,
-  tracing cognee operations, or visualizing the resulting graph. Covers the top-level
-  exports from cognee/__init__.py: add, cognify, search, memify, datasets, prune,
-  update, run_custom_pipeline, config, SearchType, visualize_graph, and the tracing
-  API. Do NOT use for: cognee internals (cognify task implementation, graph adapters),
-  the HTTP REST API (use cognee-mcp or the FastAPI server instead), non-cognee memory
-  or RAG libraries.
+  Builds apps on top of cognee v1.0.0, the knowledge-graph memory engine for AI agents.
+  Use when ingesting text/files/URLs into persistent memory, building knowledge graphs,
+  searching graph-backed memory with multiple SearchType modes, enriching graphs with
+  memify/improve, scoping memory with datasets and node_sets, configuring LLM/embedding/
+  graph/vector backends, running custom task pipelines, tracing operations, decorating
+  agent entrypoints with `agent_memory`, connecting to Cognee Cloud with `serve`, or
+  visualizing the graph. Covers cognee/__init__.py exports: the V1 API (add, cognify,
+  search, memify, datasets, prune, update, run_custom_pipeline, config, SearchType,
+  visualize_graph, pipelines, Drop, run_startup_migrations, tracing) and the V2
+  memory-oriented API (remember, RememberResult, recall, improve, forget, serve,
+  disconnect, visualize, agent_memory). Do NOT use for: cognee internals, the HTTP
+  REST API (use cognee-mcp or the FastAPI server), non-cognee memory/RAG libraries.
 ```
 
 **Body (what your AI agent reads):**
@@ -33,15 +33,15 @@ description: >
 
 | Function | Purpose | Key Params | Source |
 |----------|---------|------------|--------|
-| add() | Ingest text, files, binary data | data, dataset_name | [AST:cognee/api/v1/add/add.py:L21] |
+| add() | Ingest text, files, binary data | data, dataset_name | [AST:cognee/api/v1/add/add.py:L22] |
 | cognify() | Build knowledge graph | datasets, graph_model | [AST:cognee/api/v1/cognify/cognify.py:L44] |
-| search() | Query knowledge graph | query_text, query_type | [AST:cognee/api/v1/search/search.py:L27] |
+| search() | Query knowledge graph | query_text, query_type | [AST:cognee/api/v1/search/search.py:L26] |
 | memify() | Enrich graph with custom tasks | extraction_tasks, data | [AST:cognee/modules/memify/memify.py:L25] |
-| session | Session module | session.py module | [SRC:cognee/api/v1/session/session.py:L16] |
+| remember() | V2 one-shot memory ingest | data, dataset_name | [AST:cognee/api/v1/remember/remember.py:L339] |
 | DataPoint | Base class for custom graph nodes | inherit and add fields | [EXT:docs.cognee.ai/guides/custom-data-models] |
 ```
 
-Every line number above is verbatim from the real [`forge-data/oms-cognee/0.5.8/provenance-map.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/forge-data/oms-cognee/0.5.8/provenance-map.json) shipped with oh-my-skills — not illustrative.
+Every line number above is verbatim from the real [`forge-data/oms-cognee/1.0.0/provenance-map.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/forge-data/oms-cognee/1.0.0/provenance-map.json) shipped with oh-my-skills — not illustrative.
 
 Provenance tags trace each instruction to its source:
 - `[AST:file:line]` — extracted from code via AST parsing (highest confidence)
@@ -55,10 +55,16 @@ See [How It Works](../how-it-works/) for the full output structure.
 
 ```
 skills/oms-cognee/
-├── active -> 0.5.8
-└── 0.5.8/
+├── active -> 1.0.0
+├── 0.5.8/
+│   └── oms-cognee/
+│       ├── SKILL.md              # Archived: v0.5.8, pinned to b51dcce1
+│       ├── context-snippet.md
+│       ├── metadata.json
+│       └── references/
+└── 1.0.0/
     └── oms-cognee/
-        ├── SKILL.md              # What your agent reads
+        ├── SKILL.md              # Active: pinned to cognee v1.0.0 (3c048aa4)
         ├── context-snippet.md    # Compressed index for platform context files
         ├── metadata.json         # Machine-readable provenance
         └── references/           # Progressive disclosure detail
@@ -68,7 +74,7 @@ skills/oms-cognee/
             └── pipelines-and-datapoints.md
 ```
 
-This is the real directory listing from [`oh-my-skills/skills/oms-cognee/`](https://github.com/armelhbobdad/oh-my-skills/tree/main/skills/oms-cognee). Skills are stored per-version — updating cognee to v1.0.0 creates a new version directory without overwriting v0.5.8. The `active` symlink always points to the current version. Some skills also include `scripts/` and `assets/` directories when the source repository contains executable scripts or static assets — oms-cognee doesn't have either, but see [How It Works → Per-Skill Output](../how-it-works/#per-skill-output) for the full schema.
+This is the real directory listing from [`oh-my-skills/skills/oms-cognee/`](https://github.com/armelhbobdad/oh-my-skills/tree/main/skills/oms-cognee) after cognee shipped v1.0.0 upstream. SKF recompiled the skill from the v1.0.0 commit and wrote it next to the existing 0.5.8 tree — the older version stays pinned to its original commit (`b51dcce1`) and is still installable by any project that hasn't bumped its `CLAUDE.md` pin yet. The `active` symlink and the [`.export-manifest.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/.export-manifest.json) both point at the current version. Some skills also include `scripts/` and `assets/` directories when the source repository contains executable scripts or static assets — oms-cognee doesn't have either, but see [How It Works → Per-Skill Output](../how-it-works/#per-skill-output) for the full schema.
 
 ---
 
@@ -82,12 +88,12 @@ Developer adds [cognee](https://github.com/topoteretes/cognee) to a Python proje
 @Ferris QS https://github.com/topoteretes/cognee
 ```
 
-Ferris reads the repository, extracts the public API, and validates against the agentskills.io spec. The skill is written to `skills/cognee/<version>/cognee/` (auto-detected from the source manifest). Agent stops hallucinating.
+Ferris reads the repository, extracts the public API, and validates against the agentskills.io spec. The skill is written to `skills/cognee/<version>/cognee/` (auto-detected from the source manifest). The agent now reads the real signatures from the skill instead of guessing.
 
 Need a specific version? Append `@version`:
 
 ```
-@Ferris QS cognee@0.5.8
+@Ferris QS cognee@1.0.0
 ```
 
 ### Brownfield Platform — Pipeline or per-workflow
@@ -95,21 +101,21 @@ Need a specific version? Append `@version`:
 Alex's team adopts BMAD for 10 microservices (TypeScript, Go, Rust).
 
 ```
-@Ferris SF          # Setup — Deep mode detected
+@Ferris SF          # Setup — Deep tier detected
 # — clear session —
 @Ferris onboard     # Analyze → Create → Test → Export in one pipeline
 ```
 
 Or one workflow per session:
 ```
-@Ferris SF          # Setup — Deep mode detected
+@Ferris SF          # Setup — Deep tier detected
 # — clear session —
 @Ferris AN          # Analyze — 10 services mapped
 # — clear session —
 @Ferris CS --batch  # Create — batch generation
 ```
 
-10 individual skills + 1 platform stack skill. [BMM](../bmad-synergy/#skf-and-bmm-phase-by-phase-playbook) architect navigates cross-service flows with verified knowledge.
+10 individual skills + 1 platform stack skill. The [BMM](../bmad-synergy/#skf-and-bmm-phase-by-phase-playbook) architect then navigates cross-service flows using verified knowledge.
 
 ### Release Prep — Trust Builder
 
@@ -130,7 +136,7 @@ Or one workflow per session:
 @Ferris EX    # Export — package for npm release
 ```
 
-Ships with npm release. Consumers upgrade — their agents use the correct function names. Zero hallucination tickets.
+Ships with the npm release. Consumers upgrade and their agents use the correct function names — no more "wrong signature" support tickets.
 
 ### Stack Skill — Integration Intelligence
 
@@ -140,7 +146,7 @@ Armel's full-stack project: Next.js + Serwist + SpacetimeDB + better-auth.
 @Ferris SS
 ```
 
-Ferris detects 8 significant dependencies, finds 5 co-import integration points. Generates a consolidated stack skill. The agent now knows: "When you modify the auth flow, update the Serwist cache exclusion at `src/sw.ts:L23`." Integration intelligence no other tool provides.
+Ferris detects 8 significant dependencies, finds 5 co-import integration points. Generates a consolidated stack skill. The agent now knows: "When you modify the auth flow, update the Serwist cache exclusion at `src/sw.ts:L23`." That integration detail isn't available from any other tool in the [comparison table](../how-it-works/#how-skf-compares-to-product-alternatives).
 
 ### Pre-Code Architecture Verification — Greenfield Confidence
 
@@ -155,7 +161,7 @@ Gery is designing a new TypeScript backend with Hono + Drizzle + SpacetimeDB. Ar
 @Ferris SS               # Stack Skill — compose-mode (no codebase needed)
 ```
 
-VS finds a Risky integration between Drizzle and SpacetimeDB (incompatible query models) and returns CONDITIONALLY FEASIBLE. Jordan adds a bridge layer to the architecture, re-runs VS → FEASIBLE. RA fills in verified API signatures. SS compose-mode synthesizes the stack skill from existing skills + refined architecture. The agent now has integration intelligence for a project that doesn't have code yet.
+VS flags the Drizzle↔SpacetimeDB integration as incompatible (query-model mismatch) and returns CONDITIONALLY FEASIBLE. Gery adds a bridge layer to the architecture, re-runs VS → FEASIBLE. RA fills in verified API signatures. SS compose-mode synthesizes the stack skill from existing skills + refined architecture. The agent now has integration intelligence for a project that doesn't have code yet.
 
 ---
 
@@ -172,7 +178,7 @@ BMAD user starts a new project. [BMM](../bmad-synergy/#skf-and-bmm-phase-by-phas
 @Ferris EX    # Export — inject into platform context files
 ```
 
-Skills accumulate over sprints. Agent gets smarter every iteration.
+Skills accumulate over sprints. The agent's coverage improves each iteration.
 
 ### Scenario B: Multi-Repo Platform
 
@@ -239,17 +245,53 @@ You have `cognee` with versions 0.1.0, 0.5.0, and 0.6.0 (active). Version 0.1.0 
 
 Version 0.6.0 remains active. Version 0.5.0 is untouched. The managed sections in CLAUDE.md/AGENTS.md no longer reference 0.1.0.
 
+### Scenario G: Maximum Accuracy for a High-Stakes Library
+
+You're building skills for a production payments library and need maximum citation density. Every signature must be AST-verified, and you want historical context (deprecations, migration notes) baked into the skill.
+
+**Workflow:**
+
+```
+@Ferris SF
+# Ferris detects installed tools and sets your tier automatically:
+# - Quick: no tools required (best-effort, source-read only)
+# - Forge: + ast-grep (T1 AST-verified signatures)
+# - Forge+: + cocoindex-code (semantic pre-ranking for large repos)
+# - Deep: + gh + qmd (T2 evidence — issues, PRs, changelogs)
+# Install the missing tools, then re-run @Ferris SF to promote your tier.
+@Ferris BS    # Scope — confirm the forge tier is Deep (+ ccc if installed)
+@Ferris CS    # Extract — AST + QMD enrichment
+@Ferris TS    # Completeness score — 80%+ threshold
+```
+
+**What you get:** Every signature carries `[AST:file:Lnn]` at T1. Deprecation warnings and design rationale carry `[QMD:collection:doc]` at T2. Install tooling once, every downstream skill benefits. See [Capability Tiers](../concepts/#capability-tiers-quickforgeforgedeep).
+
+### Scenario H: OSS Maintainer Publishing Official Skills
+
+You maintain an OSS library and want to ship official agent skills alongside each release — distributed via [skills.sh](https://skills.sh) or [oh-my-skills](https://github.com/armelhbobdad/oh-my-skills) so consumers install them with `npx skills add`.
+
+**Workflow:**
+
+```
+@Ferris BS    # Scope the skill — set source_authority: official in the brief
+@Ferris CS    # Compile — AST extraction + QMD enrichment (Deep tier recommended)
+@Ferris TS    # Verify completeness before publishing (target: 90%+)
+@Ferris EX    # Package for distribution — emits npx skills publish instructions
+```
+
+**What you get:** A verified skill pinned to the release commit, with `source_authority: official` surfaced in metadata as a trust signal so downstream tooling (and the ecosystem check in `@Ferris QS`) recognize it as maintainer-published rather than community-forged. Re-run `@Ferris maintain <skill>` (AS → US → TS → EX) on every release to keep published skills current.
+
 ---
 
 ## Tips & Tricks
 
 ### Skip Permissions for Faster Forging
 
-> **Tip from Armel:** When forging skills with Claude Code, I run `claude --dangerously-skip-permissions` to bypass all permission prompts. SKF workflows only read source code, write to `skills/` and `forge-data/`, and call local tools (ast-grep, qmd, gh) — every step is auditable in the [open source](https://github.com/armelhbobdad/bmad-module-skill-forge). Skipping permissions drastically reduces forge time: I start a pipeline, go [grab one of those coffees ☕ you keep offering](https://buymeacoffee.com/armelhbobdad), and come back to a completed workflow. Review the output at the end, not at every gate.
+See the canonical [Tip from Armel](../concepts/#best-practices) in Concepts — same recommendation applies across every workflow.
 
 ### Progressive Capability
 
-Start with Quick mode (no setup required), upgrade to Forge (install ast-grep), then Forge+ (install cocoindex-code for semantic discovery), then Deep (install QMD). Each tier builds on the previous — you never lose capability.
+Start with the Quick tier (no setup required), upgrade to Forge (install ast-grep), then Forge+ (install cocoindex-code for semantic discovery), then Deep (install QMD). Each tier builds on the previous — you never lose capability.
 
 ### Batch Operations
 
@@ -290,7 +332,7 @@ Every SKF workflow ends with a shared **health check** step where Ferris reflect
 ### Common Issues
 
 **Forge reports ast-grep is unavailable**
-If setup reports that ast-grep was not detected, install it to unlock Forge mode: <https://ast-grep.github.io>
+If setup reports that ast-grep was not detected, install it to unlock the Forge tier: <https://ast-grep.github.io>
 
 **"No brief found"**
 Run `@Ferris BS` first to create a skill brief, or use `@Ferris QS` for brief-less generation.
@@ -298,17 +340,17 @@ Run `@Ferris BS` first to create a skill brief, or use `@Ferris QS` for brief-le
 **"Ecosystem check: official skill exists"**
 An official skill already exists for this package. Consider installing it with `npx skills add` instead of generating your own.
 
-**Quick mode skills have lower confidence**
-Quick mode reads source without AST analysis. Install ast-grep to upgrade to Forge mode for structural truth (T1 confidence).
+**Quick tier skills have lower confidence**
+Quick tier reads source without AST analysis. Install ast-grep to upgrade to the Forge tier for AST-verified signatures (T1 confidence).
 
 **Want semantic discovery for large codebases?**
-Install [cocoindex-code](https://github.com/cocoindex-io/cocoindex-code) to unlock Forge+ mode. CCC indexes your codebase and pre-ranks files by semantic relevance before AST extraction, improving coverage on projects with 500+ files.
+Install [cocoindex-code](https://github.com/cocoindex-io/cocoindex-code) to unlock the Forge+ tier. CCC indexes your codebase and pre-ranks files by semantic relevance before AST extraction, improving coverage on projects with 500+ files.
 
 ---
 
 ## Getting More Help
 
-- Run `/bmad-help` — analyzes your current state and suggests what to do next
+- Run `/bmad-help` — it analyzes your current state and suggests what to do next
   (e.g. `/bmad-help my batch creation failed halfway, how do I resume?`)
   *Provided by the [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) — not available in standalone SKF installations.*
 - Run `@Ferris SF` to check your current tier and tool availability

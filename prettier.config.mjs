@@ -8,7 +8,11 @@ export default {
   trailingComma: 'all',
   bracketSpacing: true,
   arrowParens: 'always',
-  endOfLine: 'lf',
+  // 'auto' tolerates whatever line endings git produces in the working tree
+  // (LF on POSIX, possibly CRLF on Windows checkouts without the .gitattributes
+  // normalization yet applied). Repo storage is enforced LF via .gitattributes,
+  // so this only affects the local working copy — no committed CRLF leakage.
+  endOfLine: 'auto',
   proseWrap: 'preserve',
   overrides: [
     {

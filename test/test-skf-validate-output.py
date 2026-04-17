@@ -64,11 +64,11 @@ VALID_METADATA = {
 def make_valid_package(tmpdir, name="test-skill"):
     pkg = Path(tmpdir) / name
     pkg.mkdir(parents=True)
-    (pkg / "SKILL.md").write_text(VALID_SKILL_MD.replace("test-skill", name))
-    (pkg / "context-snippet.md").write_text(VALID_SNIPPET.replace("test-skill", name))
+    (pkg / "SKILL.md").write_text(VALID_SKILL_MD.replace("test-skill", name), encoding="utf-8")
+    (pkg / "context-snippet.md").write_text(VALID_SNIPPET.replace("test-skill", name), encoding="utf-8")
     meta = dict(VALID_METADATA)
     meta["name"] = name
-    (pkg / "metadata.json").write_text(json.dumps(meta))
+    (pkg / "metadata.json").write_text(json.dumps(meta), encoding="utf-8")
     return pkg
 
 
@@ -88,7 +88,7 @@ class TestSkfValidateOutput:
         with tempfile.TemporaryDirectory() as tmp:
             pkg = Path(tmp) / "broken-skill"
             pkg.mkdir()
-            (pkg / "metadata.json").write_text(json.dumps(VALID_METADATA))
+            (pkg / "metadata.json").write_text(json.dumps(VALID_METADATA), encoding="utf-8")
             r = validate_skill_package(str(pkg))
             assert r["result"] == "FAIL"
             assert r["summary"]["by_severity"]["high"] >= 1
@@ -97,7 +97,7 @@ class TestSkfValidateOutput:
         with tempfile.TemporaryDirectory() as tmp:
             pkg = Path(tmp) / "bad-fm"
             pkg.mkdir()
-            (pkg / "SKILL.md").write_text("# No frontmatter\n\nJust content.")
+            (pkg / "SKILL.md").write_text("# No frontmatter\n\nJust content.", encoding="utf-8")
             r = validate_skill_package(str(pkg))
             assert r["result"] == "FAIL"
 
@@ -105,7 +105,7 @@ class TestSkfValidateOutput:
         with tempfile.TemporaryDirectory() as tmp:
             pkg = Path(tmp) / "real-name"
             pkg.mkdir()
-            (pkg / "SKILL.md").write_text("---\nname: wrong-name\ndescription: test\n---\n\n# Wrong\n\n## Overview\n\nTest\n\n## Key Exports\n\nNone\n\n## Usage\n\nNone\n")
+            (pkg / "SKILL.md").write_text("---\nname: wrong-name\ndescription: test\n---\n\n# Wrong\n\n## Overview\n\nTest\n\n## Key Exports\n\nNone\n\n## Usage\n\nNone\n", encoding="utf-8")
             r = validate_skill_package(str(pkg))
             has_mismatch = any(
                 "does not match" in i["message"]
@@ -116,7 +116,7 @@ class TestSkfValidateOutput:
     def test_invalid_metadata(self):
         with tempfile.TemporaryDirectory() as tmp:
             pkg = make_valid_package(tmp, "bad-meta")
-            (pkg / "metadata.json").write_text(json.dumps({"name": "bad-meta"}))
+            (pkg / "metadata.json").write_text(json.dumps({"name": "bad-meta"}), encoding="utf-8")
             r = validate_skill_package(str(pkg))
             assert r["summary"]["total_issues"] > 0
 
@@ -135,8 +135,8 @@ class TestSkfValidateOutput:
         with tempfile.TemporaryDirectory() as tmp:
             pkg = Path(tmp) / "bad-name-"
             pkg.mkdir()
-            (pkg / "SKILL.md").write_text("---\nname: bad-name-\ndescription: test\n---\n\n## Overview\n\nTest\n\n## Key Exports\n\nNone\n\n## Usage\n\nNone\n")
-            (pkg / "metadata.json").write_text(json.dumps(VALID_METADATA))
+            (pkg / "SKILL.md").write_text("---\nname: bad-name-\ndescription: test\n---\n\n## Overview\n\nTest\n\n## Key Exports\n\nNone\n\n## Usage\n\nNone\n", encoding="utf-8")
+            (pkg / "metadata.json").write_text(json.dumps(VALID_METADATA), encoding="utf-8")
             r = validate_skill_package(str(pkg))
             fm_issues = r["validation"]["skill_md"]["frontmatter"]
             assert any("must be lowercase" in i["message"] or "alphanumeric" in i["message"] for i in fm_issues), f"Expected name rejection, got: {fm_issues}"

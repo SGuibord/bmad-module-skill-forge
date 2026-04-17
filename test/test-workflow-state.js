@@ -64,20 +64,22 @@ async function runTests() {
   const templateFrontmatter = vsTemplate.split('---')[1];
   const templateFields = new Set(templateFrontmatter.match(/^(\w+):/gm).map((f) => f.replace(':', '')));
 
-  // Key fields that step-06 must read
+  // Key fields step-06 must read.
+  // Producer-local bookkeeping uses camelCase to match the shared
+  // schema at src/shared/references/feasibility-report-schema.md (v1.0).
   const requiredStep06Fields = [
-    'skills_analyzed',
-    'coverage_percentage',
-    'integrations_verified',
-    'integrations_plausible',
-    'integrations_risky',
-    'integrations_blocked',
-    'requirements_fulfilled',
-    'requirements_partial',
-    'requirements_not_addressed',
-    'requirements_pass',
-    'overall_verdict',
-    'recommendation_count',
+    'skillsAnalyzed',
+    'coveragePercentage',
+    'pairsVerified',
+    'pairsPlausible',
+    'pairsRisky',
+    'pairsBlocked',
+    'requirementsFulfilled',
+    'requirementsPartial',
+    'requirementsNotAddressed',
+    'requirementsPass',
+    'overallVerdict',
+    'recommendationCount',
   ];
 
   for (const field of requiredStep06Fields) {
@@ -85,7 +87,7 @@ async function runTests() {
   }
 
   // Delta fields must exist in template for step-06 consumption
-  const deltaFields = ['delta_improved', 'delta_regressed', 'delta_new', 'delta_unchanged'];
+  const deltaFields = ['deltaImproved', 'deltaRegressed', 'deltaNew', 'deltaUnchanged'];
   for (const field of deltaFields) {
     assert(
       templateFields.has(field),
@@ -101,25 +103,25 @@ async function runTests() {
 
   // Step-05 must write delta fields to frontmatter
   assert(
-    vsStep05.includes('delta_improved'),
+    vsStep05.includes('deltaImproved'),
     'VS step-05 writes delta fields to frontmatter',
-    'step-05-synthesize.md should set delta_* fields',
+    'step-05-synthesize.md should set delta* fields',
   );
 
   // Requirements fields should init to null (not 0) for proper N/A fallback
   assert(
-    vsTemplate.includes('requirements_fulfilled: null'),
-    'VS template inits requirements_fulfilled to null',
+    vsTemplate.includes('requirementsFulfilled: null'),
+    'VS template inits requirementsFulfilled to null',
     'Should be null for proper N/A fallback in step-06',
   );
   assert(
-    vsTemplate.includes('requirements_partial: null'),
-    'VS template inits requirements_partial to null',
+    vsTemplate.includes('requirementsPartial: null'),
+    'VS template inits requirementsPartial to null',
     'Should be null for proper N/A fallback in step-06',
   );
   assert(
-    vsTemplate.includes('requirements_not_addressed: null'),
-    'VS template inits requirements_not_addressed to null',
+    vsTemplate.includes('requirementsNotAddressed: null'),
+    'VS template inits requirementsNotAddressed to null',
     'Should be null for proper N/A fallback in step-06',
   );
 

@@ -53,6 +53,17 @@ function resolveOmsPath(anchors) {
   return path.resolve(SKF_ROOT, anchors.oh_my_skills_path);
 }
 
+// Accept either a full SHA match or a short-SHA prefix match, per
+// src/skf-update-skill/steps-c/step-03-re-extract.md:36 — the pinned commit
+// is often stored as an 8-char short hash. Both anchors and metadata are
+// lowercased before comparison; blank / null values never match.
+function commitsMatch(anchorCommit, metadataCommit) {
+  if (!anchorCommit || !metadataCommit) return false;
+  const a = String(anchorCommit).toLowerCase();
+  const b = String(metadataCommit).toLowerCase();
+  return a === b || a.startsWith(b) || b.startsWith(a);
+}
+
 function checkCanonicalFiles(anchors, omsPath) {
   const errors = [];
   if (!fs.existsSync(omsPath) || !fs.statSync(omsPath).isDirectory()) {
@@ -83,7 +94,7 @@ function checkCanonicalFiles(anchors, omsPath) {
       errors.push(`VERSION_DRIFT: ${skillName} — anchors say ${spec.version}, ` + `metadata.json says ${metadata.version}`);
     }
 
-    if (metadata.source_commit !== spec.source_commit) {
+    if (!commitsMatch(spec.source_commit, metadata.source_commit)) {
       const anchorShort = (spec.source_commit || '').slice(0, 12);
       const realShort = (metadata.source_commit || '').slice(0, 12);
       errors.push(`COMMIT_DRIFT: ${skillName} — anchors say ${anchorShort}, ` + `metadata.json says ${realShort}`);

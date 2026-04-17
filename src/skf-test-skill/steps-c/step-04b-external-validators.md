@@ -1,6 +1,6 @@
 ---
 nextStepFile: './step-05-score.md'
-outputFile: '{forge_version}/test-report-{skill_name}.md'
+outputFile: '{forge_version}/test-report-{skill_name}-{run_id}.md'
 ---
 
 # Step 4b: External Validators
@@ -52,19 +52,26 @@ If no evidence report exists, it contains no validation section, or results are 
 
 ### 2. Run skill-check
 
-**Check availability:**
+**Check availability (short probe — 15s timeout):**
 
 ```bash
-npx skill-check -h
+timeout 15s npx --no-install skill-check -h 2>/dev/null
 ```
 
-If unavailable, record `skill_check_score: N/A` and skip to section 3.
+Use `--no-install` so the probe never triggers a slow cold-cache download (npx
+would otherwise fetch the package before printing help). Wrap in `timeout 15s`
+so a hung probe cannot stall the workflow — consistent with the 120s cap used
+on the actual validator run below. If the probe exits non-zero OR the 15s
+timeout trips (exit code `124`), record `skill_check_score: N/A` and skip to
+section 3.
 
-**Run validation:**
+**Run validation (S2 — 120s timeout):**
 
 ```bash
-npx skill-check check {skillDir} --format json --no-security-scan
+timeout 120s npx skill-check check {skillDir} --format json --no-security-scan
 ```
+
+If the command exits non-zero AND the exit code is `124` (GNU timeout's signal for the 120s wall-clock expiring), record `skill_check_score: N/A` with reason `timeout-120s`, log a warning, and skip to section 3. Other non-zero exits fall through to the regular JSON-parse path per the note below.
 
 **Parse JSON output** to extract:
 - `qualityScore` — overall score (0-100)
@@ -79,19 +86,27 @@ Store in context: `skill_check_score`, `skill_check_diagnostics`
 
 ### 3. Run tessl
 
-**Check availability:**
+**Check availability (short probe — 15s timeout):**
 
 ```bash
-npx -y tessl --version
+timeout 15s npx --no-install -y tessl --version 2>/dev/null
 ```
 
-If unavailable, record `tessl_score: N/A` and skip to section 4.
+Same rationale as the skill-check probe above: `--no-install` + `timeout 15s`
+prevent a cold-cache fetch from stalling the workflow. If the probe exits
+non-zero OR the 15s timeout trips (exit code `124`), record
+`tessl_score: N/A` and skip to section 4.
 
-**Run review:**
+**Run review (S2 — 120s timeout; S3 — pinned version):**
 
 ```bash
-npx -y tessl skill review {skillDir}
+# S3: pin tessl to a known-working version. Bump TESSL_PIN here (and only
+# here) when upgrading. Treat regex parse failure below as `tessl_score: N/A`.
+TESSL_PIN="@anthropic/tessl@0.4"
+timeout 120s npx -y "$TESSL_PIN" skill review {skillDir}
 ```
+
+Timeout handling mirrors skill-check: exit `124` → `tessl_score: N/A` with reason `timeout-120s`. If the percentage regex (`/(Description|Content|Review Score):\s*(\d+)%/`) returns fewer than three matches, record `tessl_score: N/A` with reason `parse-failure` and include the first 200 chars of output in evidence-report for debugging.
 
 **Parse the output** to extract:
 - `description_score` — percentage (e.g., 100%)

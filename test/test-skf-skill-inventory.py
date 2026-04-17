@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 import tempfile
 from pathlib import Path
 
@@ -19,6 +21,32 @@ spec.loader.exec_module(mod)
 scan_inventory = mod.scan_inventory
 
 
+def _link_active(active_link: Path, version: str) -> None:
+    """Create active->version link with Windows junction fallback.
+
+    Mirrors src/shared/scripts/skf-atomic-write.py — symlink first, junction
+    via `mklink /J` when the symlink privilege isn't held. Junctions need an
+    existing absolute target directory.
+    """
+    try:
+        active_link.symlink_to(version)
+        return
+    except OSError as e:
+        if os.name != "nt" or getattr(e, "winerror", None) not in (1314, 5):
+            raise
+        abs_target = (active_link.parent / version).resolve()
+        result = subprocess.run(
+            ["cmd", "/c", "mklink", "/J", str(active_link), str(abs_target)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if result.returncode != 0:
+            raise OSError(
+                f"junction fallback failed: {result.stderr.strip() or result.stdout.strip()}"
+            ) from e
+
+
 def make_skill(skills_dir, name, version="1.0.0", with_metadata=True, with_provenance=False):
     """Create a mock skill with versioned directory structure."""
     skill_group = skills_dir / name
@@ -26,7 +54,7 @@ def make_skill(skills_dir, name, version="1.0.0", with_metadata=True, with_prove
     version_dir.mkdir(parents=True, exist_ok=True)
 
     # Write SKILL.md
-    (version_dir / "SKILL.md").write_text(f"---\nname: {name}\n---\n# {name}\n")
+    (version_dir / "SKILL.md").write_text(f"---\nname: {name}\n---\n# {name}\n", encoding="utf-8")
 
     if with_metadata:
         meta = {
@@ -39,16 +67,20 @@ def make_skill(skills_dir, name, version="1.0.0", with_metadata=True, with_prove
             "confidence_tier": "Forge",
             "stats": {"exports_total": 10},
         }
-        (version_dir / "metadata.json").write_text(json.dumps(meta))
+        (version_dir / "metadata.json").write_text(json.dumps(meta), encoding="utf-8")
 
     if with_provenance:
-        (version_dir / "provenance-map.json").write_text("{}")
+        (version_dir / "provenance-map.json").write_text("{}", encoding="utf-8")
 
-    # Create active symlink
+    # Create active symlink (junction on Windows w/o Dev Mode)
     active_link = skill_group / "active"
-    if active_link.exists() or active_link.is_symlink():
+    if active_link.is_symlink():
         active_link.unlink()
-    active_link.symlink_to(version)
+    elif active_link.is_dir():
+        active_link.rmdir()
+    elif active_link.exists():
+        active_link.unlink()
+    _link_active(active_link, version)
 
     return skill_group
 
@@ -112,7 +144,7 @@ class TestSkfSkillInventory:
     def test_with_export_manifest(self, skills_dir):
         make_skill(skills_dir, "cocoindex", "2.0.0")
         manifest = {"exports": {"cocoindex": {"active_version": "2.0.0"}}}
-        (skills_dir / ".export-manifest.json").write_text(json.dumps(manifest))
+        (skills_dir / ".export-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
         result = scan_inventory(str(skills_dir))
         assert result["manifest"] is not None
         assert "cocoindex" in result["manifest"]["exports"]
