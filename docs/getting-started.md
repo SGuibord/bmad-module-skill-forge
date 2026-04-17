@@ -85,6 +85,12 @@ The installer reads the installed version from your manifest and shows the delta
 
 Node.js, Python, and uv are required for all tiers. Don't worry about the rest — SKF detects what's available and sets your tier automatically. Security scanning via Snyk is optional and requires an Enterprise plan; it does not affect your tier level.
 
+### Platform support
+
+**Linux and Windows** are exercised in CI on every PR (`ubuntu-latest` + `windows-latest` matrix on `validate` and `python` jobs). **macOS** works in practice — POSIX-equivalent to Linux — but isn't CI-gated; if you hit a macOS-specific bug, please [file an issue](https://github.com/armelhbobdad/bmad-module-skill-forge/issues).
+
+On Windows, SKF transparently falls back to NTFS junctions when symlink privilege isn't held, so no Developer Mode or admin rights are required. Git Bash (bundled with [Git for Windows](https://git-scm.com/download/win)), PowerShell, and WSL2 all work.
+
 ---
 
 ## Configuration
