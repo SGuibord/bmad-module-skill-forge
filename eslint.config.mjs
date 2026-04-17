@@ -37,6 +37,7 @@ export default [
       'src/modules/*/sub-modules/**',
       '.bundler-temp/**',
       'temp/**',
+      '.playwright-mcp/**',
     ],
   },
 
