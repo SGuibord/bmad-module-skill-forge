@@ -97,17 +97,36 @@ export default defineConfig({
       // Custom CSS
       customCss: ['./src/styles/custom.css'],
 
-      // Sidebar configuration (flat structure for SKF's docs)
+      // Sidebar configuration — Why / Try / Reference buckets
       sidebar: [
         { label: 'Welcome', slug: 'index' },
-        { label: 'Getting Started', slug: 'getting-started' },
-        { label: 'Concepts', slug: 'concepts' },
-        { label: 'How It Works', slug: 'how-it-works' },
-        { label: 'Verifying a Skill', slug: 'verifying-a-skill' },
-        { label: 'Workflows', slug: 'workflows' },
-        { label: 'Agents', slug: 'agents' },
-        { label: 'Examples', slug: 'examples' },
-        { label: 'BMAD Synergy', slug: 'bmad-synergy' },
+        {
+          label: 'Why',
+          items: [
+            { label: 'Why Skill Forge?', slug: 'why-skf' },
+            { label: 'Verifying a Skill', slug: 'verifying-a-skill' },
+          ],
+        },
+        {
+          label: 'Try',
+          items: [
+            { label: 'Getting Started', slug: 'getting-started' },
+            { label: 'How It Works', slug: 'how-it-works' },
+            { label: 'Examples', slug: 'examples' },
+            { label: 'Workflows', slug: 'workflows' },
+          ],
+        },
+        {
+          label: 'Reference',
+          items: [
+            { label: 'Concepts', slug: 'concepts' },
+            { label: 'Architecture', slug: 'architecture' },
+            { label: 'Skill Model', slug: 'skill-model' },
+            { label: 'Agents', slug: 'agents' },
+            { label: 'BMAD Synergy', slug: 'bmad-synergy' },
+            { label: 'Troubleshooting', slug: 'troubleshooting' },
+          ],
+        },
       ],
 
       // Credits in footer

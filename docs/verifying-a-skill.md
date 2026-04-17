@@ -81,7 +81,7 @@ Take oh-my-skills' four reference skills as an example. Their scores range from 
 | [oms-storybook-react-vite](https://github.com/armelhbobdad/oh-my-skills/blob/main/forge-data/oms-storybook-react-vite/10.3.5/test-report-oms-storybook-react-vite.md) | **99.49%** | 215/216 documented — the missing 1 entry is logged openly as **GAP-004**, a canonical surface count drift from the stated denominator. |
 | [oms-uitripled](https://github.com/armelhbobdad/oh-my-skills/blob/main/forge-data/oms-uitripled/0.1.0/test-report-oms-uitripled.md) | **99.45%** | 34-entry denominator (not 11, not 25) with the full reconciliation reasoning in the report. |
 
-A promise of perfection is suspicious. A promise of visible fallibility is trustworthy. SKF writes down the edges it can't score cleanly — so you can read them and decide for yourself whether the remaining coverage is enough for your use case.
+Perfection is suspicious. Visible fallibility is trustworthy. SKF writes down the edges it can't score cleanly — so you can read them and decide for yourself whether the remaining coverage is enough for your use case.
 
 ### GAP-004: a worked example of the 1% that fails
 
