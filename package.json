@@ -79,6 +79,9 @@
     ],
     "*.md": [
       "markdownlint-cli2"
+    ],
+    "*.astro": [
+      "prettier --write --ignore-unknown"
     ]
   },
   "dependencies": {
