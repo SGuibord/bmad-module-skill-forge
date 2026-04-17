@@ -1,6 +1,6 @@
 ---
 title: Examples
-description: Real-world scenarios, tips, and troubleshooting for Skill Forge
+description: Real-world scenarios and operational tips for Skill Forge. For common errors, see Troubleshooting.
 ---
 
 ## What the Output Looks Like
@@ -49,7 +49,7 @@ Provenance tags trace each instruction to its source:
 - `[EXT:url]` — sourced from external documentation
 - `[QMD:collection:doc]` — surfaced from indexed developer discourse (issues, PRs, changelogs)
 
-See [How It Works](../how-it-works/) for the full output structure.
+See [Skill Model → Output Architecture](../skill-model/#output-architecture) for the full output structure.
 
 **Full skill directory structure** (real layout from [`oh-my-skills/skills/oms-cognee/`](https://github.com/armelhbobdad/oh-my-skills/tree/main/skills/oms-cognee)):
 
@@ -74,7 +74,7 @@ skills/oms-cognee/
             └── pipelines-and-datapoints.md
 ```
 
-This is the real directory listing from [`oh-my-skills/skills/oms-cognee/`](https://github.com/armelhbobdad/oh-my-skills/tree/main/skills/oms-cognee) after cognee shipped v1.0.0 upstream. SKF recompiled the skill from the v1.0.0 commit and wrote it next to the existing 0.5.8 tree — the older version stays pinned to its original commit (`b51dcce1`) and is still installable by any project that hasn't bumped its `CLAUDE.md` pin yet. The `active` symlink and the [`.export-manifest.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/.export-manifest.json) both point at the current version. Some skills also include `scripts/` and `assets/` directories when the source repository contains executable scripts or static assets — oms-cognee doesn't have either, but see [How It Works → Per-Skill Output](../how-it-works/#per-skill-output) for the full schema.
+This is the real directory listing from [`oh-my-skills/skills/oms-cognee/`](https://github.com/armelhbobdad/oh-my-skills/tree/main/skills/oms-cognee) after cognee shipped v1.0.0 upstream. SKF recompiled the skill from the v1.0.0 commit and wrote it next to the existing 0.5.8 tree — the older version stays pinned to its original commit (`b51dcce1`) and is still installable by any project that hasn't bumped its `CLAUDE.md` pin yet. The `active` symlink and the [`.export-manifest.json`](https://github.com/armelhbobdad/oh-my-skills/blob/main/skills/.export-manifest.json) both point at the current version. Some skills also include `scripts/` and `assets/` directories when the source repository contains executable scripts or static assets — oms-cognee doesn't have either, but see [Skill Model → Per-Skill Output](../skill-model/#per-skill-output) for the full schema.
 
 ---
 
@@ -98,7 +98,7 @@ Need a specific version? Append `@version`:
 
 ### Brownfield Platform — Pipeline or per-workflow
 
-Alex's team adopts BMAD for 10 microservices (TypeScript, Go, Rust).
+Alex, a platform engineer, adopts BMAD for 10 microservices spanning TypeScript, Go, and Rust.
 
 ```
 @Ferris SF          # Setup — Deep tier detected
@@ -119,7 +119,7 @@ Or one workflow per session:
 
 ### Release Prep — Trust Builder
 
-Jin prepares v1.0.0 with breaking changes.
+Jin, a Rust library maintainer, is preparing v1.0.0 with breaking changes she wants consumers' agents to pick up automatically.
 
 ```
 @Ferris maintain cocoindex
@@ -140,17 +140,17 @@ Ships with the npm release. Consumers upgrade and their agents use the correct f
 
 ### Stack Skill — Integration Intelligence
 
-Armel's full-stack project: Next.js + Serwist + SpacetimeDB + better-auth.
+Armel, building a full-stack side project on Next.js + Serwist + SpacetimeDB + better-auth.
 
 ```
 @Ferris SS
 ```
 
-Ferris detects 8 significant dependencies, finds 5 co-import integration points. Generates a consolidated stack skill. The agent now knows: "When you modify the auth flow, update the Serwist cache exclusion at `src/sw.ts:L23`." That integration detail isn't available from any other tool in the [comparison table](../how-it-works/#how-skf-compares-to-product-alternatives).
+Ferris detects 8 significant dependencies, finds 5 co-import integration points. Generates a consolidated stack skill. The agent now knows: "When you modify the auth flow, update the Serwist cache exclusion at `src/sw.ts:L23`." That integration detail isn't available from any other tool in the [comparison table](/#how-skf-compares).
 
 ### Pre-Code Architecture Verification — Greenfield Confidence
 
-Gery is designing a new TypeScript backend with Hono + Drizzle + SpacetimeDB. Architecture doc written, but no code yet. Wants to verify the stack works before building.
+Gery, a backend architect, is designing a new TypeScript service on Hono + Drizzle + SpacetimeDB. Architecture doc is written but no code exists yet — he wants to verify the stack holds together before anyone starts building.
 
 ```
 @Ferris QS hono          # Quick Skill per library
@@ -182,13 +182,13 @@ Skills accumulate over sprints. The agent's coverage improves each iteration.
 
 ### Scenario B: Multi-Repo Platform
 
-Blondin needs cross-service knowledge for 10 microservices.
+Blondin, a platform lead, needs cross-service knowledge for 10 microservices so agents can navigate shared types and cross-calls.
 
 One forge project, multiple QMD collections, hub-and-spoke skills with integration patterns.
 
 ### Scenario C: External Dependency
 
-Kossi needs skills for a library that doesn't have official skills.
+Kossi, a developer integrating an uncommon library, needs a skill for it — nothing official exists yet.
 
 ```
 @Ferris QS better-auth
@@ -287,7 +287,7 @@ You maintain an OSS library and want to ship official agent skills alongside eac
 
 ### Skip Permissions for Faster Forging
 
-See the canonical [Tip from Armel](../concepts/#best-practices) in Concepts — same recommendation applies across every workflow.
+> **Tip from Armel:** When forging skills with Claude Code, I run `claude --dangerously-skip-permissions` to bypass all permission prompts. SKF workflows only read source code, write to `skills/` and `forge-data/`, and call local tools (ast-grep, qmd, gh) — every step is auditable in the [open source](https://github.com/armelhbobdad/bmad-module-skill-forge). Skipping permissions drastically reduces forge time: I start a pipeline, go [grab one of those coffees ☕ you keep offering](https://buymeacoffee.com/armelhbobdad), and come back to a completed workflow. Review the output at the end, not at every gate.
 
 ### Progressive Capability
 
@@ -327,32 +327,6 @@ Every SKF workflow ends with a shared **health check** step where Ferris reflect
 
 ---
 
-## Troubleshooting
+## Something not working?
 
-### Common Issues
-
-**Forge reports ast-grep is unavailable**
-If setup reports that ast-grep was not detected, install it to unlock the Forge tier: <https://ast-grep.github.io>
-
-**"No brief found"**
-Run `@Ferris BS` first to create a skill brief, or use `@Ferris QS` for brief-less generation.
-
-**"Ecosystem check: official skill exists"**
-An official skill already exists for this package. Consider installing it with `npx skills add` instead of generating your own.
-
-**Quick tier skills have lower confidence**
-Quick tier reads source without AST analysis. Install ast-grep to upgrade to the Forge tier for AST-verified signatures (T1 confidence).
-
-**Want semantic discovery for large codebases?**
-Install [cocoindex-code](https://github.com/cocoindex-io/cocoindex-code) to unlock the Forge+ tier. CCC indexes your codebase and pre-ranks files by semantic relevance before AST extraction, improving coverage on projects with 500+ files.
-
----
-
-## Getting More Help
-
-- Run `/bmad-help` — it analyzes your current state and suggests what to do next
-  (e.g. `/bmad-help my batch creation failed halfway, how do I resume?`)
-  *Provided by the [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) — not available in standalone SKF installations.*
-- Run `@Ferris SF` to check your current tier and tool availability
-- Review `forge-tier.yaml` in your forger sidecar for runtime configuration
-- Check module configuration in your BMAD settings
+See [Troubleshooting](../troubleshooting/) for common errors (ast-grep unavailable, "no brief found", ecosystem check messages) and how to resolve them. For general setup help, see [Getting Started → Need help?](../getting-started/#need-help).
