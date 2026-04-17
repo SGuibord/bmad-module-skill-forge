@@ -2,69 +2,23 @@
 nextStepFile: './step-07-health-check.md'
 ---
 
-# Step 6: Write Output
+# Step 6: Finalize
 
 ## STEP GOAL:
 
-To write the compiled SKILL.md, context-snippet.md, and metadata.json to the skills output folder and display a completion summary with next step recommendations.
+To finalize the skill by creating the active-version pointer, displaying the completion summary, and writing the result contract. Deliverables (SKILL.md, context-snippet.md, metadata.json) were already written in step-05 so that validation could run against files on disk; this step only performs the post-write finalization.
 
 ## Rules
 
-- Write exactly what was compiled — do not modify content
-- If any write fails, hard halt with error details
-- Path resolution: Quick-skill uses `{repo_name}` as the skill name and defaults `{version}` to `1.0.0` if not detected from the extraction inventory
+- Do not rewrite deliverables — they were written and validated in step-05
+- Create the active pointer via the shared helper — never `rm` + `ln -s` manually
+- Result contract writing is mandatory (pipeline consumers depend on it)
 
 ## MANDATORY SEQUENCE
 
 **CRITICAL:** Follow this sequence exactly. Do not skip, reorder, or improvise unless user explicitly requests a change.
 
-### 1. Create Output Directory
-
-Resolve `{version}` from the extraction inventory's detected version, defaulting to `1.0.0` if not detected. Create the skill output directories:
-
-```
-{skill_group}                          # {skills_output_folder}/{repo_name}/
-{skill_package}                        # {skills_output_folder}/{repo_name}/{version}/{repo_name}/
-```
-
-If `{skill_package}` already exists, confirm with user before overwriting:
-
-"**Directory `{skill_package}` already exists.** Overwrite existing files? [Y/N]"
-
-- **If user selects Y:** Proceed to section 2.
-- **If user selects N:** Halt with: "Overwrite cancelled. Existing skill preserved. Run [QS] with a different skill name or remove the existing directory manually."
-
-### 2. Write SKILL.md
-
-Write the compiled SKILL.md content to:
-
-```
-{skill_package}/SKILL.md
-```
-
-Confirm: "Written: SKILL.md"
-
-### 3. Write context-snippet.md
-
-Write the context snippet to:
-
-```
-{skill_package}/context-snippet.md
-```
-
-Confirm: "Written: context-snippet.md"
-
-### 4. Write metadata.json
-
-Write the metadata JSON to:
-
-```
-{skill_package}/metadata.json
-```
-
-Confirm: "Written: metadata.json"
-
-### 4b. Create Active Pointer (atomic flip, Windows-safe)
+### 1. Create Active Pointer (atomic flip, Windows-safe)
 
 Create or update the `active` pointer at `{skill_group}/active` pointing to `{version}` using the shared atomic-flip helper. The helper acquires an `flock` on `{skill_group}/active.skf-lock`, refuses to replace a non-link at `{skill_group}/active` (protecting against accidental `rm -rf` of a real directory), and uses a rename-over-symlink pattern so the update is atomic from a concurrent reader's perspective. On Windows the helper automatically falls back to a directory junction (`mklink /J`) when `os.symlink` fails with `PRIVILEGE_NOT_HELD` / `ACCESS_DENIED` — junctions require no admin elevation and resolve identically for `skf-skill-inventory`'s consumers:
 
@@ -80,20 +34,7 @@ The helper returns non-zero (exit 2) if `{skill_group}/active` already exists as
 
 Confirm: "Active pointer: {skill_group}/active -> {version} ({kind})" where `{kind}` is `symlink` or `junction` as returned by the helper.
 
-### 5. Handle Write Failures
-
-**If any file write fails — HARD HALT:**
-
-"**Write failed:** Could not write to `{file_path}`.
-
-Error: {error details}
-
-Please check:
-- Does the output directory exist and is it writable?
-- Is there sufficient disk space?
-- Are there permission issues?"
-
-### 6. Display Completion Summary
+### 2. Display Completion Summary
 
 "**Quick Skill complete.**
 
@@ -121,11 +62,10 @@ Please check:
 
 **Note:** This is a best-effort community skill. For deeper analysis with AST-verified exports and provenance tracking, use the full **create-skill** workflow with a skill brief."
 
-### Result Contract
+### 3. Result Contract
 
 Write the result contract per `shared/references/output-contract-schema.md`: the per-run record at `{skill_package}/quick-skill-result-{YYYYMMDD-HHmmss}.json` (UTC timestamp, resolution to seconds) and a copy at `{skill_package}/quick-skill-result-latest.json` (stable path for pipeline consumers — copy, not symlink). Include `SKILL.md`, `context-snippet.md`, and `metadata.json` paths in `outputs` and export count in `summary`.
 
-### 7. Chain to Health Check
+### 4. Chain to Health Check
 
-ONLY WHEN the skill files are written and the completion summary has been displayed will you then load, read the full file, and execute `{nextStepFile}`. The health-check step is the true terminal step — do not stop here even though the summary reads as final.
-
+ONLY WHEN the active pointer has been created and the completion summary and result contract have been written will you then load, read the full file, and execute `{nextStepFile}`. The health-check step is the true terminal step — do not stop here even though the summary reads as final.
