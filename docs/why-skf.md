@@ -88,6 +88,6 @@ Everything else is downstream of one question: *are the instructions your AI rea
 
 ## Next
 
-- **[Install SKF](../getting-started/#installation)** — Node ≥ 22, Python ≥ 3.10, `uv`, one `npx` command
+- **[Install SKF](../getting-started/#install)** — Node ≥ 22, Python ≥ 3.10, `uv`, one `npx` command
 - **[Audit a skill in 60 seconds](../verifying-a-skill/)** — see the receipts before you install
 - **[Browse real skills](https://github.com/armelhbobdad/oh-my-skills)** — four Deep-tier skills, all shipping their audit trails

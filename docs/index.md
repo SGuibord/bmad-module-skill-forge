@@ -11,7 +11,7 @@ hero:
       icon: right-arrow
       variant: primary
     - text: Install
-      link: ./getting-started/#installation
+      link: ./getting-started/#install
       icon: right-arrow
       variant: secondary
 ---
