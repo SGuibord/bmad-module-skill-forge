@@ -54,7 +54,7 @@ def make_skill(skills_dir, name, version="1.0.0", with_metadata=True, with_prove
     version_dir.mkdir(parents=True, exist_ok=True)
 
     # Write SKILL.md
-    (version_dir / "SKILL.md").write_text(f"---\nname: {name}\n---\n# {name}\n")
+    (version_dir / "SKILL.md").write_text(f"---\nname: {name}\n---\n# {name}\n", encoding="utf-8")
 
     if with_metadata:
         meta = {
@@ -67,10 +67,10 @@ def make_skill(skills_dir, name, version="1.0.0", with_metadata=True, with_prove
             "confidence_tier": "Forge",
             "stats": {"exports_total": 10},
         }
-        (version_dir / "metadata.json").write_text(json.dumps(meta))
+        (version_dir / "metadata.json").write_text(json.dumps(meta), encoding="utf-8")
 
     if with_provenance:
-        (version_dir / "provenance-map.json").write_text("{}")
+        (version_dir / "provenance-map.json").write_text("{}", encoding="utf-8")
 
     # Create active symlink (junction on Windows w/o Dev Mode)
     active_link = skill_group / "active"
@@ -144,7 +144,7 @@ class TestSkfSkillInventory:
     def test_with_export_manifest(self, skills_dir):
         make_skill(skills_dir, "cocoindex", "2.0.0")
         manifest = {"exports": {"cocoindex": {"active_version": "2.0.0"}}}
-        (skills_dir / ".export-manifest.json").write_text(json.dumps(manifest))
+        (skills_dir / ".export-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
         result = scan_inventory(str(skills_dir))
         assert result["manifest"] is not None
         assert "cocoindex" in result["manifest"]["exports"]

@@ -68,7 +68,7 @@ def deep_diff(expected, actual, path=""):
 
 
 def _load_fixtures():
-    with open(FIXTURES_PATH) as f:
+    with open(FIXTURES_PATH, encoding="utf-8") as f:
         fixtures = json.load(f)
     return fixtures
 

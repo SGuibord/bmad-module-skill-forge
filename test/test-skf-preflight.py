@@ -45,15 +45,15 @@ def make_project(tmpdir, config=None, sidecar=True, preferences=None, forge_tier
             "forge_data_folder": str(root / "forge-data"),
         }
 
-    with open(cfg_dir / "config.yaml", "w") as f:
+    with open(cfg_dir / "config.yaml", "w", encoding="utf-8") as f:
         yaml.dump(config, f)
 
     if sidecar and preferences is not None:
-        with open(sidecar_dir / "preferences.yaml", "w") as f:
+        with open(sidecar_dir / "preferences.yaml", "w", encoding="utf-8") as f:
             yaml.dump(preferences, f)
 
     if sidecar and forge_tier is not None:
-        with open(sidecar_dir / "forge-tier.yaml", "w") as f:
+        with open(sidecar_dir / "forge-tier.yaml", "w", encoding="utf-8") as f:
             yaml.dump(forge_tier, f)
 
     return root

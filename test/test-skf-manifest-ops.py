@@ -124,7 +124,7 @@ class TestManifestOps:
             },
             "updated_at": "2026-04-01T00:00:00+00:00",
         }
-        manifest_path.write_text(json.dumps(v1_data))
+        manifest_path.write_text(json.dumps(v1_data), encoding="utf-8")
         r = mod.cmd_get(manifest_path, "cocoindex")
         assert r["status"] == "ok"
         assert isinstance(r["entry"]["versions"], dict)
@@ -150,7 +150,7 @@ class TestManifestOps:
                 }
             },
         }
-        manifest_path.write_text(json.dumps(legacy_v2))
+        manifest_path.write_text(json.dumps(legacy_v2), encoding="utf-8")
         r = mod.cmd_get(manifest_path, "cocoindex")
         assert r["status"] == "ok"
         entry = r["entry"]["versions"]["2.0.0"]
@@ -174,7 +174,7 @@ class TestManifestOps:
                 }
             },
         }
-        manifest_path.write_text(json.dumps(legacy_v2))
+        manifest_path.write_text(json.dumps(legacy_v2), encoding="utf-8")
         # Re-set the same version — should keep the IDE list, rewritten under `ides`
         mod.cmd_set(manifest_path, "cocoindex", "2.0.0")
         r = mod.cmd_get(manifest_path, "cocoindex")
@@ -200,7 +200,7 @@ class TestManifestOps:
                 }
             },
         }
-        manifest_path.write_text(json.dumps(data))
+        manifest_path.write_text(json.dumps(data), encoding="utf-8")
         r = mod.cmd_get(manifest_path, "cocoindex")
         entry = r["entry"]["versions"]["2.0.0"]
         assert entry["ides"] == ["cursor"]
