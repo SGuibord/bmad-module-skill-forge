@@ -31,6 +31,8 @@ You ask an AI agent to use a library. It invents function names that don't exist
 
 This isn't an edge case. It's the default experience.
 
+For the full story behind SKF, read [*Hallucination has a line number*](https://medium.com/@armelhbobdad/hallucination-has-a-line-number-32209b4688de) on Medium.
+
 ## Before vs After
 
 **Without SKF** — your agent guesses:
