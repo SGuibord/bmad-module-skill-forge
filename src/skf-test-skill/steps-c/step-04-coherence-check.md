@@ -70,7 +70,20 @@ for i, line in enumerate(open('SKILL.md'), 1):
 - Description says async + example shows no `await` → **High severity** finding: `naive-coherence — \`{name}\` described as async but example lacks \`await\``
 - Description says sync + example uses `await {name}` → **High severity** finding: `naive-coherence — \`{name}\` described as sync but example awaits it`
 
-**2.6 Table syntax.** `grep -nE '^\|.*\|$' SKILL.md | head` — for each table row, verify adjacent rows have the same pipe count (split on `|` and compare column count). **Column-count drift → Medium severity** finding: `naive-coherence — table row at line {N} has {X} columns; neighboring rows have {Y}`.
+**2.6 Table syntax.** `grep -nE '^\|.*\|$' SKILL.md | head` — for each table row, normalize escaped pipes (`\|`) before splitting, then verify adjacent rows have the same column count. **Escaped pipes appear inside TypeScript union types and discriminated payloads** (e.g. `string \| undefined`) and must not inflate the count.
+
+Recipe:
+
+```bash
+# Normalize `\|` to a placeholder, split on |, count, restore.
+grep -nE '^\|.*\|$' SKILL.md \
+  | sed 's/\\|/\x00/g' \
+  | awk -F'|' '{print NR, NF-2}'   # -2 drops the empty leading/trailing fields
+```
+
+Or equivalent: hand off to a proper markdown-table parser. A plain `split on |` WILL produce false "column drift" findings on any table whose cells contain union types.
+
+**Column-count drift → Medium severity** finding: `naive-coherence — table row at line {N} has {X} columns; neighboring rows have {Y}`.
 
 **2.7 Scripts & Assets section.** If `{skillDir}/scripts/` or `{skillDir}/assets/` exists, `grep -n '^## Scripts' SKILL.md`:
 - Directory exists AND no `## Scripts` section → **Medium severity** finding: `naive-coherence — scripts/assets directory exists but Scripts & Assets section missing` (per `{scoringRulesFile}`)
