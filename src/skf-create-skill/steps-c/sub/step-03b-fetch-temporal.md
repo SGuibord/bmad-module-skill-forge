@@ -1,5 +1,11 @@
 ---
 nextStepFile: './step-03c-fetch-docs.md'
+# Resolve `{atomicWriteHelper}` by probing `{atomicWriteProbeOrder}` in order
+# (installed SKF module path first, src/ dev-checkout fallback); first existing
+# path wins. HALT if neither resolves.
+atomicWriteProbeOrder:
+  - '{project-root}/_bmad/skf/shared/scripts/skf-atomic-write.py'
+  - '{project-root}/src/shared/scripts/skf-atomic-write.py'
 ---
 
 # Step 3b: Fetch Temporal Context
@@ -171,7 +177,7 @@ fi
 1. Acquire an exclusive `flock` on `{sidecar_path}/forge-tier.yaml.lock` (create the lock file if absent). Use `flock -x {lockfile} -c "..."` or an equivalent `fcntl.flock(LOCK_EX)` guard.
 2. Read the current `forge-tier.yaml`, capturing its `st_mtime` as `mtime_before`.
 3. Perform the read-modify-write below.
-4. Write via `python3 {project-root}/src/shared/scripts/skf-atomic-write.py write --target {sidecar_path}/forge-tier.yaml`.
+4. Write via `python3 {atomicWriteHelper} write --target {sidecar_path}/forge-tier.yaml`.
 5. Release the flock.
 
 **Fallback when `flock` is unavailable:** re-stat the file after the write; if the on-disk `st_mtime` is newer than `mtime_before` by more than this run's own write timestamp, halt with "forge-tier.yaml modified mid-update by another process — refusing to clobber. Re-run after the other run completes." This read-CAS-by-mtime is the belt-and-braces safety net for environments without `flock`.

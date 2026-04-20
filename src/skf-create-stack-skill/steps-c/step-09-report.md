@@ -1,5 +1,11 @@
 ---
 nextStepFile: './step-10-health-check.md'
+# Resolve `{atomicWriteHelper}` by probing `{atomicWriteProbeOrder}` in order
+# (installed SKF module path first, src/ dev-checkout fallback); first existing
+# path wins. HALT if neither resolves.
+atomicWriteProbeOrder:
+  - '{project-root}/_bmad/skf/shared/scripts/skf-atomic-write.py'
+  - '{project-root}/src/shared/scripts/skf-atomic-write.py'
 ---
 
 # Step 9: Stack Skill Report
@@ -95,7 +101,7 @@ Write the result contract per `shared/references/output-contract-schema.md` usin
 **Per-run record (inside the version dir):**
 
 ```bash
-<json-content> | python3 {project-root}/src/shared/scripts/skf-atomic-write.py write \
+<json-content> | python3 {atomicWriteHelper} write \
   --target {forge_version}/create-stack-skill-result-{YYYYMMDD-HHmmss}-{pid}-{rand}.json
 ```
 
@@ -105,7 +111,7 @@ Write the result contract per `shared/references/output-contract-schema.md` usin
 **Stable latest pointer (ABOVE the version dir, at the stack group root):**
 
 ```bash
-<json-content> | python3 {project-root}/src/shared/scripts/skf-atomic-write.py write \
+<json-content> | python3 {atomicWriteHelper} write \
   --target {forge_data_folder}/{project_name}-stack/create-stack-skill-result-latest.json
 ```
 

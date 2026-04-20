@@ -1,6 +1,13 @@
 ---
 nextStepFile: './step-08-validate.md'
 stackSkillTemplate: 'assets/stack-skill-template.md'
+# Resolve `{atomicWriteHelper}` by probing `{atomicWriteProbeOrder}` in order
+# (installed SKF module path first, src/ dev-checkout fallback); first existing
+# path wins. HALT if neither resolves — stage/commit/flip-link/write below
+# MUST go through the atomic helper, per §1 rollback contract.
+atomicWriteProbeOrder:
+  - '{project-root}/_bmad/skf/shared/scripts/skf-atomic-write.py'
+  - '{project-root}/src/shared/scripts/skf-atomic-write.py'
 ---
 
 # Step 7: Generate Output Files
@@ -46,7 +53,7 @@ Do NOT proceed to staging or commit.
 Create the staging directory:
 
 ```bash
-python3 {project-root}/src/shared/scripts/skf-atomic-write.py stage-dir --target {skill_package}
+python3 {atomicWriteHelper} stage-dir --target {skill_package}
 ```
 
 After this call, writes land in `{skill_package}.skf-tmp/` (referred to below as `{skill_staging}`). Create the required subdirectories inside the staging dir:
@@ -64,7 +71,7 @@ mkdir -p {forge_version}
 **Rollback contract:** If ANY write in sections 2–7 below fails, immediately run:
 
 ```bash
-python3 {project-root}/src/shared/scripts/skf-atomic-write.py commit-dir --rollback --target {skill_package}
+python3 {atomicWriteHelper} commit-dir --rollback --target {skill_package}
 ```
 
 Then abort with a structured error contract (see B7): purge any `{forge_version}/*-tmp` staging artifacts, emit `{"status":"error","skill":"skf-create-stack-skill","stage":"step-07","reason":"<message>"}` on stderr, and halt the workflow.
@@ -176,8 +183,8 @@ Populate all fields from the metadata.json schema defined in `{stackSkillTemplat
 Write workspace artifacts directly to `{forge_version}` (these are workspace-only, not part of the skill package — no staging required). Each individual file MUST be written via `skf-atomic-write.py write` to avoid partial-write corruption:
 
 ```bash
-<json-content> | python3 {project-root}/src/shared/scripts/skf-atomic-write.py write --target {forge_version}/provenance-map.json
-<md-content>   | python3 {project-root}/src/shared/scripts/skf-atomic-write.py write --target {forge_version}/evidence-report.md
+<json-content> | python3 {atomicWriteHelper} write --target {forge_version}/provenance-map.json
+<md-content>   | python3 {atomicWriteHelper} write --target {forge_version}/evidence-report.md
 ```
 
 If any workspace write fails, invoke the rollback contract from §1.
@@ -277,7 +284,7 @@ If any workspace write fails, invoke the rollback contract from §1.
 After all staged writes in sections 2–6 completed successfully, atomically swap the staging dir into place:
 
 ```bash
-python3 {project-root}/src/shared/scripts/skf-atomic-write.py commit-dir --target {skill_package}
+python3 {atomicWriteHelper} commit-dir --target {skill_package}
 ```
 
 The helper moves any existing `{skill_package}` aside to a `.skf-rollback-<pid>` dir before the swap. On failure the helper restores the prior target and exits non-zero — in that case invoke the rollback contract from §1 and HALT.
@@ -287,7 +294,7 @@ The helper moves any existing `{skill_package}` aside to a `.skf-rollback-<pid>`
 ONLY AFTER `commit-dir` succeeds, flip the `{skill_group}/active` symlink to point at `{version}`:
 
 ```bash
-python3 {project-root}/src/shared/scripts/skf-atomic-write.py flip-link --link {skill_group}/active --target {version}
+python3 {atomicWriteHelper} flip-link --link {skill_group}/active --target {version}
 ```
 
 The helper holds an flock on `{skill_group}/active.skf-lock` and refuses to replace a non-symlink at `{skill_group}/active` — this guards against accidentally overwriting a real directory (ECH BLOCKER 6/B6). After the flip, `{skill_group}/active/{project_name}-stack/` resolves to the just-committed skill package.

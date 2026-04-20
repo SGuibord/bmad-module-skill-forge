@@ -1,6 +1,13 @@
 ---
 nextStepFile: './step-07-generate-artifacts.md'
 tesslDismissalData: 'assets/tessl-dismissal-rules.md'
+# Resolve `{atomicWriteHelper}` by probing `{atomicWriteProbeOrder}` in order
+# (installed SKF module path first, src/ dev-checkout fallback); first existing
+# path wins. HALT if neither resolves — losing atomic-write guarantees is not
+# an option for the staging-directory artifacts this step produces.
+atomicWriteProbeOrder:
+  - '{project-root}/_bmad/skf/shared/scripts/skf-atomic-write.py'
+  - '{project-root}/src/shared/scripts/skf-atomic-write.py'
 ---
 
 # Step 6: Validate
@@ -51,7 +58,7 @@ To prevent this, any tool invocation that may touch SKILL.md must run inside the
 Run: `timeout 30s npx skill-check -h` — the short timeout protects against a cold `npx` download blocking the workflow indefinitely on a slow network.
 
 - If succeeds: Continue to automated validation (section 2)
-- If fails or times out: Perform manual fallback (section 3); add note to evidence-report: "Spec validation performed manually — skill-check tool unavailable". Also set `metadata.validation_status: 'manual-only'` in `metadata.json` (write via `python3 {project-root}/src/shared/scripts/skf-atomic-write.py write --target <staging-skill-dir>/metadata.json`), and in the evidence-report's `Validation Results` section mark Security, Body, and Content Quality (tessl) rows explicitly as `skipped — skill-check unavailable`. Downstream consumers (pipeline, forger, test-skill) check `validation_status` to decide how much weight to put on the artifact; leaving it unset would make a manual-only run look equivalent to a fully automated PASS.
+- If fails or times out: Perform manual fallback (section 3); add note to evidence-report: "Spec validation performed manually — skill-check tool unavailable". Also set `metadata.validation_status: 'manual-only'` in `metadata.json` (write via `python3 {atomicWriteHelper} write --target <staging-skill-dir>/metadata.json`), and in the evidence-report's `Validation Results` section mark Security, Body, and Content Quality (tessl) rows explicitly as `skipped — skill-check unavailable`. Downstream consumers (pipeline, forger, test-skill) check `validation_status` to decide how much weight to put on the artifact; leaving it unset would make a manual-only run look equivalent to a fully automated PASS.
 
 **Important:** Do not assume availability — empirical check required.
 
