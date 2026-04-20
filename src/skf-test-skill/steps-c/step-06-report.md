@@ -86,6 +86,15 @@ If no gaps found, append a clean pass message recommending **export-skill** work
 
 After gap enumeration, perform minimum-viable discovery testing. This is a **Medium-weight** check contributing to the Discovery Quality subsection — no longer advisory boilerplate.
 
+**4b.0 Precondition — catalog size check:**
+
+Count the skills in `{skillsOutputFolder}`: `ls -1d {skillsOutputFolder}/*/ 2>/dev/null | wc -l` (directories only — each skill package lives at `{skillsOutputFolder}/<skill-name>/`).
+
+- If `catalog_size < 2`: **skip §4b.1–§4b.3**. Record an Info-severity note in the Discovery Quality subsection: `discovery — skipped: catalog size N={catalog_size}, requires ≥2 candidates for meaningful routing`. The routing test is vacuous with one candidate (any prompt returns the sole skill); reporting `3/3 PASS` under those conditions inflates the Discovery score and masks genuinely bad description triggers. Proceed to §4b.4 (description optimization) if tessl/skill-check flagged description issues; otherwise skip to §4c.
+- If `catalog_size >= 2`: continue with §4b.1 as written.
+
+Optional escape hatch: the workflow accepts `--discovery-catalog=all` to broaden the candidate pool to `.claude/skills/` or `_bmad/agents/` for single-skill repos where the repo-local catalog is trivially too small. When the flag is set, rebuild `catalog_size` from the broader pool before the precondition check.
+
 **4b.1 Extract realistic prompts from the skill under test:**
 
 Parse SKILL.md for the three most "organic" prompts found in its `description`, `Triggers`, or example sections. Prefer prompts that:
