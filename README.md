@@ -175,6 +175,10 @@ SKF builds on these excellent open-source tools:
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
+## Release Process
+
+Maintainers: see [docs/RELEASING.md](docs/RELEASING.md) for branch-protection rules, required status checks, and (later) the rollback playbook.
+
 ## License
 
 MIT License — see [LICENSE](LICENSE) for details.
