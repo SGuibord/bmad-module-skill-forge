@@ -177,7 +177,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## Release Process
 
-Maintainers: see [docs/RELEASING.md](docs/RELEASING.md) for branch-protection rules, required status checks, the `release` environment with required-reviewer gate, the npm Trusted Publisher registration (OIDC-backed publish, auto-provenance), and (later) the rollback playbook.
+Maintainers: see [docs/RELEASING.md](docs/RELEASING.md) for branch-protection rules, required status checks, the [`release` environment with required-reviewer gate](docs/RELEASING.md#release-environment), the [npm Trusted Publisher registration](docs/RELEASING.md#npm-trusted-publisher) (OIDC-backed publish, auto-provenance), and (later) the rollback playbook.
 
 ## License
 
