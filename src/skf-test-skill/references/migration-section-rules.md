@@ -42,8 +42,30 @@ authoring rule.
 ## Case Rules
 
 Check whether SKILL.md contains a "Migration & Deprecation Warnings" section
-(Section 4b). Then check the skill's `evidence-report.md` for T2-future
-annotation counts.
+(Section 4b). Then parse `evidence-report.md`'s **YAML frontmatter** for the
+pinned `t2_future_count` field — this is the authoritative count, not the
+narrative body.
+
+**Detection contract (MANDATORY).** Read the frontmatter deterministically:
+
+```bash
+# Extract t2_future_count from frontmatter. Requires a `---` delimiter pair.
+awk '/^---$/{c++;next} c==1 && /^t2_future_count:/{print $2; exit}' \
+    {forge_data_folder}/{skill_name}/evidence-report.md
+```
+
+- **Frontmatter missing OR `t2_future_count` absent** → treat as Case 4 (see
+  below) and skip silently. Do NOT fall back to grepping prose (`grep "T2-future"`) —
+  prose drift (heading renames, alt phrasings like "forward-looking
+  annotations", capitalization variance) silently breaks detection and can
+  invert Case-1 vs Case-2/3 severity.
+- **`t2_future_count` parsed** → use its integer value for the Case Rules
+  below.
+
+The pinned field is emitted by `skf-create-skill/steps-c/step-05-compile.md`
+§7 (frontmatter-pinned fields), which ALWAYS writes `t2_future_count: N`
+(including 0). Legacy skills whose `evidence-report.md` predates the pinned
+field land in Case 4.
 
 ### Case 1 — T2-future > 0 AND Section 4b absent
 
