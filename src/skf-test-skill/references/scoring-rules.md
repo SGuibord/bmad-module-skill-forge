@@ -56,6 +56,18 @@ This is functionally identical to Quick tier weight redistribution but with a di
 
 **S4 external-validator requirement for docs-only:** docs-only mode removes two categories (Signature Accuracy, Type Coverage) from scoring. If External Validation is ALSO unavailable, the evidence base collapses to Coverage alone (naive) or Coverage + Coherence (contextual) — which in the naive/Quick case trips the minimum-evidence floor (INCONCLUSIVE). To keep docs-only skills gradable when external validators are present but still deterministic when they are missing: **when `docsOnly: true` AND `externalValidation is null`, step-05 MUST cap `totalScore` at `threshold - 1` (forcing FAIL) before the INCONCLUSIVE floor is evaluated.** This prevents a docs-only skill from PASSing with only one or two redistributed categories carrying all the weight. Implement in step-05 §4 as a pre-compare cap, recorded in the report as `scoring_notes: docs-only without external validators — capped below threshold per S4`.
 
+### Stack Skills (Any Tier)
+
+When `metadata.json.skill_type == "stack"` (set `stackSkill: true` in the scoring input):
+
+- **Signature Accuracy:** N/A — a stack skill's "signature surface" is the external library API it composes (pydantic, SQLAlchemy, FastAPI, etc.), not a proprietary surface the skill authors. Grading signatures against a surface the skill does not own produces meaningless numbers.
+- **Type Coverage:** N/A — same rationale; the type surface belongs to the external libraries.
+- **Weight redistribution:** Same as Quick tier / docs-only / State 2 — Signature Accuracy (22%) and Type Coverage (14%) weights redistributed proportionally to remaining active categories (Export Coverage, Coherence, External Validation).
+- **Applies regardless of detected tier** (Quick, Forge, Forge+, Deep) and is independent of `docsOnly` and `state2`. A stack skill can also be docs-only or State 2; the skip reasons combine additively (e.g. `"stack skill (external type surface) + State 2 (provenance-map)"`).
+- **Detection:** step-05 reads `metadata.json.skill_type` from the skill package. If the value is `"stack"`, set `stackSkill: true` in the scoring input JSON.
+
+Equivalence-class note: stack skills with `docsOnly:false` / `state2:false` map to the same equivalence class as State 2 contextual rows (class B) or State 2 naive rows (class D) — the redistribution math is identical; only the `skipReasons` string changes.
+
 ### State 2 Source Access (Any Tier, Provenance-Map Only)
 
 When source is not locally available and analysis resolves to State 2 (provenance-map baseline per source-access-protocol.md):
