@@ -26,9 +26,11 @@ From `confirmed_dependencies`, generate all unique pairs:
 - N libraries → N*(N-1)/2 pairs
 - Skip pairs where either library had extraction failure in step 04
 
-**Top-K cap (S7):** If `|confirmed_dependencies| > 50`, cap pair analysis at the top **50** libraries ranked by import count (code-mode) or export count (compose-mode). Pairs outside the top-50 are excluded from integration detection. Warn the user explicitly: `"dependency count {N} exceeds pair-analysis cap — analyzing top 50 by {metric}; {excluded_count} libraries skipped for integration detection"`. Record this cap in the evidence report.
+**File-list intersection fast path (MANDATORY first pass, all N):** before issuing any pair grep, compute each pair's candidate file set by **intersecting the per-library file lists recorded by step-03 import-count extraction**. Pairs with an empty intersection cannot be integration candidates by construction — drop them. Subsequent grep passes run only against pairs with a non-empty intersection, and grep scope is restricted to those intersection files rather than the whole source tree. This is NOT a "subprocess-unavailable" fallback; it is the default strategy for every N. Rationale: at N≈21 this collapses 210 prescribed pair greps to ~12 non-empty-intersection pairs in typical codebases; at larger N the compression is even greater.
 
-Report: "**Analyzing {pair_count} library pairs for integration patterns...**"
+**Top-K cap (S7, lowered to 20):** If the file-list-intersection prune still leaves more than **20** non-empty-intersection pairs, cap at the top 20 pairs ranked by intersection size (or by import count if tied). Dropped pairs are excluded from integration detection — warn the user explicitly: `"non-empty-intersection pair count {N} exceeds cap — analyzing top 20 by intersection size; {excluded_count} pairs skipped"`. Record this cap in the evidence report. The legacy 50-dependency threshold that formerly gated a separate Top-K pass is retired — the file-intersection prune does the bulk of the work and the cap is now a second-order safety limit, not a primary strategy.
+
+Report: "**Analyzing {pair_count} library pairs for integration patterns** (pruned from {N*(N-1)/2} via file-list intersection; {capped_count} after Top-K if applicable)**...**"
 
 ### 2. Detect Co-Import Files
 
@@ -77,7 +79,7 @@ For each library pair (A, B):
 
 **Subprocess returns:** `{pair: [A, B], co_import_files: [{path, line_A, line_B}], count: N}`
 
-**If subprocess unavailable:** Intersect the file lists from step 03 import counts for each pair.
+**Note on file-list intersection:** per §1, the intersection has already been computed and the pair's `intersection_files` set is known. The grep below runs against that set only, not the whole source tree. If a subprocess is entirely unavailable, the intersection itself is the integration evidence — count the intersection files against the 2-file threshold below without the grep. The intersection is mandatory first-pass work, not a fallback.
 
 **Threshold:** A pair must have 2+ co-import files to qualify as an integration pattern (single file co-imports may be incidental).
 

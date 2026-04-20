@@ -66,7 +66,7 @@ def make_error(message):
 # --- Validation ---
 
 
-BOOL_FIELDS = ("docsOnly", "state2")
+BOOL_FIELDS = ("docsOnly", "state2", "stackSkill")
 
 
 def validate_input(inp):
@@ -129,6 +129,7 @@ def compute_score(inp):
     tier = inp["tier"]
     docs_only = inp.get("docsOnly") is True
     state2 = inp.get("state2") is True
+    stack_skill = inp.get("stackSkill") is True
     threshold = inp.get("threshold") if inp.get("threshold") is not None else DEFAULT_THRESHOLD
     scores = inp["scores"]
 
@@ -137,7 +138,7 @@ def compute_score(inp):
 
     # 3. Determine skip set
     skip_reasons = {}
-    skip_sig_type = tier == "Quick" or docs_only or state2
+    skip_sig_type = tier == "Quick" or docs_only or state2 or stack_skill
 
     if skip_sig_type:
         reasons = []
@@ -147,6 +148,8 @@ def compute_score(inp):
             reasons.append("docs-only mode")
         if state2:
             reasons.append("State 2 (provenance-map)")
+        if stack_skill:
+            reasons.append("stack skill (external type surface)")
         reason = " + ".join(reasons)
         skip_reasons["signatureAccuracy"] = reason
         skip_reasons["typeCoverage"] = reason
@@ -257,6 +260,7 @@ def compute_score(inp):
             "tier": tier,
             "docsOnly": docs_only,
             "state2": state2,
+            "stackSkill": stack_skill,
             "threshold": threshold,
             "scores": scores_echo,
         },

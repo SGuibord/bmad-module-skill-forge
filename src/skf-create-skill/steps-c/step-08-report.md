@@ -1,5 +1,11 @@
 ---
 nextStepFile: './step-09-health-check.md'
+# Resolve `{atomicWriteHelper}` by probing `{atomicWriteProbeOrder}` in order
+# (installed SKF module path first, src/ dev-checkout fallback); first existing
+# path wins. HALT if neither resolves.
+atomicWriteProbeOrder:
+  - '{project-root}/_bmad/skf/shared/scripts/skf-atomic-write.py'
+  - '{project-root}/src/shared/scripts/skf-atomic-write.py'
 ---
 
 # Step 8: Report
@@ -119,7 +125,7 @@ End workflow. No further steps.
 
 **Resolve the schema reference:** before writing, verify that `{project-root}/src/shared/references/output-contract-schema.md` exists and is readable. Try in order: `{project-root}/src/shared/references/output-contract-schema.md`, then `{project-root}/_bmad/skf/shared/references/output-contract-schema.md` (installed-forge path).
 
-- **If resolved:** write the result contract per the schema — the per-run record at `{forge_version}/create-skill-result-{YYYYMMDD-HHmmss}.json` (UTC timestamp, resolution to seconds) and a copy at `{forge_version}/create-skill-result-latest.json` (stable path for pipeline consumers — copy, not symlink). Include `SKILL.md`, `context-snippet.md`, and `metadata.json` paths in `outputs` and confidence distribution in `summary`. Use `python3 {project-root}/src/shared/scripts/skf-atomic-write.py write --target {forge_version}/create-skill-result-{YYYYMMDD-HHmmss}.json` (stdin-piped JSON) for the per-run record, then the same helper for the `-latest.json` copy.
+- **If resolved:** write the result contract per the schema — the per-run record at `{forge_version}/create-skill-result-{YYYYMMDD-HHmmss}.json` (UTC timestamp, resolution to seconds) and a copy at `{forge_version}/create-skill-result-latest.json` (stable path for pipeline consumers — copy, not symlink). Include `SKILL.md`, `context-snippet.md`, and `metadata.json` paths in `outputs` and confidence distribution in `summary`. Use `python3 {atomicWriteHelper} write --target {forge_version}/create-skill-result-{YYYYMMDD-HHmmss}.json` (stdin-piped JSON) for the per-run record, then the same helper for the `-latest.json` copy.
 
 - **If neither candidate path resolves:** skip the result-contract write entirely. Append a warning to `evidence-report.md`: "Result contract skipped — `shared/references/output-contract-schema.md` could not be resolved at either candidate path." Then set `validation_status: 'schema-unavailable'` in `metadata.json` (and re-write metadata.json via `skf-atomic-write.py write`). Pipeline consumers will observe the missing `-latest.json` and the metadata flag.
 

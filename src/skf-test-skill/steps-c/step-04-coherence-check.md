@@ -33,15 +33,34 @@ Read `testMode` from `{outputFile}` frontmatter.
 
 Perform the following explicit checks (no hand-waving — each recipe is a shell recipe or a literal pattern). Severity assignments are binding; do not relax them.
 
-**2.1 Required sections present.** For each required top-level H2, run `grep -n "^## {section}" SKILL.md`:
-- `## Description` (or frontmatter `description` field — either satisfies)
-- `## Usage` or `## Examples`
-- `## Exports` or equivalent API surface heading
-- **Zero matches for any required section → High severity** finding: `naive-coherence — missing required section: {section}`
+**2.1 Required sections present.** For each required top-level H2, run `grep -n "^## {section}" SKILL.md`. A required section is satisfied if **any** synonym in its set matches:
+- Description: `## Description` OR frontmatter `description` field — either satisfies
+- Usage: `## Usage` OR `## Examples` OR `## Quick Start` OR `## Common Workflows`
+- API surface: `## Exports` OR `## Key API Summary` OR `## API`
+- **Zero matches across an entire synonym set → High severity** finding: `naive-coherence — missing required section: {section-set-name}`
+
+Note: SKF-template skills ship with `## Quick Start`, `## Common Workflows`, and `## Key API Summary`. These are first-class synonyms — do not downgrade to Low on literal-name miss; accept them.
 
 **2.2 Code fence balance.** Count triple-backtick fences with `grep -c '^```' SKILL.md`. **Odd count → High severity** finding: `naive-coherence — unbalanced code fence (unclosed block)`.
 
-**2.3 Language tags on fences.** `grep -n '^```$' SKILL.md` finds bare fences. **Each match → Medium severity** finding: `naive-coherence — code fence at line {N} missing language tag`.
+**2.3 Language tags on opening fences.** Only **opening** fences are required to carry a language tag; closing fences are bare by markdown convention and must NOT be flagged. Do not use a plain `grep -n '^```$' SKILL.md` — that flags every closing fence and produces one false positive per well-formed code block.
+
+Use a stateful open/close scan (toggle `in_code` on each `^```` line; flag only the line where `in_code` transitions 0→1 with no trailing language tag):
+
+```python
+in_code = False
+for i, line in enumerate(open('SKILL.md'), 1):
+    s = line.rstrip('\n')
+    if s.startswith('```'):
+        if not in_code:
+            if s == '```':
+                print(f'{i}: bare opening fence')
+            in_code = True
+        else:
+            in_code = False
+```
+
+**Each flagged opening fence → Medium severity** finding: `naive-coherence — opening code fence at line {N} missing language tag`.
 
 **2.4 Exports cross-used in Usage section.** For each function name reported in the step-03 subagent inventory (`exports[].name` where `kind == "function"` or `kind == "method"`):
 - `grep -c "{export.name}" SKILL.md` restricted to the Usage section (find the `## Usage` anchor from §2.1 and the next `^## ` anchor; count within that span).
@@ -51,7 +70,20 @@ Perform the following explicit checks (no hand-waving — each recipe is a shell
 - Description says async + example shows no `await` → **High severity** finding: `naive-coherence — \`{name}\` described as async but example lacks \`await\``
 - Description says sync + example uses `await {name}` → **High severity** finding: `naive-coherence — \`{name}\` described as sync but example awaits it`
 
-**2.6 Table syntax.** `grep -nE '^\|.*\|$' SKILL.md | head` — for each table row, verify adjacent rows have the same pipe count (split on `|` and compare column count). **Column-count drift → Medium severity** finding: `naive-coherence — table row at line {N} has {X} columns; neighboring rows have {Y}`.
+**2.6 Table syntax.** `grep -nE '^\|.*\|$' SKILL.md | head` — for each table row, normalize escaped pipes (`\|`) before splitting, then verify adjacent rows have the same column count. **Escaped pipes appear inside TypeScript union types and discriminated payloads** (e.g. `string \| undefined`) and must not inflate the count.
+
+Recipe:
+
+```bash
+# Normalize `\|` to a placeholder, split on |, count, restore.
+grep -nE '^\|.*\|$' SKILL.md \
+  | sed 's/\\|/\x00/g' \
+  | awk -F'|' '{print NR, NF-2}'   # -2 drops the empty leading/trailing fields
+```
+
+Or equivalent: hand off to a proper markdown-table parser. A plain `split on |` WILL produce false "column drift" findings on any table whose cells contain union types.
+
+**Column-count drift → Medium severity** finding: `naive-coherence — table row at line {N} has {X} columns; neighboring rows have {Y}`.
 
 **2.7 Scripts & Assets section.** If `{skillDir}/scripts/` or `{skillDir}/assets/` exists, `grep -n '^## Scripts' SKILL.md`:
 - Directory exists AND no `## Scripts` section → **Medium severity** finding: `naive-coherence — scripts/assets directory exists but Scripts & Assets section missing` (per `{scoringRulesFile}`)
