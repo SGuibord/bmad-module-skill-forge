@@ -80,7 +80,7 @@ test-skill is a quality gate — it MUST NOT trust subagent output blindly. Befo
 **Schema validation (required keys + types):**
 
 1. Parse the subagent response as JSON. On parse failure → HALT "coverage-check: subagent response not valid JSON".
-2. Required keys present: `skill_name` (string), `exports` (list), `cross_check_mismatches` (list — may be empty). Missing key or wrong type → HALT "coverage-check: subagent JSON schema invalid — missing/typo: {key}".
+2. Required keys present: `exports` (list), `cross_check_mismatches` (list — may be empty). Missing key or wrong type → HALT "coverage-check: subagent JSON schema invalid — missing/typo: {key}". Note: the parent already knows the skill name from workflow context (`{resolved_skill_package}` from step-01) — the subagent is not required to echo it back, and doing so introduces a contract-drift surface without improving verification.
 3. Each `exports[]` entry must be a dict with at minimum `name` (non-empty string) and `kind` (one of `function|class|type|constant|hook|interface|method`). Reject entries violating this; if >0 rejections, HALT "coverage-check: subagent returned malformed export entries — {count} entries do not match schema".
 4. `cross_check_mismatches[]` entries (when non-empty) must carry `export`, `skill_md_line`, `reference_file`, `reference_line`, `issue`. Missing fields → HALT.
 
