@@ -16,7 +16,7 @@ For background on GitHub rulesets vs legacy branch protection, see the [GitHub r
 **Active rules (5):**
 
 | Rule                     | Effect                                                                                                                     |
-|--------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
 | `deletion`               | Branch cannot be deleted.                                                                                                  |
 | `non_fast_forward`       | Force-push blocked.                                                                                                        |
 | `pull_request`           | Requires ≥ 1 approving review; `require_code_owner_review: true` (see CODEOWNERS note below); merge/squash/rebase allowed. |
@@ -71,14 +71,14 @@ The publish job is gated by a **GitHub [deployment environment](https://docs.git
 
 **Environment:** `release` — id `14347249917` — created 2026-04-20.
 
-| Setting                      | Value                                               |
-|------------------------------|-----------------------------------------------------|
-| `wait_timer`                 | `0` (no artificial delay; approval is the only gate) |
-| `prevent_self_review`        | `false` — see rationale below                       |
-| `reviewers`                  | `armelhbobdad` (user id `132626034`), 1 approver    |
-| `deployment_branch_policy`   | `custom_branch_policies: true`, list: `main` only   |
-| Environment-scoped secrets   | `0` (invariant — see `NPM_TOKEN` note below)        |
-| Cost                         | `$0` on public-repo tier (environments, required reviewers, and branch policies are [free for public repositories](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment#about-environments)) |
+| Setting                    | Value                                                                                                                                                                                                                                                    |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `wait_timer`               | `0` (no artificial delay; approval is the only gate)                                                                                                                                                                                                     |
+| `prevent_self_review`      | `false` — see rationale below                                                                                                                                                                                                                            |
+| `reviewers`                | `armelhbobdad` (user id `132626034`), 1 approver                                                                                                                                                                                                         |
+| `deployment_branch_policy` | `custom_branch_policies: true`, list: `main` only                                                                                                                                                                                                        |
+| Environment-scoped secrets | `0` (invariant — see `NPM_TOKEN` note below)                                                                                                                                                                                                             |
+| Cost                       | `$0` on public-repo tier (environments, required reviewers, and branch policies are [free for public repositories](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment#about-environments)) |
 
 **`prevent_self_review: false` — correctness constraint, not a loosened control.** Solo-maintainer setups cannot self-approve when this is `true`, so the gate would deadlock on any maintainer-triggered publish. The value flips to `true` the moment a second reviewer joins — do not leave it loose by inertia.
 
@@ -151,6 +151,30 @@ gh api --method DELETE \
 ```
 
 Leaving a feature branch on the allow-list is an unguarded hole — any later `workflow_dispatch` from that branch would be able to reach the publish path. Treat the revoke as the last step of the validation, not a follow-up.
+
+## npm Trusted Publisher
+
+The future `release.yaml` workflow (Story 3.1) publishes to npm via **OIDC trusted publishing** — no `NPM_TOKEN` is consulted during the publish step, and every published version carries an auto-attached SLSA Build Level 2 provenance attestation. For this to work, the npm package `bmad-module-skill-forge` has a trusted-publisher entry on npmjs.com that binds on four fields exactly matching what the workflow asserts at run time. A mismatch on any field causes a silent `404` at publish time with no actionable signal.
+
+**Registered:** 2026-04-20 by `armelhbobdad`.
+
+| Field             | Value                     |
+| ----------------- | ------------------------- |
+| Publisher type    | `GitHub Actions`          |
+| Organization/user | `armelhbobdad`            |
+| Repository        | `bmad-module-skill-forge` |
+| Workflow filename | `release.yaml`            |
+| Environment       | `release`                 |
+
+**Inspect current state:** visit [`https://www.npmjs.com/package/bmad-module-skill-forge`](https://www.npmjs.com/package/bmad-module-skill-forge) → **Settings** tab → **Trusted Publisher** section (npm UI as of 2026-04-20; if the tab is reorganised later, the section still lives on the package Settings page). Modification requires 2FA re-entry on the maintainer account.
+
+**Rename coupling — the four fields are load-bearing.** Renaming the `release` GitHub environment (see § Release Environment), renaming or moving `release.yaml` within `.github/workflows/`, or flipping the extension between `.yaml` and `.yml` each require a matching update to the npm-side Trusted Publisher in the same change. Skipping the npm-side update produces an opaque `404` ("npm could not match your workflow run") on the next publish with no actionable signal.
+
+**Pre-registration inversion.** This entry was registered **before** `release.yaml` was authored (Story 3.1). The first live validator of the full OIDC chain is Story 3.2's alpha cut. If that cut's publish step 404s, the **first** diagnostic is to reload the npm Settings tab and verify all four fields character-for-character against the workflow's header; the workflow YAML is the second-line check, not the first.
+
+**`NPM_TOKEN` is still live during the transition.** The legacy `publish.yaml` continues to use `NPM_TOKEN` until Story 3.3 retires it. Story 6.3 removes the `NPM_TOKEN` secret from repo settings entirely post-v1.0.0. Until then, the token is defence-in-depth: if OIDC fails unexpectedly, the fallback path is a temporary flip of the new workflow to token-based publishing (last-resort; document the reason in the commit body if ever exercised).
+
+**Fixing a bad registration.** The npm UI exposes both **Edit** and **Delete** on an existing Trusted Publisher entry (observed 2026-04-20). Prefer edit for a single-field typo; prefer delete-and-re-add if multiple fields are wrong or the edit form ever feels ambiguous — there is no destructive side effect (no publish is attempted until Story 3.2), and delete-and-re-add keeps the audit trail cleaner.
 
 <!-- Rollback Playbook — added in Story 4.1 -->
 
