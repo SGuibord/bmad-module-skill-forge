@@ -33,11 +33,13 @@ Read `testMode` from `{outputFile}` frontmatter.
 
 Perform the following explicit checks (no hand-waving — each recipe is a shell recipe or a literal pattern). Severity assignments are binding; do not relax them.
 
-**2.1 Required sections present.** For each required top-level H2, run `grep -n "^## {section}" SKILL.md`:
-- `## Description` (or frontmatter `description` field — either satisfies)
-- `## Usage` or `## Examples`
-- `## Exports` or equivalent API surface heading
-- **Zero matches for any required section → High severity** finding: `naive-coherence — missing required section: {section}`
+**2.1 Required sections present.** For each required top-level H2, run `grep -n "^## {section}" SKILL.md`. A required section is satisfied if **any** synonym in its set matches:
+- Description: `## Description` OR frontmatter `description` field — either satisfies
+- Usage: `## Usage` OR `## Examples` OR `## Quick Start` OR `## Common Workflows`
+- API surface: `## Exports` OR `## Key API Summary` OR `## API`
+- **Zero matches across an entire synonym set → High severity** finding: `naive-coherence — missing required section: {section-set-name}`
+
+Note: SKF-template skills ship with `## Quick Start`, `## Common Workflows`, and `## Key API Summary`. These are first-class synonyms — do not downgrade to Low on literal-name miss; accept them.
 
 **2.2 Code fence balance.** Count triple-backtick fences with `grep -c '^```' SKILL.md`. **Odd count → High severity** finding: `naive-coherence — unbalanced code fence (unclosed block)`.
 
