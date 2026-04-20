@@ -37,7 +37,7 @@ For background on GitHub rulesets vs legacy branch protection, see the [GitHub r
 
 **`strict_required_status_checks_policy: false`** — PR branches are not forced to be up-to-date with `main` before merging. This avoids constant rebases on a low-traffic repo. Flip to `true` if concurrent merges start producing logical conflicts the checks can't catch.
 
-**CODEOWNERS note:** the `pull_request` rule has `require_code_owner_review: true`, but no `.github/CODEOWNERS` file exists in the repo today. GitHub treats the code-owner requirement as vacuously satisfied when the file is absent, so this setting is currently a no-op — the only active review gate is `required_approving_review_count: 1`. If a CODEOWNERS file is added later, make sure the listed owners can actually approve PRs from other authors (GitHub disallows self-review as a code owner, which would deadlock solo-maintainer PRs).
+**CODEOWNERS note:** the `pull_request` rule has `require_code_owner_review: true`, but no `.github/CODEOWNERS` file exists in the repo today. GitHub treats the code-owner requirement as vacuously satisfied when the file is absent, so this setting is currently a no-op — the only active review gate is `required_approving_review_count: 1`. If a CODEOWNERS file is added later, make sure the listed owners can actually approve PRs from other authors. GitHub's universal rule is that a PR author cannot approve their own PR — so a CODEOWNERS file that lists only a solo maintainer would deadlock every PR that maintainer opens (they'd be the sole eligible code-owner reviewer but also the author).
 
 **Bypass actors:** `RepositoryRole` actor_id=5 (Admin), `bypass_mode: pull_request`. Admins can bypass the ruleset **only via a pull request**, never via direct push. This preserves `non_fast_forward` and the required-checks gate for the `github-actions[bot]` account that the future `release.yaml` workflow (Story 3.1) will use to push tags and commits to `main`. **Do not add a bot-specific bypass**; it would defeat the whole purpose of this ruleset.
 
@@ -52,8 +52,11 @@ gh api repos/armelhbobdad/bmad-module-skill-forge/rulesets/13855503
 A JSON baseline captured before any change can be replayed via:
 
 ```bash
-# Extract rules + bypass_actors from a saved baseline.json
-jq '{rules, bypass_actors}' baseline.json > /tmp/restore.json
+# Extract the full set of fields required by a ruleset PUT from a saved baseline.json.
+# PUT replaces the resource wholesale — omitting any of these fields either 422s or
+# silently resets them server-side. `bypass_actors` is optional (empty array is the
+# default) but is included here to preserve the admin-via-PR bypass.
+jq '{name, target, enforcement, conditions, rules, bypass_actors}' baseline.json > /tmp/restore.json
 
 gh api --method PUT \
   repos/armelhbobdad/bmad-module-skill-forge/rulesets/13855503 \
@@ -114,7 +117,10 @@ gh api --method PUT repos/armelhbobdad/bmad-module-skill-forge/environments/rele
 }
 JSON
 
-# (2) Add main to the allowed deployment branches
+# (2) Add main to the allowed deployment branches.
+#     Returns HTTP 422 ("already_exists") if main is already on the list —
+#     safe to ignore on re-apply. To pre-check:
+#     gh api repos/armelhbobdad/bmad-module-skill-forge/environments/release/deployment-branch-policies
 gh api --method POST repos/armelhbobdad/bmad-module-skill-forge/environments/release/deployment-branch-policies --input - <<'JSON'
 { "name": "main" }
 JSON
@@ -125,19 +131,23 @@ JSON
 A release workflow that declares `environment: release` will be rejected from any branch not on the allow-list. For legitimate validation cuts from a feature branch (Story 3.2's alpha cut is the canonical case), widen the allow-list for the duration of the test and tighten it back immediately:
 
 ```bash
-# Allow the feature branch (capture the returned policy id)
-gh api --method POST \
+# Allow the feature branch and capture the returned policy id into a shell var.
+# Using command substitution + --jq .id avoids the "eyeball the JSON and paste
+# the id later" footgun — if the POST succeeds, $POLICY_ID is ready for the revoke.
+POLICY_ID=$(gh api --method POST \
   repos/armelhbobdad/bmad-module-skill-forge/environments/release/deployment-branch-policies \
-  --input - <<'JSON'
+  --input - --jq .id <<'JSON'
 { "name": "feat/my-validation-branch" }
 JSON
-# → { "id": <POLICY_ID>, "name": "feat/my-validation-branch", ... }
+)
+echo "POLICY_ID=$POLICY_ID"  # confirm a numeric id was captured before proceeding
 
 # ... run the validation cut, approve via the reviewer UI, confirm publish ...
 
-# Revoke immediately — the allow-list must return to { main } before leaving the session
+# Revoke immediately — the allow-list must return to { main } before leaving the session.
+# Quote the expansion so the shell never interprets the id as a redirection token.
 gh api --method DELETE \
-  repos/armelhbobdad/bmad-module-skill-forge/environments/release/deployment-branch-policies/<POLICY_ID>
+  "repos/armelhbobdad/bmad-module-skill-forge/environments/release/deployment-branch-policies/$POLICY_ID"
 ```
 
 Leaving a feature branch on the allow-list is an unguarded hole — any later `workflow_dispatch` from that branch would be able to reach the publish path. Treat the revoke as the last step of the validation, not a follow-up.

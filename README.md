@@ -177,7 +177,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## Release Process
 
-Maintainers: see [docs/RELEASING.md](docs/RELEASING.md) for branch-protection rules, required status checks, and (later) the rollback playbook.
+Maintainers: see [docs/RELEASING.md](docs/RELEASING.md) for branch-protection rules, required status checks, the `release` environment with required-reviewer gate, and (later) the rollback playbook.
 
 ## License
 
