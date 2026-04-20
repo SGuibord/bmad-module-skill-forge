@@ -43,7 +43,24 @@ Note: SKF-template skills ship with `## Quick Start`, `## Common Workflows`, and
 
 **2.2 Code fence balance.** Count triple-backtick fences with `grep -c '^```' SKILL.md`. **Odd count → High severity** finding: `naive-coherence — unbalanced code fence (unclosed block)`.
 
-**2.3 Language tags on fences.** `grep -n '^```$' SKILL.md` finds bare fences. **Each match → Medium severity** finding: `naive-coherence — code fence at line {N} missing language tag`.
+**2.3 Language tags on opening fences.** Only **opening** fences are required to carry a language tag; closing fences are bare by markdown convention and must NOT be flagged. Do not use a plain `grep -n '^```$' SKILL.md` — that flags every closing fence and produces one false positive per well-formed code block.
+
+Use a stateful open/close scan (toggle `in_code` on each `^```` line; flag only the line where `in_code` transitions 0→1 with no trailing language tag):
+
+```python
+in_code = False
+for i, line in enumerate(open('SKILL.md'), 1):
+    s = line.rstrip('\n')
+    if s.startswith('```'):
+        if not in_code:
+            if s == '```':
+                print(f'{i}: bare opening fence')
+            in_code = True
+        else:
+            in_code = False
+```
+
+**Each flagged opening fence → Medium severity** finding: `naive-coherence — opening code fence at line {N} missing language tag`.
 
 **2.4 Exports cross-used in Usage section.** For each function name reported in the step-03 subagent inventory (`exports[].name` where `kind == "function"` or `kind == "method"`):
 - `grep -c "{export.name}" SKILL.md` restricted to the Usage section (find the `## Usage` anchor from §2.1 and the next `^## ` anchor; count within that span).
