@@ -118,6 +118,36 @@ jobs:
         run: |
           npx conventional-changelog-cli -p conventionalcommits -i CHANGELOG.md -s
 
+      - name: Restore CHANGELOG preamble
+        run: |
+          # conventional-changelog-cli -s prepends the new release entry at byte 0
+          # of CHANGELOG.md, pushing "# Changelog" title + preamble + "## [Unreleased]"
+          # anchor DOWN below it. Restore the canonical Keep-a-Changelog shape:
+          #   # Changelog
+          #   (preamble)
+          #   ## [Unreleased]
+          #   ## [<new release>] (...)
+          #   ## [<older releases>] (...)
+          # Idempotent: if "# Changelog" is already on line 1, no-op.
+          if ! head -n 1 CHANGELOG.md | grep -q '^# Changelog'; then
+            awk '
+              BEGIN { new_entry=""; preamble=""; rest=""; section=0 }
+              # section 0: new release entry prepended by conventional-changelog -s
+              # section 1: "# Changelog" title + preamble + "## [Unreleased]" anchor
+              # section 2: first released version ("## [X.Y.Z]") onward
+              section==0 && /^# Changelog/ { section=1 }
+              section==1 && /^## \[[0-9]/ { section=2 }
+              { if (section==0) new_entry=new_entry $0 "\n";
+                else if (section==1) preamble=preamble $0 "\n";
+                else rest=rest $0 "\n" }
+              END { printf "%s%s%s", preamble, new_entry, rest }
+            ' CHANGELOG.md > CHANGELOG.md.tmp
+            mv CHANGELOG.md.tmp CHANGELOG.md
+            echo "::notice::Restored CHANGELOG preamble ordering (# Changelog → preamble → [Unreleased] → new release → history)"
+          else
+            echo "CHANGELOG preamble already at top — no reordering needed"
+          fi
+
       - name: Assert no bogus issue refs in CHANGELOG
         run: |
           if grep -iE '(closes|fixes|resolves) \[#[^0-9]' CHANGELOG.md; then
