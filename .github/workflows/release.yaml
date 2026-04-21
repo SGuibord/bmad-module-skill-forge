@@ -112,7 +112,14 @@ jobs:
       - name: Pre-publish dry-run (catch package validation failures before tag push)
         env:
           NPM_TOKEN: ""
-        run: npm publish --dry-run
+        run: |
+          VERSION="${{ steps.version.outputs.new_version }}"
+          if   [[ "$VERSION" == *"alpha"* ]]; then TAG=alpha
+          elif [[ "$VERSION" == *"beta"*  ]]; then TAG=beta
+          elif [[ "$VERSION" == *"rc"*    ]]; then TAG=rc
+          else                                     TAG=latest
+          fi
+          npm publish --dry-run --tag "$TAG"
 
       - name: Commit version bump
         run: |
