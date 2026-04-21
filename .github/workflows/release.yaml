@@ -36,6 +36,11 @@ jobs:
   release:
     runs-on: ubuntu-latest
     environment: release
+    env:
+      # Husky's documented opt-out (.husky/_/h checks this explicitly). Needed
+      # because .husky/commit-msg invokes `entire` (local dev session tool) and
+      # hard-exits if it's not on PATH — breaks CI's `Commit version bump`.
+      HUSKY: "0"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
