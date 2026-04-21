@@ -137,13 +137,13 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Bug Fixes
 
-* adapt lightbox background to current theme ([2a1fdb6](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/2a1fdb6598edeb47f15ef1acf834b47eceb83fea)), closes [#f5f5f5](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/f5f5f5)
+* adapt lightbox background to current theme ([2a1fdb6](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/2a1fdb6598edeb47f15ef1acf834b47eceb83fea))
 * add staleness detection to external validator auto-reuse logic ([6078d08](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/6078d085c7e73d3cc1c2979ffff6ad97279b8c21))
 * address review findings across all split-body-affected workflows ([a51f0d1](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/a51f0d1010994f5340399af8daa2935b3fd4c681))
 * extend coverage check to traverse references/ for split-body skills ([d5b6ad4](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/d5b6ad43bf957e731390ab27ca2a75e3978d66b1))
 * install website dependencies in docs CI workflow ([b17caf3](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/b17caf34675d3c2450f41ab23a6de746ce96ccb9))
 * populate metadata.json description, language, ast_node_count at compile time ([10203f4](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/10203f43b46e242c122f047106cadc9cdbed2104))
-* verify snippet anchors against SKILL.md headings for split-body skills ([8496430](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/8496430473e43448be4551b51eef8e62494634b3)), closes [#quick-start](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/quick-start) [#key-types](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/key-types)
+* verify snippet anchors against SKILL.md headings for split-body skills ([8496430](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/8496430473e43448be4551b51eef8e62494634b3))
 
 ## [0.4.0](https://github.com/armelhbobdad/bmad-module-skill-forge/compare/v0.3.0...v0.4.0) (2026-03-19)
 
@@ -187,8 +187,8 @@ All notable changes to this project will be documented in this file. The format 
 * integrate external skill-check CLI across all validation workflows ([44d66f1](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/44d66f1f8c35ce1d0bfee78999a21fc63f8cabf4))
 * integrate skill-check and tessl as external validators ([#20](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/20)) ([9bda903](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/9bda9034fefd7b4f0d062cc5096cc35f6da7eb7b))
 * pre-populate install prompts from saved config on reinstall ([18a293e](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/18a293ecbaa771bde62a5ebd7302555154fcc970))
-* redesign CLI with brand colors and ANSI Shadow banner for v1.0.0 ([146189e](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/146189ec4d58928c041fa84d807e78a70383a9cb)), closes [#F59E0B](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/F59E0B) [#FBBF24](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/FBBF24) [#D97706](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/D97706) [#FCD34D](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/FCD34D)
-* redesign context-snippet format with Vercel-aligned indexed structure ([#38](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/38)) ([0e6bf0f](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/0e6bf0f56d14a8df8fdc58c4becf47e08afe0e3b)), closes [#anchor](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/anchor)
+* redesign CLI with brand colors and ANSI Shadow banner for v1.0.0 ([146189e](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/146189ec4d58928c041fa84d807e78a70383a9cb))
+* redesign context-snippet format with Vercel-aligned indexed structure ([#38](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/38)) ([0e6bf0f](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/0e6bf0f56d14a8df8fdc58c4becf47e08afe0e3b))
 * **skf:** add complete SKF module with agent, workflows, knowledge base, and docs ([88b8f51](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/88b8f51878fd2d2c8564cfe5650c6e1ce220dd30))
 * two-tier SKILL.md assembly to survive split-body extraction ([#21](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/21)) ([ceb2f49](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/ceb2f49c57fdc6feec3f707dd054c4f6b3a048a6))
 * write installation manifest for uninstall and smart updates ([efd4dbc](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/efd4dbc3ca9ca3fd6d44583a420504710fd4597f))
