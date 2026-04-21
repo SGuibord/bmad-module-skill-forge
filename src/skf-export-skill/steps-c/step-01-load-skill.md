@@ -58,6 +58,38 @@ For each IDE in `config.yaml.ides`:
 **Context file(s):** {context-file-list} (skill root: {skill-root-list})
 **Dry Run:** {yes/no}"
 
+### 1b. Detect Snippet Root Prefix Mismatch
+
+**Skip entirely if `snippet_skill_root_override` is already set in `config.yaml`** — the authoring-repo escape hatch is already configured and any on-disk prefix that matches it is ground truth (see `assets/managed-section-format.md` override rules).
+
+Otherwise, probe existing snippets to catch the authoring-repo case (skills live under a single shared directory like `skills/` that does not match any per-IDE `skill_root`) before step-04 silently rewrites their root paths:
+
+1. Collect candidate snippet paths:
+   - Read `{skills_output_folder}/.export-manifest.json` if it exists. For each skill in `exports` with a resolvable `active_version`, add `{skills_output_folder}/{skill-name}/{active_version}/{skill-name}/context-snippet.md`
+   - Also include the current skill's snippet if present (resolved via manifest / `active` symlink / flat path per `knowledge/version-paths.md`)
+2. For each snippet that exists on disk, read the first line and parse the `root:` value. Strip the trailing `{skill-name}/` to extract the prefix (e.g. `skills/`, `.claude/skills/`)
+3. Collect unique prefixes into `observed_prefixes`
+4. Compare against `target_context_files[0].skill_root` (the first entry's IDE-mapped skill root — used as reference since step-03 §2.7 picks this same entry for snippet generation when no override is set)
+
+**If `observed_prefixes` contains any value that does not match the reference `skill_root`:**
+
+Emit a single warning (once, not per snippet) and present resolution options before proceeding:
+
+"**Snippet root prefix mismatch detected.**
+Existing snippets use: `{observed_prefixes}`
+IDE-mapped skill_root:  `{target_context_files[0].skill_root}`
+
+This usually means you are in an authoring repo where skills live under a single shared directory. Options:
+- **(a) Set override** — add `snippet_skill_root_override: {observed_prefix}` to `config.yaml`. Snippets keep their on-disk prefix; the managed section references the real location.
+- **(b) Proceed with IDE mapping** — step-04 will rewrite every snippet's root path to the IDE's skill_root. Use this only if the IDE's skill directory actually contains the skill files.
+- **(c) Cancel** — abort export and investigate.
+
+If multiple distinct prefixes were observed, the snippets disagree with each other — investigate before choosing (a)."
+
+In `{headless_mode}`, default to (b) and log the observed prefix(es) so the mismatch is visible in run logs. In interactive mode, wait for user choice before continuing to section 2.
+
+**If all observed prefixes match the reference `skill_root` (or no existing snippets were found):** Proceed silently.
+
 ### 2. Load and Validate Skill Artifacts
 
 Resolve the skill's versioned path before loading artifacts:
