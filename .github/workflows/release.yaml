@@ -66,6 +66,21 @@ jobs:
           echo "$INSTALL_DIR/node_modules/.bin" >> "$GITHUB_PATH"
           echo "Upgraded npm: $("$INSTALL_DIR/node_modules/.bin/npm" --version)"
 
+      - name: Verify npm version floor for OIDC trusted publishing
+        # Runs in a fresh step so $GITHUB_PATH from the previous step takes effect.
+        # Bare `npm` here asserts BOTH (a) PATH propagation worked (the side-prefix
+        # install is actually first on PATH, not masked by the Node-bundled npm)
+        # AND (b) the resolved version meets the OIDC trusted-publishing floor
+        # (>=11.5.1). Fails fast before tag-push if either guarantee is absent.
+        run: |
+          NPM_VERSION=$(npm --version)
+          echo "Resolved npm (via PATH): $NPM_VERSION"
+          MIN_VERSION="11.5.1"
+          if [[ "$(printf '%s\n%s\n' "$MIN_VERSION" "$NPM_VERSION" | sort -V | head -n1)" != "$MIN_VERSION" ]]; then
+            echo "::error::npm $NPM_VERSION is below the OIDC trusted-publishing floor ($MIN_VERSION). Either \$GITHUB_PATH propagation failed (bare \`npm\` resolved to the Node-bundled version) or npm@latest regressed below the floor."
+            exit 1
+          fi
+
       - name: Install uv
         uses: astral-sh/setup-uv@v6
         with:
