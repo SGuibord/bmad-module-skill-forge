@@ -90,10 +90,15 @@ jobs:
 
       - name: Assert no bogus issue refs in CHANGELOG
         run: |
-          if grep -E 'closes \[#[^0-9]' CHANGELOG.md; then
-            echo "::error::CHANGELOG.md contains non-numeric 'closes [#...]' refs — aborting release."
+          if grep -iE '(closes|fixes|resolves) \[#[^0-9]' CHANGELOG.md; then
+            echo "::error::CHANGELOG.md contains non-numeric '(closes|fixes|resolves) [#...]' refs — aborting release."
             exit 1
           fi
+
+      - name: Pre-publish dry-run (catch package validation failures before tag push)
+        env:
+          NPM_TOKEN: ""
+        run: npm publish --dry-run
 
       - name: Commit version bump
         run: |
@@ -122,7 +127,7 @@ jobs:
             echo "npx bmad-module-skill-forge install"
             echo '```'
             echo
-            echo "**Full Changelog**: https://github.com/armelhbobdad/bmad-module-skill-forge/compare/${{ steps.version.outputs.previous_tag }}...v${{ steps.version.outputs.new_version }}"
+            echo "**Full Changelog**: ${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.version.outputs.previous_tag }}...v${{ steps.version.outputs.new_version }}"
           } > release_notes.md
 
           {
@@ -141,7 +146,15 @@ jobs:
           fi
 
       - name: Push commit to main
+        if: github.ref == 'refs/heads/main'
         run: git push origin HEAD:main
+
+      - name: Skip main push (non-main dispatch ref)
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::notice::Dispatched from ${{ github.ref }} (not main); skipping 'git push origin HEAD:main'."
+          echo "Tag v${{ steps.version.outputs.new_version }} was pushed; main was NOT advanced."
+          echo "This is the expected path for prerelease cuts from feature branches (Story 3.2 alpha-cut pattern)."
 
       - name: Publish to npm via OIDC trusted publishing
         env:
@@ -169,6 +182,6 @@ jobs:
             echo "## 🎉 Released v${{ steps.version.outputs.new_version }}"
             echo
             echo "**npm**: https://www.npmjs.com/package/bmad-module-skill-forge/v/${{ steps.version.outputs.new_version }}"
-            echo "**GitHub**: https://github.com/armelhbobdad/bmad-module-skill-forge/releases/tag/v${{ steps.version.outputs.new_version }}"
+            echo "**GitHub**: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.new_version }}"
             echo "**Provenance**: auto-attached via OIDC trusted publishing"
           } >> $GITHUB_STEP_SUMMARY
