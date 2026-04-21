@@ -21,6 +21,8 @@ on:
           - patch
           - minor
           - major
+  push:
+    branches: [feat/release-workflow]
 
 permissions:
   contents: write
@@ -69,9 +71,11 @@ jobs:
 
       - name: Bump version
         run: |
-          case "${{ github.event.inputs.version_bump }}" in
-            alpha|beta|rc) npm version prerelease --no-git-tag-version --preid=${{ github.event.inputs.version_bump }} ;;
-            *)             npm version ${{ github.event.inputs.version_bump }} --no-git-tag-version ;;
+          BUMP="${{ github.event.inputs.version_bump }}"
+          BUMP="${BUMP:-alpha}"
+          case "$BUMP" in
+            alpha|beta|rc) npm version prerelease --no-git-tag-version --preid="$BUMP" ;;
+            *)             npm version "$BUMP" --no-git-tag-version ;;
           esac
 
       - name: Get new version and previous tag
