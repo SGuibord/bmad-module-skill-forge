@@ -1,6 +1,13 @@
 ---
 nextStepFile: './step-08-report.md'
 forgeTierConfig: '{sidecar_path}/forge-tier.yaml'
+# Resolve `{atomicWriteHelper}` by probing `{atomicWriteProbeOrder}` in order
+# (installed SKF module path first, src/ dev-checkout fallback); first existing
+# path wins. HALT if neither resolves — the active-symlink flip and registry
+# writes below MUST go through the atomic helper for concurrency safety.
+atomicWriteProbeOrder:
+  - '{project-root}/_bmad/skf/shared/scripts/skf-atomic-write.py'
+  - '{project-root}/src/shared/scripts/skf-atomic-write.py'
 ---
 
 # Step 7: Generate Artifacts
@@ -87,7 +94,7 @@ Write these 3 files from the compiled content:
 Create or update the `active` symlink at `{skill_group}/active` pointing to `{version}` using the shared atomic-flip helper. The helper holds an `flock` on `{skill_group}/active.skf-lock`, refuses to replace a non-symlink at `{skill_group}/active` (protecting against accidental rm-rf of a real directory), and uses a rename-over-symlink pattern so the update is atomic from a concurrent reader's perspective:
 
 ```bash
-python3 {project-root}/src/shared/scripts/skf-atomic-write.py flip-link \
+python3 {atomicWriteHelper} flip-link \
   --link {skill_group}/active \
   --target {version}
 ```

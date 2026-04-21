@@ -97,16 +97,20 @@ prevent a cold-cache fetch from stalling the workflow. If the probe exits
 non-zero OR the 15s timeout trips (exit code `124`), record
 `tessl_score: N/A` and skip to section 4.
 
-**Run review (S2 — 120s timeout; S3 — pinned version):**
+**Run review (S2 — 120s timeout):**
+
+The §2 probe (`npx --no-install -y tessl --version`) already resolved tessl via the caller's npm cache or a locally-installed binary on `$PATH`. Invoke the same binary for the review — do not re-pin to a registry-published version.
 
 ```bash
-# S3: pin tessl to a known-working version. Bump TESSL_PIN here (and only
-# here) when upgrading. Treat regex parse failure below as `tessl_score: N/A`.
-TESSL_PIN="@anthropic/tessl@0.4"
-timeout 120s npx -y "$TESSL_PIN" skill review {skillDir}
+# Use the tessl binary the §2 probe just verified. `--no-install` keeps
+# the review execution path identical to the probe; no fresh registry
+# fetch needed.
+timeout 120s npx --no-install -y tessl skill review {skillDir}
 ```
 
 Timeout handling mirrors skill-check: exit `124` → `tessl_score: N/A` with reason `timeout-120s`. If the percentage regex (`/(Description|Content|Review Score):\s*(\d+)%/`) returns fewer than three matches, record `tessl_score: N/A` with reason `parse-failure` and include the first 200 chars of output in evidence-report for debugging.
+
+**Registry-404 branch:** if the invocation emits `npm error 404 Not Found` or the npx wrapper exits with a not-found condition, record `tessl_score: N/A` with reason `pin-not-on-registry` and continue. This branch exists because tessl has historically shipped under shifting scope/tag combinations; do not HALT the workflow on a missing registry entry.
 
 **Parse the output** to extract:
 - `description_score` — percentage (e.g., 100%)

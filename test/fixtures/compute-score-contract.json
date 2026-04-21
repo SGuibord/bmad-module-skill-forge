@@ -18,6 +18,7 @@
         "tier": "Deep",
         "docsOnly": false,
         "state2": false,
+        "stackSkill": false,
         "threshold": 80,
         "scores": {
           "exportCoverage": 92,
@@ -75,6 +76,7 @@
         "tier": "Forge",
         "docsOnly": false,
         "state2": false,
+        "stackSkill": false,
         "threshold": 80,
         "scores": {
           "exportCoverage": 90,
@@ -133,6 +135,7 @@
         "tier": "Quick",
         "docsOnly": false,
         "state2": false,
+        "stackSkill": false,
         "threshold": 80,
         "scores": {
           "exportCoverage": 85,
@@ -194,6 +197,7 @@
         "tier": "Deep",
         "docsOnly": false,
         "state2": false,
+        "stackSkill": false,
         "threshold": 80,
         "scores": {
           "exportCoverage": 80,
@@ -254,6 +258,7 @@
         "tier": "Quick",
         "docsOnly": false,
         "state2": false,
+        "stackSkill": false,
         "threshold": 80,
         "scores": {
           "exportCoverage": 95,
@@ -320,6 +325,7 @@
         "tier": "Quick",
         "docsOnly": true,
         "state2": false,
+        "stackSkill": false,
         "threshold": 80,
         "scores": {
           "exportCoverage": 88,
@@ -382,6 +388,7 @@
         "tier": "Deep",
         "docsOnly": false,
         "state2": true,
+        "stackSkill": false,
         "threshold": 80,
         "scores": {
           "exportCoverage": 90,
@@ -444,6 +451,7 @@
         "tier": "Deep",
         "docsOnly": false,
         "state2": false,
+        "stackSkill": false,
         "threshold": 90,
         "scores": {
           "exportCoverage": 92,
@@ -502,6 +510,7 @@
         "tier": "Forge",
         "docsOnly": false,
         "state2": false,
+        "stackSkill": false,
         "threshold": 84,
         "scores": {
           "exportCoverage": 90,
@@ -561,6 +570,7 @@
         "tier": "Forge",
         "docsOnly": false,
         "state2": false,
+        "stackSkill": false,
         "threshold": 84.01,
         "scores": {
           "exportCoverage": 90,
@@ -619,6 +629,7 @@
         "tier": "Forge+",
         "docsOnly": false,
         "state2": false,
+        "stackSkill": false,
         "threshold": 80,
         "scores": {
           "exportCoverage": 92,
@@ -744,6 +755,7 @@
         "tier": "Quick",
         "docsOnly": false,
         "state2": false,
+        "stackSkill": false,
         "threshold": 80,
         "scores": {
           "exportCoverage": 85,
@@ -811,6 +823,7 @@
         "tier": "Quick",
         "docsOnly": true,
         "state2": false,
+        "stackSkill": false,
         "threshold": 75,
         "scores": {
           "exportCoverage": 80,
@@ -876,6 +889,7 @@
         "tier": "Forge",
         "docsOnly": false,
         "state2": false,
+        "stackSkill": false,
         "threshold": 80,
         "scores": {
           "exportCoverage": 90,
@@ -933,6 +947,7 @@
         "tier": "Deep",
         "docsOnly": false,
         "state2": false,
+        "stackSkill": false,
         "threshold": 80,
         "scores": {
           "exportCoverage": 95,
@@ -992,6 +1007,7 @@
         "tier": "Deep",
         "docsOnly": true,
         "state2": false,
+        "stackSkill": false,
         "threshold": 80,
         "scores": {
           "exportCoverage": 90,
@@ -1054,6 +1070,7 @@
         "tier": "Deep",
         "docsOnly": true,
         "state2": false,
+        "stackSkill": false,
         "threshold": 80,
         "scores": {
           "exportCoverage": 88,
@@ -1116,6 +1133,7 @@
         "tier": "Deep",
         "docsOnly": false,
         "state2": true,
+        "stackSkill": false,
         "threshold": 80,
         "scores": {
           "exportCoverage": 86,
@@ -1156,6 +1174,69 @@
       "threshold": 80,
       "result": "PASS",
       "weightSum": 100.0
+    }
+  },
+  {
+    "name": "suite_u_stack_skill_deep",
+    "input": {
+      "mode": "contextual",
+      "tier": "Deep",
+      "stackSkill": true,
+      "scores": {
+        "exportCoverage": 90,
+        "signatureAccuracy": null,
+        "typeCoverage": null,
+        "coherence": 85,
+        "externalValidation": 80
+      }
+    },
+    "expected_output": {
+      "input": {
+        "mode": "contextual",
+        "tier": "Deep",
+        "docsOnly": false,
+        "state2": false,
+        "stackSkill": true,
+        "threshold": 80,
+        "scores": {
+          "exportCoverage": 90,
+          "signatureAccuracy": null,
+          "typeCoverage": null,
+          "coherence": 85,
+          "externalValidation": 80
+        }
+      },
+      "activeCategories": [
+        "exportCoverage",
+        "coherence",
+        "externalValidation"
+      ],
+      "skippedCategories": [
+        "signatureAccuracy",
+        "typeCoverage"
+      ],
+      "skipReasons": {
+        "signatureAccuracy": "stack skill (external type surface)",
+        "typeCoverage": "stack skill (external type surface)"
+      },
+      "weights": {
+        "exportCoverage": 56.25,
+        "signatureAccuracy": 0,
+        "typeCoverage": 0,
+        "coherence": 28.13,
+        "externalValidation": 15.63
+      },
+      "weightedScores": {
+        "exportCoverage": 50.63,
+        "signatureAccuracy": 0,
+        "typeCoverage": 0,
+        "coherence": 23.91,
+        "externalValidation": 12.5
+      },
+      "totalScore": 87.04,
+      "threshold": 80,
+      "result": "PASS",
+      "weightSum": 100.01
     }
   }
 ]

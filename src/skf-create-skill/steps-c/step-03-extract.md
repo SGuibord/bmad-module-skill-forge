@@ -5,6 +5,12 @@ extractionPatternsData: 'references/extraction-patterns.md'
 extractionPatternsTracingData: 'references/extraction-patterns-tracing.md'
 tierDegradationRulesData: 'references/tier-degradation-rules.md'
 sourceResolutionData: 'references/source-resolution-protocols.md'
+# Probe installed SKF module path first, src/ dev-checkout fallback. At first
+# use below, resolve `{atomicWriteHelper}` to the first existing path; HALT if
+# neither candidate exists — losing atomic-write guarantees is not an option.
+atomicWriteProbeOrder:
+  - '{project-root}/_bmad/skf/shared/scripts/skf-atomic-write.py'
+  - '{project-root}/src/shared/scripts/skf-atomic-write.py'
 ---
 
 # Step 3: Extract
@@ -31,7 +37,7 @@ Load `{extractionPatternsData}` completely. Identify the strategy for the curren
 
 From the brief, apply scope and pattern filters:
 
-- `scope.type` — determines what to extract (e.g., `full-library`, `specific-modules`, `public-api`, `component-library`, `docs-only`)
+- `scope.type` — determines what to extract (e.g., `full-library`, `specific-modules`, `public-api`, `component-library`, `reference-app`, `docs-only`). Use `reference-app` when the source is a whole app and the skill's value is wiring patterns rather than public exports (embedded-sidecar reference apps, CLI-demo repos, integration-pattern demonstrators). `reference-app` triggers the compile-assembly overrides in `{compileAssemblyRules}` that replace "Key API Summary" with a "Pattern Surface" section and make `stats.exports_documented` semantics pattern-oriented. Do NOT pick `full-library` for reference apps — downstream assembly will remap wiring onto export slots, producing fuzzy counts and an awkward SKILL.md.
 - `scope.include` — file globs to include
 - `scope.exclude` — file globs to exclude
 
@@ -101,7 +107,7 @@ This protocol detects such files, prompts the user, and records the decision in 
            {forge_data_folder}/{skill_name}/skill-brief.yaml.bak
 
         # 2. Atomic write (stdin → tmp → fsync → rename)
-        cat <<'AMENDED_YAML' | python3 {project-root}/src/shared/scripts/skf-atomic-write.py write \
+        cat <<'AMENDED_YAML' | python3 {atomicWriteHelper} write \
             --target {forge_data_folder}/{skill_name}/skill-brief.yaml
         {amended brief YAML}
         AMENDED_YAML
