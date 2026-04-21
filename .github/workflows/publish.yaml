@@ -1,9 +1,8 @@
+# DEPRECATED: Replaced by release.yaml (see docs/RELEASING.md). Scheduled for removal post-v1.0.0 per Epic 6. Do NOT invoke.
 name: Publish to NPM
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: read

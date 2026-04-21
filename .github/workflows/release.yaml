@@ -1,0 +1,254 @@
+name: Release
+
+# Canonical OIDC trusted-publishing release workflow for bmad-module-skill-forge.
+# Consolidates publish.yaml + manual-release.yaml. Gated on the `release` GitHub
+# Environment (required-reviewer approval). Filename MUST remain literal
+# `release.yaml` — the npm Trusted Publisher is registered character-for-character
+# on `release.yaml` + job id `release`. See docs/RELEASING.md § npm Trusted Publisher.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: Version bump type
+        required: true
+        default: alpha
+        type: choice
+        options:
+          - alpha
+          - beta
+          - rc
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: release
+    env:
+      # Husky's documented opt-out (.husky/_/h checks this explicitly). Needed
+      # because .husky/commit-msg invokes `entire` (local dev session tool) and
+      # hard-exits if it's not on PATH — breaks CI's `Commit version bump`.
+      HUSKY: "0"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - name: Ensure npm CLI supports trusted publishing
+        run: |
+          echo "Node: $(node --version); bundled npm: $(npm --version)"
+          # Side-prefix install — avoids the arborist rebuild race that bites
+          # `npm install -g npm@latest` on Node 22.22.2's bundled npm 10.9.7
+          # (old arborist cannot find its own promise-retry after the global
+          # tree has been partially overwritten by the new npm mid-install).
+          INSTALL_DIR="$RUNNER_TEMP/npm-tp"
+          mkdir -p "$INSTALL_DIR"
+          npm install --prefix "$INSTALL_DIR" --no-save npm@latest
+          echo "$INSTALL_DIR/node_modules/.bin" >> "$GITHUB_PATH"
+          echo "Upgraded npm: $("$INSTALL_DIR/node_modules/.bin/npm" --version)"
+
+      - name: Verify npm version floor for OIDC trusted publishing
+        # Runs in a fresh step so $GITHUB_PATH from the previous step takes effect.
+        # Bare `npm` here asserts BOTH (a) PATH propagation worked (the side-prefix
+        # install is actually first on PATH, not masked by the Node-bundled npm)
+        # AND (b) the resolved version meets the OIDC trusted-publishing floor
+        # (>=11.5.1). Fails fast before tag-push if either guarantee is absent.
+        run: |
+          NPM_VERSION=$(npm --version)
+          echo "Resolved npm (via PATH): $NPM_VERSION"
+          MIN_VERSION="11.5.1"
+          if [[ "$(printf '%s\n%s\n' "$MIN_VERSION" "$NPM_VERSION" | sort -V | head -n1)" != "$MIN_VERSION" ]]; then
+            echo "::error::npm $NPM_VERSION is below the OIDC trusted-publishing floor ($MIN_VERSION). Either \$GITHUB_PATH propagation failed (bare \`npm\` resolved to the Node-bundled version) or npm@latest regressed below the floor."
+            exit 1
+          fi
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests and validation
+        run: npm test
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        run: |
+          case "${{ github.event.inputs.version_bump }}" in
+            alpha|beta|rc) npm version prerelease --no-git-tag-version --preid=${{ github.event.inputs.version_bump }} ;;
+            *)             npm version ${{ github.event.inputs.version_bump }} --no-git-tag-version ;;
+          esac
+
+      - name: Get new version and previous tag
+        id: version
+        run: |
+          echo "new_version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+          echo "previous_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
+
+      - name: Update marketplace.json version
+        run: |
+          sed -i 's/"version": "[^"]*"/"version": "${{ steps.version.outputs.new_version }}"/' .claude-plugin/marketplace.json
+
+      - name: Update CHANGELOG.md
+        run: |
+          npx conventional-changelog-cli -p conventionalcommits -i CHANGELOG.md -s
+
+      - name: Restore CHANGELOG preamble
+        run: |
+          # conventional-changelog-cli -s prepends the new release entry at byte 0
+          # of CHANGELOG.md, pushing "# Changelog" title + preamble + "## [Unreleased]"
+          # anchor DOWN below it. Restore the canonical Keep-a-Changelog shape:
+          #   # Changelog
+          #   (preamble)
+          #   ## [Unreleased]
+          #   ## [<new release>] (...)
+          #   ## [<older releases>] (...)
+          # Idempotent: if "# Changelog" is already on line 1, no-op.
+          if ! head -n 1 CHANGELOG.md | grep -q '^# Changelog'; then
+            awk '
+              BEGIN { new_entry=""; preamble=""; rest=""; section=0 }
+              # section 0: new release entry prepended by conventional-changelog -s
+              # section 1: "# Changelog" title + preamble + "## [Unreleased]" anchor
+              # section 2: first released version ("## [X.Y.Z]") onward
+              section==0 && /^# Changelog/ { section=1 }
+              section==1 && /^## \[[0-9]/ { section=2 }
+              { if (section==0) new_entry=new_entry $0 "\n";
+                else if (section==1) preamble=preamble $0 "\n";
+                else rest=rest $0 "\n" }
+              END { printf "%s%s%s", preamble, new_entry, rest }
+            ' CHANGELOG.md > CHANGELOG.md.tmp
+            mv CHANGELOG.md.tmp CHANGELOG.md
+            echo "::notice::Restored CHANGELOG preamble ordering (# Changelog → preamble → [Unreleased] → new release → history)"
+          else
+            echo "CHANGELOG preamble already at top — no reordering needed"
+          fi
+
+      - name: Assert no bogus issue refs in CHANGELOG
+        run: |
+          if grep -iE '(closes|fixes|resolves) \[#[^0-9]' CHANGELOG.md; then
+            echo "::error::CHANGELOG.md contains non-numeric '(closes|fixes|resolves) [#...]' refs — aborting release."
+            exit 1
+          fi
+
+      - name: Pre-publish dry-run (catch package validation failures before tag push)
+        env:
+          NPM_TOKEN: ""
+        run: |
+          VERSION="${{ steps.version.outputs.new_version }}"
+          if   [[ "$VERSION" == *"alpha"* ]]; then TAG=alpha
+          elif [[ "$VERSION" == *"beta"*  ]]; then TAG=beta
+          elif [[ "$VERSION" == *"rc"*    ]]; then TAG=rc
+          else                                     TAG=latest
+          fi
+          npm publish --dry-run --tag "$TAG"
+
+      - name: Commit version bump
+        run: |
+          git add package.json .claude-plugin/marketplace.json CHANGELOG.md
+          git commit -m "release: bump to v${{ steps.version.outputs.new_version }}"
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          COMMITS=$(git log ${{ steps.version.outputs.previous_tag }}..HEAD --pretty=format:"- %s" --reverse)
+          FEATURES=$(echo "$COMMITS" | grep -E "^- (feat|Feature)" || true)
+          FIXES=$(echo "$COMMITS" | grep -E "^- (fix|Fix)" || true)
+          CHORES=$(echo "$COMMITS" | grep -E "^- (chore|Chore)" || true)
+          OTHERS=$(echo "$COMMITS" | grep -v -E "^- (feat|Feature|fix|Fix|chore|Chore|release:|Release:)" || true)
+
+          {
+            echo "## What's New"
+            echo
+            [ -n "$FEATURES" ] && { echo "### New Features"; echo "$FEATURES"; echo; }
+            [ -n "$FIXES" ]    && { echo "### Bug Fixes"; echo "$FIXES"; echo; }
+            [ -n "$OTHERS" ]   && { echo "### Other Changes"; echo "$OTHERS"; echo; }
+            [ -n "$CHORES" ]   && { echo "### Maintenance"; echo "$CHORES"; echo; }
+            echo "## Installation"
+            echo
+            echo '```bash'
+            echo "npx bmad-module-skill-forge install"
+            echo '```'
+            echo
+            echo "**Full Changelog**: ${{ github.server_url }}/${{ github.repository }}/compare/${{ steps.version.outputs.previous_tag }}...v${{ steps.version.outputs.new_version }}"
+          } > release_notes.md
+
+          {
+            echo "RELEASE_NOTES<<EOF"
+            cat release_notes.md
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      - name: Create and push tag
+        run: |
+          if git rev-parse "v${{ steps.version.outputs.new_version }}" >/dev/null 2>&1; then
+            echo "Tag v${{ steps.version.outputs.new_version }} already exists, skipping tag creation"
+          else
+            git tag -a "v${{ steps.version.outputs.new_version }}" -m "Release v${{ steps.version.outputs.new_version }}"
+            git push origin "v${{ steps.version.outputs.new_version }}"
+          fi
+
+      - name: Push commit to main
+        if: github.ref == 'refs/heads/main'
+        run: git push origin HEAD:main
+
+      - name: Skip main push (non-main dispatch ref)
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::notice::Dispatched from ${{ github.ref }} (not main); skipping 'git push origin HEAD:main'."
+          echo "Tag v${{ steps.version.outputs.new_version }} was pushed; main was NOT advanced."
+          echo "This is the expected path for prerelease cuts from feature branches (Story 3.2 alpha-cut pattern)."
+
+      - name: Publish to npm via OIDC trusted publishing
+        env:
+          NPM_TOKEN: ""
+        run: |
+          VERSION="${{ steps.version.outputs.new_version }}"
+          if   [[ "$VERSION" == *"alpha"* ]]; then npm publish --tag alpha
+          elif [[ "$VERSION" == *"beta"*  ]]; then npm publish --tag beta
+          elif [[ "$VERSION" == *"rc"*    ]]; then npm publish --tag rc
+          else                                     npm publish --tag latest
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.new_version }}
+          name: "Skill Forge (SKF) v${{ steps.version.outputs.new_version }}"
+          body: ${{ steps.release_notes.outputs.RELEASE_NOTES }}
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.new_version, 'alpha') || contains(steps.version.outputs.new_version, 'beta') || contains(steps.version.outputs.new_version, 'rc') }}
+
+      - name: Summary
+        run: |
+          {
+            echo "## 🎉 Released v${{ steps.version.outputs.new_version }}"
+            echo
+            echo "**npm**: https://www.npmjs.com/package/bmad-module-skill-forge/v/${{ steps.version.outputs.new_version }}"
+            echo "**GitHub**: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.new_version }}"
+            echo "**Provenance**: auto-attached via OIDC trusted publishing"
+          } >> $GITHUB_STEP_SUMMARY
