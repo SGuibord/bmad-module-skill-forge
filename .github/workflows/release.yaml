@@ -128,20 +128,28 @@ jobs:
           #   ## [Unreleased]
           #   ## [<new release>] (...)
           #   ## [<older releases>] (...)
-          # Idempotent: if "# Changelog" is already on line 1, no-op.
-          if ! head -n 1 CHANGELOG.md | grep -q '^# Changelog'; then
+          # Idempotent: if "# Changelog" is already on line 1 (exact match), no-op.
+          [ -s CHANGELOG.md ] || { echo "::error::CHANGELOG.md is empty or missing — aborting release."; exit 1; }
+          if ! head -n 1 CHANGELOG.md | grep -q '^# Changelog$'; then
             awk '
-              BEGIN { new_entry=""; preamble=""; rest=""; section=0 }
+              BEGIN { new_entry=""; preamble=""; rest=""; section=0; seen_title=0 }
               # section 0: new release entry prepended by conventional-changelog -s
               # section 1: "# Changelog" title + preamble + "## [Unreleased]" anchor
               # section 2: first released version ("## [X.Y.Z]") onward
-              section==0 && /^# Changelog/ { section=1 }
+              section==0 && !seen_title && /^# Changelog$/ { seen_title=1; section=1 }
               section==1 && /^## \[[0-9]/ { section=2 }
               { if (section==0) new_entry=new_entry $0 "\n";
                 else if (section==1) preamble=preamble $0 "\n";
                 else rest=rest $0 "\n" }
-              END { printf "%s%s%s", preamble, new_entry, rest }
+              END {
+                if (!seen_title) {
+                  print "restore-preamble: # Changelog title not found in CHANGELOG.md — aborting" > "/dev/stderr"
+                  exit 1
+                }
+                printf "%s%s%s", preamble, new_entry, rest
+              }
             ' CHANGELOG.md > CHANGELOG.md.tmp
+            [ -s CHANGELOG.md.tmp ] || { echo "::error::awk produced empty CHANGELOG.md.tmp — aborting release."; rm -f CHANGELOG.md.tmp; exit 1; }
             mv CHANGELOG.md.tmp CHANGELOG.md
             echo "::notice::Restored CHANGELOG preamble ordering (# Changelog → preamble → [Unreleased] → new release → history)"
           else
