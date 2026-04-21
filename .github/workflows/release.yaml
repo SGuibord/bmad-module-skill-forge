@@ -1,0 +1,174 @@
+name: Release
+
+# Canonical OIDC trusted-publishing release workflow for bmad-module-skill-forge.
+# Consolidates publish.yaml + manual-release.yaml. Gated on the `release` GitHub
+# Environment (required-reviewer approval). Filename MUST remain literal
+# `release.yaml` — the npm Trusted Publisher is registered character-for-character
+# on `release.yaml` + job id `release`. See docs/RELEASING.md § npm Trusted Publisher.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: Version bump type
+        required: true
+        default: alpha
+        type: choice
+        options:
+          - alpha
+          - beta
+          - rc
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - name: Ensure npm CLI supports trusted publishing
+        run: npm install -g npm@latest
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests and validation
+        run: npm test
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        run: |
+          case "${{ github.event.inputs.version_bump }}" in
+            alpha|beta|rc) npm version prerelease --no-git-tag-version --preid=${{ github.event.inputs.version_bump }} ;;
+            *)             npm version ${{ github.event.inputs.version_bump }} --no-git-tag-version ;;
+          esac
+
+      - name: Get new version and previous tag
+        id: version
+        run: |
+          echo "new_version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+          echo "previous_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
+
+      - name: Update marketplace.json version
+        run: |
+          sed -i 's/"version": "[^"]*"/"version": "${{ steps.version.outputs.new_version }}"/' .claude-plugin/marketplace.json
+
+      - name: Update CHANGELOG.md
+        run: |
+          npx conventional-changelog-cli -p conventionalcommits -i CHANGELOG.md -s
+
+      - name: Assert no bogus issue refs in CHANGELOG
+        run: |
+          if grep -E 'closes \[#[^0-9]' CHANGELOG.md; then
+            echo "::error::CHANGELOG.md contains non-numeric 'closes [#...]' refs — aborting release."
+            exit 1
+          fi
+
+      - name: Commit version bump
+        run: |
+          git add package.json .claude-plugin/marketplace.json CHANGELOG.md
+          git commit -m "release: bump to v${{ steps.version.outputs.new_version }}"
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          COMMITS=$(git log ${{ steps.version.outputs.previous_tag }}..HEAD --pretty=format:"- %s" --reverse)
+          FEATURES=$(echo "$COMMITS" | grep -E "^- (feat|Feature)" || true)
+          FIXES=$(echo "$COMMITS" | grep -E "^- (fix|Fix)" || true)
+          CHORES=$(echo "$COMMITS" | grep -E "^- (chore|Chore)" || true)
+          OTHERS=$(echo "$COMMITS" | grep -v -E "^- (feat|Feature|fix|Fix|chore|Chore|release:|Release:)" || true)
+
+          {
+            echo "## What's New"
+            echo
+            [ -n "$FEATURES" ] && { echo "### New Features"; echo "$FEATURES"; echo; }
+            [ -n "$FIXES" ]    && { echo "### Bug Fixes"; echo "$FIXES"; echo; }
+            [ -n "$OTHERS" ]   && { echo "### Other Changes"; echo "$OTHERS"; echo; }
+            [ -n "$CHORES" ]   && { echo "### Maintenance"; echo "$CHORES"; echo; }
+            echo "## Installation"
+            echo
+            echo '```bash'
+            echo "npx bmad-module-skill-forge install"
+            echo '```'
+            echo
+            echo "**Full Changelog**: https://github.com/armelhbobdad/bmad-module-skill-forge/compare/${{ steps.version.outputs.previous_tag }}...v${{ steps.version.outputs.new_version }}"
+          } > release_notes.md
+
+          {
+            echo "RELEASE_NOTES<<EOF"
+            cat release_notes.md
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      - name: Create and push tag
+        run: |
+          if git rev-parse "v${{ steps.version.outputs.new_version }}" >/dev/null 2>&1; then
+            echo "Tag v${{ steps.version.outputs.new_version }} already exists, skipping tag creation"
+          else
+            git tag -a "v${{ steps.version.outputs.new_version }}" -m "Release v${{ steps.version.outputs.new_version }}"
+            git push origin "v${{ steps.version.outputs.new_version }}"
+          fi
+
+      - name: Push commit to main
+        run: git push origin HEAD:main
+
+      - name: Publish to npm via OIDC trusted publishing
+        env:
+          NPM_TOKEN: ""
+        run: |
+          VERSION="${{ steps.version.outputs.new_version }}"
+          if   [[ "$VERSION" == *"alpha"* ]]; then npm publish --tag alpha
+          elif [[ "$VERSION" == *"beta"*  ]]; then npm publish --tag beta
+          elif [[ "$VERSION" == *"rc"*    ]]; then npm publish --tag rc
+          else                                     npm publish --tag latest
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.new_version }}
+          name: "Skill Forge (SKF) v${{ steps.version.outputs.new_version }}"
+          body: ${{ steps.release_notes.outputs.RELEASE_NOTES }}
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.new_version, 'alpha') || contains(steps.version.outputs.new_version, 'beta') || contains(steps.version.outputs.new_version, 'rc') }}
+
+      - name: Summary
+        run: |
+          {
+            echo "## 🎉 Released v${{ steps.version.outputs.new_version }}"
+            echo
+            echo "**npm**: https://www.npmjs.com/package/bmad-module-skill-forge/v/${{ steps.version.outputs.new_version }}"
+            echo "**GitHub**: https://github.com/armelhbobdad/bmad-module-skill-forge/releases/tag/v${{ steps.version.outputs.new_version }}"
+            echo "**Provenance**: auto-attached via OIDC trusted publishing"
+          } >> $GITHUB_STEP_SUMMARY
