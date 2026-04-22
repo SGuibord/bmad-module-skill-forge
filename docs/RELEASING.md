@@ -218,7 +218,8 @@ Placeholder substitutions used throughout:
 
   ```bash
   npm view bmad-module-skill-forge dist-tags --json
-  # expected: {"latest":"<previous_good>", ... "alpha":"0.10.1-alpha.0"}
+  # expected: {"latest":"<previous_good>", ...}
+  # Other dist-tags (e.g. "alpha") may also appear depending on prior releases.
   ```
 
 ### Scenario B — "Bad version live for hours/days, users may be installing it"
@@ -240,8 +241,10 @@ Placeholder substitutions used throughout:
 - **Verification.**
 
   ```bash
-  # Deprecation warning appears on a fresh install.
-  npm install bmad-module-skill-forge@<bad> 2>&1 | grep -i deprecat
+  # Confirm the deprecation message landed on the registry (no install required —
+  # `npm install` would mutate the cwd's package.json/package-lock.json).
+  npm view bmad-module-skill-forge@<bad> deprecated
+  # expected: the exact deprecation string set above ("Critical bug - use <next_version> instead")
   ```
 
   NFR3 (rollback frequency <1/quarter post-v1.0.0) is evaluated against the frequency of Scenario B invocations — each trip through Scenario B is an NFR3 data point.
@@ -306,21 +309,37 @@ Placeholder substitutions used throughout:
 - **CLI — tag recovery.**
 
   ```bash
-  # Obtain the commit-sha the workflow used as its HEAD during the publish run.
-  gh run view <run-id> --log | grep -A 2 "release: bump to v<version>"
+  # Obtain the commit-sha the workflow used as its HEAD during the publish run
+  # (returns the SHA directly; do not grep the run log — the bump-commit echo
+  # line does not contain the SHA, only the post-commit confirmation does).
+  COMMIT_SHA=$(gh api \
+    repos/armelhbobdad/bmad-module-skill-forge/actions/runs/<run-id> \
+    --jq .head_sha)
 
   # Recreate the annotated tag and push.
-  git tag -a v<version> <commit-sha> -m "Release v<version>"
+  git tag -a v<version> "$COMMIT_SHA" -m "Release v<version>"
   git push origin v<version>
   ```
 
-- **CLI — GitHub Release recovery.**
+- **CLI — GitHub Release recovery.** The workflow's `Generate release notes`
+  step writes to `release_notes.md` inside the runner; that file is **not**
+  uploaded as an artifact, so it does not exist outside the run. Either scrape
+  the body from the run log first, or use `--generate-notes` to let GitHub
+  regenerate from commit subjects.
 
   ```bash
-  # Re-create the GitHub Release from the notes the workflow generated
-  # (scrape from the run log if release_notes.md was not preserved as an artifact).
+  # Option A: scrape the notes body from the run log into a local file.
+  gh run view <run-id> --log \
+    | sed -n '/^## Generate release notes/,/^##[^#]/p' \
+    > release_notes.md
   gh release create v<version> \
     --notes-file release_notes.md \
+    --title "Skill Forge (SKF) v<version>"
+
+  # Option B: let GitHub regenerate from commit subjects (loses the curated
+  # changelog body but always works).
+  gh release create v<version> \
+    --generate-notes \
     --title "Skill Forge (SKF) v<version>"
   ```
 
@@ -365,9 +384,16 @@ Placeholder substitutions used throughout:
   #   "provenance": { "predicateType": "https://slsa.dev/provenance/v1" }
   # }
 
-  # Human-friendly signature-chain check on a fresh install.
+  # Human-friendly signature-chain check. `npm audit signatures` operates on
+  # the cwd's installed dependency tree — running it in an empty dir returns
+  # "0 packages have verified attestations", which is a false-clean signal
+  # mid-incident. Wrap the install in a throwaway dir, ignore lifecycle
+  # scripts (the suspect tarball may be hostile), then audit.
+  mkdir -p /tmp/skf-incident-verify && cd /tmp/skf-incident-verify
+  npm init -y >/dev/null
+  npm install --ignore-scripts bmad-module-skill-forge@<suspect>
   npm audit signatures
-  # expected: "X packages have verified attestations"
+  # expected: "X packages have verified attestations" with attestation count >= 1
   ```
 
   If `dist.attestations` is missing or the `url` field points somewhere unexpected, the publish bypassed the OIDC path.
@@ -405,7 +431,7 @@ Placeholder substitutions used throughout:
   # expected: {"name":"Release","state":"active","path":".github/workflows/release.yaml"}
   ```
 
-  If `state` is not `active` (npm reports `disabled_manually` when disabled via the UI or `gh workflow disable`), or no matching workflow is returned at all (file renamed, moved, or deleted), Scenario G applies.
+  If `state` is not `active` (the GitHub Actions API reports `disabled_manually` when disabled via the UI or `gh workflow disable`), or no matching workflow is returned at all (file renamed, moved, or deleted), Scenario G applies.
 
 - **Recovery CLI.**
 
@@ -417,21 +443,32 @@ Placeholder substitutions used throughout:
   # Revert the offending PR via the normal branch-protection review path.
   # Do NOT hand-edit main — branch protection blocks direct push anyway.
   gh pr view <offending-pr-number>
+  # `gh pr revert` opens a NEW revert PR; it does not merge anything itself.
+  # Capture the URL it prints, then approve + merge that revert PR through
+  # the standard review path before retrying the release.
   gh pr revert <offending-pr-number>
+  # After approval (manual review step required by branch protection):
+  gh pr merge <revert-pr-number> --squash
   ```
 
 - **Expected outcome.** `release.yaml` is back on `main` with `state: "active"`; next dispatch fires normally.
-- **Prevention.** Single-root invariants to spot-check after any workflow-dir PR:
+- **Prevention.** Single-root invariants to spot-check after any workflow-dir PR. The globs below cover both `.yaml` and `.yml` extensions (the repo currently has at least one `.yml` workflow):
 
   ```bash
   # Any workflow with id-token: write should be a known release/provenance workflow.
-  grep -l 'id-token: write' .github/workflows/*.yaml
-  # expected set: docs.yaml (GitHub Pages), publish.yaml (DEPRECATED, workflow_dispatch-only),
-  # release.yaml (canonical).
+  grep -l 'id-token: write' .github/workflows/*.{yaml,yml} 2>/dev/null
+  # expected set:
+  #   - docs.yaml (GitHub Pages — orthogonal to release)
+  #   - publish.yaml (DEPRECATED — kept until Story 6.1 deletes it; workflow_dispatch-only,
+  #                   surviving as the Scenario G emergency hatch)
+  #   - release.yaml (canonical)
 
-  # No v* push trigger outside release.yaml — and release.yaml itself is workflow_dispatch-only,
-  # so there should be zero matches for `v*` push triggers anywhere.
-  grep -rE 'tags:\s*$|v\*' .github/workflows/*.yaml
+  # No `v*` push trigger should exist in any workflow — release.yaml is workflow_dispatch-only,
+  # and publish.yaml had its push:tags:v* trigger neutralized in Story 3.3 Patch A.
+  # Scan the 3 lines following each `push:` block for a v* tag pattern.
+  grep -A3 -E '^\s*push:' .github/workflows/*.{yaml,yml} 2>/dev/null \
+    | grep -E "['\"]v\*['\"]"
+  # expected: zero matches.
   ```
 
 - **Escalation path — emergency hatch.** If Scenario G is detected mid-incident when a release is urgently needed, the legacy `.github/workflows/publish.yaml` retains `workflow_dispatch:` as an emergency hatch (NPM_TOKEN still at repo scope until Story 6.3). Invoke via:
@@ -440,7 +477,12 @@ Placeholder substitutions used throughout:
   gh workflow run publish.yaml
   ```
 
-  with the explicit understanding that this publish is **token-based (not OIDC)** and will **not** carry SLSA-L2 provenance. Document every emergency-hatch use in an incident post-mortem, and re-enable `release.yaml` before the next release. This fallback disappears when Story 6.1 deletes `publish.yaml`.
+  Read the next two paragraphs **before** dispatching:
+
+  - **Auth vs. provenance — they are independent.** `publish.yaml` authenticates to npm with `NODE_AUTH_TOKEN=${{ secrets.NPM_TOKEN }}` (token-based; NOT OIDC trusted publishing — that path is `release.yaml`-only). However, the workflow also has `id-token: write` permission and calls `npm publish --provenance`, so npm WILL attach a SLSA-L2 provenance attestation derived from the GitHub Actions OIDC token. Provenance is independent of the auth-to-npm path. The trade-off is auth lineage (token vs. trusted-publisher OIDC), not attestation presence.
+  - **State divergence — `publish.yaml` does NOT bump version, push the `v*` tag, update `CHANGELOG.md`, or create a GitHub Release.** It only runs `npm publish` against whatever `package.json` is at HEAD of the dispatched ref. Every emergency-hatch use therefore leaves npm + git state diverged and requires a Scenario E-style reconciliation afterward: bump `package.json` manually on `main` (so the next release does not collide), then recreate the tag and GitHub Release per Scenario E.
+
+  Document every emergency-hatch use in an incident post-mortem, and re-enable `release.yaml` before the next release. This fallback disappears when Story 6.1 deletes `publish.yaml`.
 
 - **Constraints.** Branch protection on `main` blocks direct pushes — recovery goes through a PR in every case. Do not attempt to sidestep branch protection to "fix" `release.yaml` faster; the cost of a bad release (NFR5 audit-trail breakage, NFR10 commit-trail breakage) far exceeds the cost of a normal-review PR.
 
@@ -486,8 +528,11 @@ Baselines live in `_bmad-output/planning-artifacts/` (already git-tracked, not s
    ```bash
    RULESET_ID=$(gh api repos/armelhbobdad/bmad-module-skill-forge/rulesets \
      --jq '.[] | select(.name=="Default") | .id')
-   jq '{name, target, enforcement, conditions, rules, bypass_actors}' \
-     _bmad-output/planning-artifacts/baseline-ruleset-Default-YYYYMMDD.json \
+   # Pick the most recent baseline file (the YYYYMMDD suffix is a real date
+   # written by the capture command above; the glob avoids hard-coding it).
+   BASELINE=$(ls -t _bmad-output/planning-artifacts/baseline-ruleset-Default-*.json \
+     | head -1)
+   jq '{name, target, enforcement, conditions, rules, bypass_actors}' "$BASELINE" \
      > /tmp/restore.json
    gh api --method PUT \
      "repos/armelhbobdad/bmad-module-skill-forge/rulesets/$RULESET_ID" \
