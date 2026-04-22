@@ -76,6 +76,16 @@ If `npm run quality` passes locally, CI should too. The same steps run in [`.git
 
 CI re-runs everything on the PR. A green local run and a red CI run means either (a) you have uncommitted files, or (b) your Node/uv versions drift from `.nvmrc` / `test:python`. Check both before filing a CI bug.
 
+## Releasing
+
+Maintainers only — if you're not cutting a release, skip this section.
+
+- **Canonical path:** `.github/workflows/release.yaml`, triggered via GitHub Actions → Run workflow → choose `version_bump` (`alpha` / `beta` / `rc` / `patch` / `minor` / `major`). That is the only supported route — OIDC-backed publish, required-reviewer gate on the `release` environment, auto-provenance on the npm tarball.
+- **Do not use `npm run release:*` locally.** Every `release:*` script (plus the bare `release` alias) is retained only as a fail-loud stub that prints `[DEPRECATED] Use .github/workflows/release.yaml via GitHub Actions.` and exits 1. The stubs exist so that muscle memory doesn't accidentally ship anything; Epic 6 removes them outright post-v1.0.0.
+- **Do not invoke `publish.yaml` or `manual-release.yaml` directly.** Both are DEPRECATED (see each workflow's top-of-file comment header) and scheduled for deletion post-v1.0.0 per Epic 6.
+
+See [docs/RELEASING.md](docs/RELEASING.md) for the full procedure — branch-protection rules, the `release` environment with its required-reviewer gate, npm Trusted Publisher registration, and the seven-scenario [rollback playbook](docs/RELEASING.md#rollback-playbook).
+
 ## Adding a New Workflow Skill
 
 The `src/skf-*/` directories each follow the same shape:
