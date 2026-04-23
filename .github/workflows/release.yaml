@@ -275,6 +275,12 @@ jobs:
           NEW_VERSION="${{ steps.version.outputs.new_version }}"
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
+          # P3: guard release_notes.md absence so PR body is never malformed silently.
+          if [ ! -s release_notes.md ]; then
+            echo "::warning::release_notes.md missing or empty; using placeholder."
+            echo "Release notes unavailable." > release_notes.md
+          fi
+
           {
             echo "Automated release PR opened by \`release.yaml\` run \`${{ github.run_id }}\`. Auto-merges once the 7 required status checks pass and a maintainer approves."
             echo
@@ -291,11 +297,13 @@ jobs:
             echo "> This PR is authored by \`github-actions[bot]\` under \`GITHUB_TOKEN\`; human approval is required to merge. See GitHub issue #198 for the refactor rationale."
           } > pr_body.md
 
+          # P1: gh pr create may emit warnings / notices on stdout alongside the URL
+          # depending on gh version and repo state. tail -n1 pins to the URL line.
           PR_URL=$(gh pr create \
             --base main \
             --head "$TEMP_BRANCH" \
             --title "release: bump to v$NEW_VERSION" \
-            --body-file pr_body.md)
+            --body-file pr_body.md | tail -n1)
           PR_NUMBER=$(gh pr view "$PR_URL" --json number --jq .number)
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
@@ -319,7 +327,13 @@ jobs:
         # all three options.
         run: |
           TEMP_BRANCH="${{ steps.temp_push.outputs.temp_branch }}"
-          gh workflow run quality.yaml --ref "$TEMP_BRANCH"
+          # P4: surface gh workflow run failures explicitly. Without the guard,
+          # the next step (wait-for-checks) silently waits for check-runs that
+          # will never register.
+          if ! gh workflow run quality.yaml --ref "$TEMP_BRANCH"; then
+            echo "::error::gh workflow run quality.yaml --ref $TEMP_BRANCH failed. Check GH_TOKEN scope (actions:write), API status, and that quality.yaml exists on the temp branch."
+            exit 1
+          fi
           echo "::notice::Dispatched quality.yaml against $TEMP_BRANCH via workflow_dispatch"
 
       - name: Wait for required status checks
@@ -332,7 +346,26 @@ jobs:
         # register its check-runs on the PR's head SHA before we start watching.
         run: |
           PR_NUMBER="${{ steps.open_pr.outputs.pr_number }}"
-          sleep 15
+          # P5: wait for at least one required check-run to register before --watch.
+          # Without this, `gh pr checks --required --watch --fail-fast` may exit 0
+          # immediately if zero required check-runs exist yet (silent-pass bug).
+          # The workflow_dispatch from the prior step needs a few seconds to register
+          # check-runs on the PR head SHA; poll for up to 2m (24 * 5s) before giving up.
+          POLL=0
+          REQUIRED_COUNT=0
+          while [ $POLL -lt 24 ]; do
+            REQUIRED_COUNT=$(gh pr checks "$PR_NUMBER" --required --json name --jq 'length' 2>/dev/null || echo 0)
+            if [ "${REQUIRED_COUNT:-0}" -ge 1 ]; then
+              echo "::notice::$REQUIRED_COUNT required check-run(s) registered on PR #$PR_NUMBER; entering --watch"
+              break
+            fi
+            sleep 5
+            POLL=$((POLL + 1))
+          done
+          if [ "${REQUIRED_COUNT:-0}" -lt 1 ]; then
+            echo "::error::No required check-runs registered on PR #$PR_NUMBER within 2m of workflow_dispatch. Likely causes: (a) quality.yaml didn't actually dispatch (see prior step logs), (b) check-run names don't match the ruleset's required contexts (AC #3 path-3.i caveat — dispatched names may be namespaced differently). PR left open for manual inspection."
+            exit 1
+          fi
           if ! gh pr checks "$PR_NUMBER" --required --watch --fail-fast; then
             echo "::error::PR #$PR_NUMBER has failing required check(s). PR left open for manual inspection. Re-run release.yaml after the underlying defect is fixed on main."
             exit 1
@@ -364,17 +397,56 @@ jobs:
           POLL_INTERVAL=60
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT_SECONDS ]; do
-            VIEW=$(gh pr view "$PR_NUMBER" --json reviewDecision,merged)
+            # P6: guard against transient gh / API failures — empty or error VIEW
+            # would yield empty DECISION / MERGED and wedge the loop in "none" state
+            # while the 30m budget still burns.
+            if ! VIEW=$(gh pr view "$PR_NUMBER" --json reviewDecision,merged,mergeCommit,mergedAt,latestReviews 2>&1); then
+              echo "gh pr view failed (elapsed ${ELAPSED}s); retrying: $VIEW"
+              sleep $POLL_INTERVAL
+              ELAPSED=$((ELAPSED + POLL_INTERVAL))
+              continue
+            fi
+            if [ -z "$VIEW" ]; then
+              echo "gh pr view returned empty (elapsed ${ELAPSED}s); retrying"
+              sleep $POLL_INTERVAL
+              ELAPSED=$((ELAPSED + POLL_INTERVAL))
+              continue
+            fi
             DECISION=$(echo "$VIEW" | jq -r .reviewDecision)
             MERGED=$(echo "$VIEW" | jq -r .merged)
             if [ "$MERGED" = "true" ]; then
-              echo "::notice::PR #$PR_NUMBER already merged (admin-bypass path); skipping auto-merge step."
-              echo "already_merged=true" >> "$GITHUB_OUTPUT"
+              # P11: capture merge artifacts for the Summary step (admin-bypass path
+              # skips Wait-for-merge, so merge_sha + merged_at must be emitted here).
+              MERGE_SHA=$(echo "$VIEW" | jq -r '.mergeCommit.oid // "unknown"')
+              MERGED_AT=$(echo "$VIEW" | jq -r '.mergedAt // "unknown"')
+              echo "::notice::PR #$PR_NUMBER already merged (admin-bypass path) at $MERGED_AT (merge commit $MERGE_SHA); skipping auto-merge step."
+              {
+                echo "already_merged=true"
+                echo "authorization_path=admin-bypass-merge"
+                echo "approver=n/a (admin bypass)"
+                echo "approved_at=$MERGED_AT"
+                echo "merge_sha=$MERGE_SHA"
+                echo "merged_at=$MERGED_AT"
+              } >> "$GITHUB_OUTPUT"
               exit 0
             fi
+            # P7: reviewer actively rejected — fail fast, don't burn the 30m budget
+            # polling for an APPROVED that won't arrive until the comments are addressed.
+            if [ "$DECISION" = "CHANGES_REQUESTED" ]; then
+              echo "::error::PR #$PR_NUMBER has CHANGES_REQUESTED; a reviewer actively rejected the PR. Address the review comments and re-dispatch release.yaml."
+              exit 1
+            fi
             if [ "$DECISION" = "APPROVED" ]; then
-              echo "::notice::PR #$PR_NUMBER approved; proceeding to auto-merge."
-              echo "already_merged=false" >> "$GITHUB_OUTPUT"
+              # P11: capture approver identity + timestamp for the Summary step.
+              APPROVER=$(echo "$VIEW" | jq -r '[.latestReviews[]? | select(.state=="APPROVED")] | last | .author.login // "unknown"')
+              APPROVED_AT=$(echo "$VIEW" | jq -r '[.latestReviews[]? | select(.state=="APPROVED")] | last | .submittedAt // "unknown"')
+              echo "::notice::PR #$PR_NUMBER approved by @$APPROVER at $APPROVED_AT; proceeding to auto-merge."
+              {
+                echo "already_merged=false"
+                echo "authorization_path=formal-approval"
+                echo "approver=$APPROVER"
+                echo "approved_at=$APPROVED_AT"
+              } >> "$GITHUB_OUTPUT"
               exit 0
             fi
             echo "Waiting (reviewDecision: ${DECISION:-none}; merged: $MERGED; elapsed ${ELAPSED}s/${TIMEOUT_SECONDS}s)"
@@ -394,7 +466,9 @@ jobs:
         # Skipped if the maintainer bypass-merged at the approval step.
         run: |
           PR_NUMBER="${{ steps.open_pr.outputs.pr_number }}"
-          if ! gh pr merge "$PR_NUMBER" --auto --merge; then
+          # P2: --delete-branch cleans up release/bot/vX.Y.Z-<run_id> after merge
+          # so the ref namespace doesn't accumulate one branch per release forever.
+          if ! gh pr merge "$PR_NUMBER" --auto --merge --delete-branch; then
             echo "::error::Auto-merge failed for PR #$PR_NUMBER. If the error was 'auto merge is not allowed for this repository', run: gh api --method PATCH /repos/${{ github.repository }} -f allow_auto_merge=true  (see Story 3.4 AC #6 / Task 2)."
             exit 1
           fi
@@ -402,20 +476,49 @@ jobs:
 
       - name: Wait for merge completion
         if: github.ref == 'refs/heads/main' && steps.wait_approval.outputs.already_merged != 'true'
+        id: wait_merge
         timeout-minutes: 5
         # `gh pr merge --auto` schedules the merge; GitHub may take seconds to
         # actually perform it. Poll `merged` until true so the downstream tag
         # step sees the new main tip. Skipped if the maintainer bypass-merged
-        # (merged is already true).
+        # (merged is already true; wait_approval emitted merge_sha + merged_at
+        # for the Summary step).
         run: |
           PR_NUMBER="${{ steps.open_pr.outputs.pr_number }}"
           while true; do
-            MERGED=$(gh pr view "$PR_NUMBER" --json merged --jq .merged)
+            # P6: guard transient gh / API failures (empty VIEW would hang until
+            # the 5m step-level timeout with no diagnostic signal).
+            if ! VIEW=$(gh pr view "$PR_NUMBER" --json merged,closed,mergeCommit,mergedAt 2>&1); then
+              echo "gh pr view failed; retrying: $VIEW"
+              sleep 10
+              continue
+            fi
+            if [ -z "$VIEW" ]; then
+              echo "gh pr view returned empty; retrying"
+              sleep 10
+              continue
+            fi
+            MERGED=$(echo "$VIEW" | jq -r .merged)
+            CLOSED=$(echo "$VIEW" | jq -r .closed)
+            # P8: PR closed without merge means auto-merge will never fire (operator
+            # closed it, GitHub blocked it, mergeable state went bad). Fail fast
+            # instead of hanging until the 5m timeout with no actionable diagnostic.
+            if [ "$CLOSED" = "true" ] && [ "$MERGED" != "true" ]; then
+              echo "::error::PR #$PR_NUMBER was closed without being merged. Investigate: operator close, mergeable state regression, ruleset reject. PR left in closed state."
+              exit 1
+            fi
             if [ "$MERGED" = "true" ]; then
-              echo "::notice::PR #$PR_NUMBER merged"
+              # P11: capture merge artifacts for the Summary step.
+              MERGE_SHA=$(echo "$VIEW" | jq -r '.mergeCommit.oid // "unknown"')
+              MERGED_AT=$(echo "$VIEW" | jq -r '.mergedAt // "unknown"')
+              echo "::notice::PR #$PR_NUMBER merged at $MERGED_AT (merge commit $MERGE_SHA)"
+              {
+                echo "merge_sha=$MERGE_SHA"
+                echo "merged_at=$MERGED_AT"
+              } >> "$GITHUB_OUTPUT"
               break
             fi
-            echo "Waiting for PR merge to complete (merged: $MERGED)"
+            echo "Waiting for PR merge to complete (merged: $MERGED; closed: $CLOSED)"
             sleep 10
           done
 
@@ -437,9 +540,24 @@ jobs:
         # from pre-3.4 behavior).
         run: |
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            git fetch origin main
+            # P9: fail fast on fetch failure; cross-check the anchor SHA against the
+            # PR's merge commit. git-backend replication can lag the API briefly, so
+            # `origin/main` post-fetch may still be the pre-merge tip — in which case
+            # the tag would anchor on the orphaned temp-branch commit instead of the
+            # merge commit now on main. Using the PR's reported mergeCommit as the
+            # authoritative anchor eliminates the race.
+            if ! git fetch origin main; then
+              echo "::error::git fetch origin main failed. Cannot safely anchor release tag. Check network/auth and re-run."
+              exit 1
+            fi
             TAG_ANCHOR=$(git rev-parse origin/main)
-            echo "Main-dispatch: anchoring tag on origin/main tip $TAG_ANCHOR"
+            PR_NUMBER="${{ steps.open_pr.outputs.pr_number }}"
+            EXPECTED_SHA=$(gh pr view "$PR_NUMBER" --json mergeCommit --jq '.mergeCommit.oid // empty')
+            if [ -n "$EXPECTED_SHA" ] && [ "$TAG_ANCHOR" != "$EXPECTED_SHA" ]; then
+              echo "::warning::origin/main tip ($TAG_ANCHOR) differs from PR #$PR_NUMBER merge commit ($EXPECTED_SHA) — possible git/API replication lag. Using PR merge commit as tag anchor."
+              TAG_ANCHOR="$EXPECTED_SHA"
+            fi
+            echo "Main-dispatch: anchoring tag on $TAG_ANCHOR"
           else
             TAG_ANCHOR=HEAD
             echo "Non-main-dispatch: anchoring tag on CI HEAD (orphan pattern per AC #9)"
@@ -486,12 +604,27 @@ jobs:
             echo "### Release Flow"
             echo
             if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+              # P11: richer summary per spec AC #15 — include authorization path,
+              # approver identity + timestamp, merge commit SHA + timestamp. Data
+              # source: wait_approval emits merge_sha + merged_at on the admin-bypass
+              # path (where wait_merge is skipped); wait_merge emits on the formal-
+              # approval path. Read from whichever populated.
+              AUTH_PATH="${{ steps.wait_approval.outputs.authorization_path }}"
+              APPROVER="${{ steps.wait_approval.outputs.approver }}"
+              APPROVED_AT="${{ steps.wait_approval.outputs.approved_at }}"
+              MERGE_SHA="${{ steps.wait_approval.outputs.merge_sha }}"
+              MERGED_AT="${{ steps.wait_approval.outputs.merged_at }}"
+              if [ -z "$MERGE_SHA" ]; then
+                MERGE_SHA="${{ steps.wait_merge.outputs.merge_sha }}"
+                MERGED_AT="${{ steps.wait_merge.outputs.merged_at }}"
+              fi
               echo "- Dispatch ref: \`main\` (Story 3.4 PR-auto-merge path)"
               echo "- Temp branch: \`${{ steps.temp_push.outputs.temp_branch }}\`"
               echo "- Bot PR: ${{ steps.open_pr.outputs.pr_url }}"
-              echo "- Required checks: passed (7 contexts)"
-              echo "- PR approved + auto-merged via \`--merge\`"
-              echo "- Tag anchored on \`origin/main\` tip post-merge"
+              echo "- Required checks: passed"
+              echo "- Authorization: $AUTH_PATH (approver: \`$APPROVER\` at $APPROVED_AT)"
+              echo "- Merged: $MERGED_AT (merge commit \`$MERGE_SHA\`)"
+              echo "- Tag anchored on merge commit"
             else
               echo "- Dispatch ref: \`${{ github.ref }}\` (non-main; tag-only path per AC #9)"
               echo "- Tag anchored on CI-ephemeral commit (orphan pattern)"
