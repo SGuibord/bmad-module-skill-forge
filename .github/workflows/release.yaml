@@ -336,41 +336,142 @@ jobs:
           fi
           echo "::notice::Dispatched quality.yaml against $TEMP_BRANCH via workflow_dispatch"
 
-      - name: Wait for required status checks
+      - name: Cancel action_required pull_request runs on bot PR head
         if: github.ref == 'refs/heads/main'
-        timeout-minutes: 20
-        # AC #4: poll until all required contexts conclude, 20m hard cap.
-        # `--required` filters to only ruleset-required checks (ignores optional
-        # runs); `--watch` polls every 10s; `--fail-fast` exits 1 on first
-        # failure. Pre-sleep lets the workflow_dispatch from the prior step
-        # register its check-runs on the PR's head SHA before we start watching.
+        # Story 3.5 AC #5 (5.a): GitHub's fork-PR-approval rule applies even to
+        # GITHUB_TOKEN-authored PRs in user-owned repos; the pull_request event
+        # on the bot PR fires quality.yaml + discord-notification.yaml which
+        # land in `conclusion: action_required` and cannot be approved via
+        # POST /actions/runs/:id/approve (returns "This run is not from a fork
+        # pull request."). These orphan runs DO appear in PullRequest.status
+        # CheckRollup and permanently block branch protection even when the
+        # workflow_dispatch-sourced runs conclude success. Cancelling them
+        # transitions conclusion action_required → cancelled (a terminal
+        # state); branch protection's most-recent-wins eval then picks the
+        # workflow_dispatch success runs as authoritative on the SHA.
         run: |
           PR_NUMBER="${{ steps.open_pr.outputs.pr_number }}"
-          # P5: wait for at least one required check-run to register before --watch.
-          # Without this, `gh pr checks --required --watch --fail-fast` may exit 0
-          # immediately if zero required check-runs exist yet (silent-pass bug).
-          # The workflow_dispatch from the prior step needs a few seconds to register
-          # check-runs on the PR head SHA; poll for up to 2m (24 * 5s) before giving up.
+          HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)
+          # Give GitHub a moment to attach the pull_request runs (they may
+          # still be firing after PR-open / force-trigger dispatch).
+          sleep 10
+          STUCK=$(gh api "/repos/${{ github.repository }}/actions/runs?head_sha=$HEAD_SHA&per_page=100" \
+            --paginate --jq '[.workflow_runs[] | select(.conclusion == "action_required") | .id]')
+          COUNT=$(echo "$STUCK" | jq 'length')
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::notice::No action_required runs on $HEAD_SHA; nothing to cancel."
+            exit 0
+          fi
+          echo "::notice::Cancelling $COUNT action_required run(s) on $HEAD_SHA"
+          for RUN_ID in $(echo "$STUCK" | jq -r '.[]'); do
+            if gh api --method POST "/repos/${{ github.repository }}/actions/runs/$RUN_ID/cancel"; then
+              echo "  Cancelled run $RUN_ID"
+            else
+              echo "::warning::Failed to cancel run $RUN_ID (may already be in a terminal state)"
+            fi
+          done
+
+      - name: Wait for required status checks
+        if: github.ref == 'refs/heads/main'
+        id: wait_checks
+        timeout-minutes: 20
+        # Story 3.5 AC #1–#4 (fixes issue #202): gh pr checks reads GraphQL's
+        # PullRequest.statusCheckRollup which only surfaces check-runs in a
+        # check suite that belongs to the PR (pull_request / push / merge_group
+        # events). The Force-trigger step above uses workflow_dispatch, whose
+        # check-runs land in a SEPARATE suite attached to the SHA by the ref-
+        # level dispatch — invisible to the rollup. Poll the commit's check-
+        # runs API directly to see all check-runs on the SHA regardless of
+        # which check suite created them. Required-context list is fetched
+        # from ruleset 13855503 so the Wait step has a single source of truth
+        # with branch protection.
+        run: |
+          PR_NUMBER="${{ steps.open_pr.outputs.pr_number }}"
+          HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)
+          echo "Polling check-runs on $HEAD_SHA (PR #$PR_NUMBER)"
+
+          # AC #2: required contexts fetched from the ruleset (not hard-coded)
+          # so the Wait step can never drift from branch protection.
+          REQUIRED_JSON=$(gh api "/repos/${{ github.repository }}/rulesets/13855503" \
+            --jq '[.rules[] | select(.type=="required_status_checks") | .parameters.required_status_checks[].context]' 2>/dev/null || echo "")
+          if [ -z "$REQUIRED_JSON" ] || [ "$REQUIRED_JSON" = "[]" ]; then
+            echo "::error::Failed to fetch required-context list from ruleset 13855503. Retry the workflow, or verify: gh api /repos/${{ github.repository }}/rulesets/13855503"
+            exit 1
+          fi
+          REQUIRED_COUNT=$(echo "$REQUIRED_JSON" | jq 'length')
+          echo "Required contexts ($REQUIRED_COUNT): $REQUIRED_JSON"
+
+          # AC #3: registration poll — wait up to 2m for check-runs to register
+          # on the SHA. Preserves the Story 3.4 Patch P5 register-before-watch
+          # guard under the new API shape.
           POLL=0
-          REQUIRED_COUNT=0
+          REGISTERED=0
           while [ $POLL -lt 24 ]; do
-            REQUIRED_COUNT=$(gh pr checks "$PR_NUMBER" --required --json name --jq 'length' 2>/dev/null || echo 0)
-            if [ "${REQUIRED_COUNT:-0}" -ge 1 ]; then
-              echo "::notice::$REQUIRED_COUNT required check-run(s) registered on PR #$PR_NUMBER; entering --watch"
+            REGISTERED=$(gh api "/repos/${{ github.repository }}/commits/$HEAD_SHA/check-runs" --paginate --jq '.check_runs | length' 2>/dev/null || echo 0)
+            if [ "${REGISTERED:-0}" -ge 1 ]; then
+              echo "::notice::$REGISTERED check-run(s) registered on $HEAD_SHA; entering main wait loop"
               break
             fi
             sleep 5
             POLL=$((POLL + 1))
           done
-          if [ "${REQUIRED_COUNT:-0}" -lt 1 ]; then
-            echo "::error::No required check-runs registered on PR #$PR_NUMBER within 2m of workflow_dispatch. Likely causes: (a) quality.yaml didn't actually dispatch (see prior step logs), (b) check-run names don't match the ruleset's required contexts (AC #3 path-3.i caveat — dispatched names may be namespaced differently). PR left open for manual inspection."
+          if [ "${REGISTERED:-0}" -lt 1 ]; then
+            echo "::error::No check-runs registered on $HEAD_SHA within 2m. Likely causes: (a) workflow_dispatch of quality.yaml failed silently at the Force-trigger step (see prior step logs); (b) ruleset required-context list is empty (verify: gh api /repos/.../rulesets/13855503)."
             exit 1
           fi
-          if ! gh pr checks "$PR_NUMBER" --required --watch --fail-fast; then
-            echo "::error::PR #$PR_NUMBER has failing required check(s). PR left open for manual inspection. Re-run release.yaml after the underlying defect is fixed on main."
-            exit 1
-          fi
-          echo "::notice::All required status checks passed on PR #$PR_NUMBER"
+
+          # AC #4: main wait loop — most-recent-wins per context, fail-fast on
+          # any concluded failure state, 20m hard cap via step-level timeout.
+          ELAPSED=0
+          TIMEOUT=1200
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            CHECKS=$(gh api "/repos/${{ github.repository }}/commits/$HEAD_SHA/check-runs" \
+              --paginate --jq '[.check_runs[] | {name, status, conclusion, started_at, html_url}]')
+            ALL_GREEN=true
+            PENDING=()
+            FAILED=()
+            for CTX in $(echo "$REQUIRED_JSON" | jq -r '.[]'); do
+              CTX_RUN=$(echo "$CHECKS" | jq -c --arg n "$CTX" '[.[] | select(.name==$n)] | sort_by(.started_at) | last')
+              if [ "$CTX_RUN" = "null" ] || [ -z "$CTX_RUN" ]; then
+                PENDING+=("$CTX(unregistered)")
+                ALL_GREEN=false
+                continue
+              fi
+              STATUS=$(echo "$CTX_RUN" | jq -r .status)
+              CONCL=$(echo "$CTX_RUN" | jq -r .conclusion)
+              if [ "$STATUS" != "completed" ]; then
+                PENDING+=("$CTX($STATUS)")
+                ALL_GREEN=false
+                continue
+              fi
+              case "$CONCL" in
+                success|skipped|neutral)
+                  : # green
+                  ;;
+                failure|cancelled|timed_out|action_required)
+                  RUN_URL=$(echo "$CTX_RUN" | jq -r .html_url)
+                  FAILED+=("$CTX(conclusion=$CONCL, run=$RUN_URL)")
+                  ALL_GREEN=false
+                  ;;
+                *)
+                  echo "::warning::Unexpected conclusion '$CONCL' on $CTX; treating as green"
+                  ;;
+              esac
+            done
+            if [ ${#FAILED[@]} -gt 0 ]; then
+              echo "::error::Required context(s) failed: ${FAILED[*]}. PR left open for manual inspection. Re-run release.yaml after the underlying defect is fixed on main."
+              exit 1
+            fi
+            if [ "$ALL_GREEN" = "true" ]; then
+              echo "::notice::All $REQUIRED_COUNT required contexts green on $HEAD_SHA"
+              exit 0
+            fi
+            echo "Waiting on: ${PENDING[*]} (elapsed ${ELAPSED}s of ${TIMEOUT}s)"
+            sleep 20
+            ELAPSED=$((ELAPSED + 20))
+          done
+          echo "::error::Required status checks did not all succeed within ${TIMEOUT}s on $HEAD_SHA. Pending: ${PENDING[*]}. PR left open for manual inspection."
+          exit 1
 
       - name: Wait for PR approval or admin-bypass merge
         if: github.ref == 'refs/heads/main'
