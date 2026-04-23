@@ -571,8 +571,9 @@ For the `release` environment, a deletion+restore similarly uses the two-call pa
 
   # Dispatch the canonical release workflow. `version_bump: major` on
   # 1.0.0-rc.N strips the prerelease suffix and produces 1.0.0 (node-semver
-  # inc(ver, 'major') behavior on a prerelease). The --ref main is
-  # load-bearing — non-main dispatches take the legacy tag-only path.
+  # inc(ver, 'major') behavior on a prerelease). `--ref main` is explicit
+  # (gh defaults to the repo's default branch, but any non-main ref takes
+  # the legacy tag-only path inside release.yaml, so pass it defensively).
   gh workflow run release.yaml -f version_bump=major --ref main
 
   # Capture the run id for monitoring + audit transcript.
@@ -581,7 +582,7 @@ For the `release` environment, a deletion+restore similarly uses the two-call pa
   gh run watch $RUN_ID
   ```
 
-  The workflow pauses at **two** gates that the maintainer must clear in the browser:
+  The workflow pauses at **two** gates that the maintainer must clear in the browser. Gate 1 requires explicit approval; gate 2 accepts either approval or admin-bypass-merge:
 
   1. The `release` environment deployment gate (at job start). Approve via "Review deployments" → "Approve and deploy" on the run page.
   2. The bot PR review-decision gate (after the 7 required status checks pass). EITHER approve the bot PR via the review UI, OR admin-bypass-merge via the PR merge button — both paths are accepted by `release.yaml`'s `Wait for PR approval or admin-bypass merge` step. Admin-bypass-merge is the observed pattern for prior cuts (PRs #209 and #213).
@@ -617,9 +618,11 @@ For the `release` environment, a deletion+restore similarly uses the two-call pa
   gh release view v1.0.0 --json tagName,isPrerelease
   # expected: {"tagName":"v1.0.0","isPrerelease":false}
 
-  # Confirm tag anchors on the merge commit (annotated tag — dereference with ^{}).
+  # Confirm the v1.0.0 tag is reachable from main (annotated tag — dereference with ^{}).
+  # Uses --is-ancestor so the check stays valid after subsequent commits land on main;
+  # pin to the recorded merge SHA if you need strict tag-anchor equivalence.
   git fetch origin --tags
-  [ "$(git rev-parse 'v1.0.0^{}')" = "$(git log main -1 --format='%H')" ] && echo OK
+  git merge-base --is-ancestor "$(git rev-parse 'v1.0.0^{}')" origin/main && echo OK
   # expected: OK
 
   # Confirm CHANGELOG reconciliation after the sign-off commit lands on main.
