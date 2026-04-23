@@ -339,41 +339,59 @@ jobs:
           fi
           echo "::notice::All required status checks passed on PR #$PR_NUMBER"
 
-      - name: Wait for PR approval
+      - name: Wait for PR approval or admin-bypass merge
         if: github.ref == 'refs/heads/main'
-        # AC #5: maintainer approval via the GitHub review UI. github-actions[bot]
-        # cannot self-approve (universal GitHub rule); `armelhbobdad` is the
-        # required approver per the `release` env's required_reviewers list.
-        # Distinct from the `release` environment's required_reviewer gate,
-        # which fires at job start (AC #5 is the PR-level approval).
+        id: wait_approval
+        # AC #5 (robust): poll until EITHER reviewDecision == APPROVED (the bot
+        # PR was approved, auto-merge will fire next) OR merged == true (the
+        # maintainer bypass-merged via admin). github-actions[bot] cannot
+        # self-approve (universal GitHub rule); `armelhbobdad` is the required
+        # approver per the `release` env's required_reviewers list.
+        #
+        # The merged-true branch handles the scenario where the maintainer
+        # chooses to bypass-merge via admin instead of approving via UI (same
+        # pattern used on PRs #195/#196/#197 in this repo, where ruleset
+        # 13855503's bypass_mode: pull_request admits admin merges without a
+        # formal review). In that case, `reviewDecision` stays REVIEW_REQUIRED
+        # forever and a pure APPROVED-only poll would hang for 30m.
         #
         # Manual timer (not step-level timeout-minutes) so we can emit a
-        # specific ::error:: message on timeout.
+        # specific ::error:: message on timeout. Exports already_merged so the
+        # next two steps skip their work when the maintainer pre-merged.
         run: |
           PR_NUMBER="${{ steps.open_pr.outputs.pr_number }}"
           TIMEOUT_SECONDS=1800  # 30 min
           POLL_INTERVAL=60
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT_SECONDS ]; do
-            DECISION=$(gh pr view "$PR_NUMBER" --json reviewDecision --jq .reviewDecision)
-            if [ "$DECISION" = "APPROVED" ]; then
-              echo "::notice::PR #$PR_NUMBER approved"
+            VIEW=$(gh pr view "$PR_NUMBER" --json reviewDecision,merged)
+            DECISION=$(echo "$VIEW" | jq -r .reviewDecision)
+            MERGED=$(echo "$VIEW" | jq -r .merged)
+            if [ "$MERGED" = "true" ]; then
+              echo "::notice::PR #$PR_NUMBER already merged (admin-bypass path); skipping auto-merge step."
+              echo "already_merged=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
-            echo "Waiting for PR approval (current reviewDecision: ${DECISION:-none}; elapsed ${ELAPSED}s/${TIMEOUT_SECONDS}s)"
+            if [ "$DECISION" = "APPROVED" ]; then
+              echo "::notice::PR #$PR_NUMBER approved; proceeding to auto-merge."
+              echo "already_merged=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "Waiting (reviewDecision: ${DECISION:-none}; merged: $MERGED; elapsed ${ELAPSED}s/${TIMEOUT_SECONDS}s)"
             sleep $POLL_INTERVAL
             ELAPSED=$((ELAPSED + POLL_INTERVAL))
           done
-          echo "::error::PR #$PR_NUMBER was not approved within 30m. PR left open. Re-run release.yaml after approval."
+          echo "::error::PR #$PR_NUMBER was neither approved nor admin-bypass-merged within 30m. PR left open. Re-run release.yaml after approving or merging."
           exit 1
 
       - name: Auto-merge bot PR
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && steps.wait_approval.outputs.already_merged != 'true'
         # AC #7: --merge (merge-commit), NOT --squash / --rebase. Merge-commit
         # preserves the bot's release commit SHA underneath main's new tip so
         # AC #8's tag anchor on `origin/main` resolves to a reachable commit
         # (the merge commit itself — see the tag step below). --auto blocks
         # nothing because checks + approval are already green.
+        # Skipped if the maintainer bypass-merged at the approval step.
         run: |
           PR_NUMBER="${{ steps.open_pr.outputs.pr_number }}"
           if ! gh pr merge "$PR_NUMBER" --auto --merge; then
@@ -383,11 +401,12 @@ jobs:
           echo "::notice::Auto-merge enabled on PR #$PR_NUMBER"
 
       - name: Wait for merge completion
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && steps.wait_approval.outputs.already_merged != 'true'
         timeout-minutes: 5
         # `gh pr merge --auto` schedules the merge; GitHub may take seconds to
         # actually perform it. Poll `merged` until true so the downstream tag
-        # step sees the new main tip.
+        # step sees the new main tip. Skipped if the maintainer bypass-merged
+        # (merged is already true).
         run: |
           PR_NUMBER="${{ steps.open_pr.outputs.pr_number }}"
           while true; do
