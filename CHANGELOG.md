@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.0.0](https://github.com/armelhbobdad/bmad-module-skill-forge/compare/v1.0.0-rc.3...v1.0.0) (2026-04-23)
 ## [1.0.0-rc.3](https://github.com/armelhbobdad/bmad-module-skill-forge/compare/v0.10.0...v1.0.0-rc.3) (2026-04-23)
 
 ### Features
