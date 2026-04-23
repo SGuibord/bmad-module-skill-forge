@@ -610,3 +610,7 @@ For the `release` environment, a deletion+restore similarly uses the two-call pa
   grep -c '^## \[1.0.0-rc.1\]' CHANGELOG.md   # expected: 1
   grep -c '^## \[1.0.0\] - TBD' CHANGELOG.md  # expected: 1
   ```
+
+#### Story 3.4 refactor note — PR-auto-merge flow
+
+After Story 3.4 (GitHub issue [#198](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/198), PR TBD), `release.yaml` no longer pushes the `release: bump to vX.Y.Z` commit directly to `main`. Instead, a main-dispatched cut pushes the release commit to a temp branch `release/bot/vX.Y.Z-<run_id>`, opens a bot PR against `main`, force-triggers `quality.yaml` against the temp branch via `workflow_dispatch` (so the 7 required status checks run and gate the merge), then auto-merges once checks pass and a maintainer approves. Approval is required at **two** gates — the `release` environment gate at job start, and the PR review-decision gate before auto-merge. Non-main dispatches (feature-branch alpha cuts) skip the PR dance and keep the legacy tag-only behavior. Story 5.2's dev agent on resume will refresh the § Cutting v1.0.0-rc.1 prose above to describe the refactored flow directly.

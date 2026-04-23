@@ -25,6 +25,13 @@ on:
 permissions:
   contents: write
   id-token: write
+  # Required by `gh pr create` / `gh pr merge --auto` in the PR-auto-merge flow
+  # (Story 3.4, issue #198). Without this, gh returns 403 on PR operations.
+  pull-requests: write
+  # Required by `gh workflow run quality.yaml --ref <branch>` at the force-trigger
+  # step (AC #3 path 3.i). workflow_dispatch dispatches via GITHUB_TOKEN need
+  # actions:write.
+  actions: write
 
 concurrency:
   group: release
@@ -39,6 +46,10 @@ jobs:
       # because .husky/commit-msg invokes `entire` (local dev session tool) and
       # hard-exits if it's not on PATH — breaks CI's `Commit version bump`.
       HUSKY: "0"
+      # `gh` CLI auth for every gh call in the Story 3.4 PR-auto-merge flow
+      # (AC #1–#7) + the tag/merge poll steps. Job-level so every step inherits
+      # it without having to repeat step-level env blocks.
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -223,25 +234,222 @@ jobs:
             echo "EOF"
           } >> $GITHUB_OUTPUT
 
-      - name: Create and push tag
+      # -----------------------------------------------------------------
+      # Story 3.4 PR-auto-merge flow (main-dispatch only) — issue #198.
+      # -----------------------------------------------------------------
+      # Why this exists: ruleset 13855503 rejects `github-actions[bot]`'s direct
+      # push to `main` (`GH013: Repository rule violations`). The `bypass_actors`
+      # list admits only the Admin RepositoryRole with `bypass_mode: pull_request`,
+      # and the repo is user-owned (not org-owned) so a global "GitHub Actions"
+      # integration bypass cannot be added. The only routes that don't weaken
+      # branch protection are (a) open an auto-merging PR, or (b) land a repo
+      # transfer + org-level ruleset. We chose (a) — Option B in issue #198.
+      #
+      # Non-main-dispatch path (feature-branch alpha cut) stays unchanged: it
+      # skips this whole block and takes the `Skip PR flow` step further down.
+      # -----------------------------------------------------------------
+
+      - name: Push commit to temp branch
+        if: github.ref == 'refs/heads/main'
+        id: temp_push
+        # AC #1: main-dispatch must NOT push directly to main. Push the release
+        # commit onto a throwaway branch whose name includes `github.run_id` so
+        # a retry after a mid-flow failure on the same version string cannot
+        # collide with a prior branch (concurrency group serializes dispatches
+        # but same-version re-dispatch after cleanup is a real scenario).
         run: |
+          TEMP_BRANCH="release/bot/v${{ steps.version.outputs.new_version }}-${{ github.run_id }}"
+          git push origin "HEAD:refs/heads/$TEMP_BRANCH"
+          echo "temp_branch=$TEMP_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "::notice::Pushed release commit to temp branch $TEMP_BRANCH"
+
+      - name: Open bot PR
+        if: github.ref == 'refs/heads/main'
+        id: open_pr
+        # AC #2: open a PR from the temp branch to main so branch protection's
+        # 7 required checks gate the release commit. `--body-file` (not --body)
+        # avoids shell-escape hazards on multi-line release notes that may
+        # contain backticks / dollar signs / nested code fences.
+        run: |
+          TEMP_BRANCH="${{ steps.temp_push.outputs.temp_branch }}"
+          NEW_VERSION="${{ steps.version.outputs.new_version }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          {
+            echo "Automated release PR opened by \`release.yaml\` run \`${{ github.run_id }}\`. Auto-merges once the 7 required status checks pass and a maintainer approves."
+            echo
+            echo "## Release notes"
+            echo
+            cat release_notes.md
+            echo
+            echo "## Workflow run"
+            echo
+            echo "$RUN_URL"
+            echo
+            echo "---"
+            echo
+            echo "> This PR is authored by \`github-actions[bot]\` under \`GITHUB_TOKEN\`; human approval is required to merge. See GitHub issue #198 for the refactor rationale."
+          } > pr_body.md
+
+          PR_URL=$(gh pr create \
+            --base main \
+            --head "$TEMP_BRANCH" \
+            --title "release: bump to v$NEW_VERSION" \
+            --body-file pr_body.md)
+          PR_NUMBER=$(gh pr view "$PR_URL" --json number --jq .number)
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "::notice::Opened bot PR #$PR_NUMBER at $PR_URL"
+
+      - name: Force-trigger required status checks on bot PR
+        if: github.ref == 'refs/heads/main'
+        # AC #3 path 3.i — PR events authored by GITHUB_TOKEN do NOT fire
+        # `pull_request`-triggered workflows (GitHub docs: "events triggered
+        # by the GITHUB_TOKEN ... will not create a new workflow run",
+        # excepting workflow_dispatch and repository_dispatch). Without this
+        # step, the 7 required contexts would stay in "expected" state forever
+        # and branch protection would block merge indefinitely.
+        #
+        # Workaround: `workflow_dispatch` is an allowed exception — dispatch
+        # quality.yaml against the temp branch so it runs there and posts its
+        # check-runs on the PR's head commit. If the posted check-run names do
+        # NOT match the ruleset's 7 required contexts (e.g., namespaced to
+        # `Quality & Validation / prettier`), fall back to path 3.ii (close-
+        # reopen) or 3.iii (PAT) in a follow-up patch; issue #198 enumerates
+        # all three options.
+        run: |
+          TEMP_BRANCH="${{ steps.temp_push.outputs.temp_branch }}"
+          gh workflow run quality.yaml --ref "$TEMP_BRANCH"
+          echo "::notice::Dispatched quality.yaml against $TEMP_BRANCH via workflow_dispatch"
+
+      - name: Wait for required status checks
+        if: github.ref == 'refs/heads/main'
+        timeout-minutes: 20
+        # AC #4: poll until all required contexts conclude, 20m hard cap.
+        # `--required` filters to only ruleset-required checks (ignores optional
+        # runs); `--watch` polls every 10s; `--fail-fast` exits 1 on first
+        # failure. Pre-sleep lets the workflow_dispatch from the prior step
+        # register its check-runs on the PR's head SHA before we start watching.
+        run: |
+          PR_NUMBER="${{ steps.open_pr.outputs.pr_number }}"
+          sleep 15
+          if ! gh pr checks "$PR_NUMBER" --required --watch --fail-fast; then
+            echo "::error::PR #$PR_NUMBER has failing required check(s). PR left open for manual inspection. Re-run release.yaml after the underlying defect is fixed on main."
+            exit 1
+          fi
+          echo "::notice::All required status checks passed on PR #$PR_NUMBER"
+
+      - name: Wait for PR approval or admin-bypass merge
+        if: github.ref == 'refs/heads/main'
+        id: wait_approval
+        # AC #5 (robust): poll until EITHER reviewDecision == APPROVED (the bot
+        # PR was approved, auto-merge will fire next) OR merged == true (the
+        # maintainer bypass-merged via admin). github-actions[bot] cannot
+        # self-approve (universal GitHub rule); `armelhbobdad` is the required
+        # approver per the `release` env's required_reviewers list.
+        #
+        # The merged-true branch handles the scenario where the maintainer
+        # chooses to bypass-merge via admin instead of approving via UI (same
+        # pattern used on PRs #195/#196/#197 in this repo, where ruleset
+        # 13855503's bypass_mode: pull_request admits admin merges without a
+        # formal review). In that case, `reviewDecision` stays REVIEW_REQUIRED
+        # forever and a pure APPROVED-only poll would hang for 30m.
+        #
+        # Manual timer (not step-level timeout-minutes) so we can emit a
+        # specific ::error:: message on timeout. Exports already_merged so the
+        # next two steps skip their work when the maintainer pre-merged.
+        run: |
+          PR_NUMBER="${{ steps.open_pr.outputs.pr_number }}"
+          TIMEOUT_SECONDS=1800  # 30 min
+          POLL_INTERVAL=60
+          ELAPSED=0
+          while [ $ELAPSED -lt $TIMEOUT_SECONDS ]; do
+            VIEW=$(gh pr view "$PR_NUMBER" --json reviewDecision,merged)
+            DECISION=$(echo "$VIEW" | jq -r .reviewDecision)
+            MERGED=$(echo "$VIEW" | jq -r .merged)
+            if [ "$MERGED" = "true" ]; then
+              echo "::notice::PR #$PR_NUMBER already merged (admin-bypass path); skipping auto-merge step."
+              echo "already_merged=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            if [ "$DECISION" = "APPROVED" ]; then
+              echo "::notice::PR #$PR_NUMBER approved; proceeding to auto-merge."
+              echo "already_merged=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "Waiting (reviewDecision: ${DECISION:-none}; merged: $MERGED; elapsed ${ELAPSED}s/${TIMEOUT_SECONDS}s)"
+            sleep $POLL_INTERVAL
+            ELAPSED=$((ELAPSED + POLL_INTERVAL))
+          done
+          echo "::error::PR #$PR_NUMBER was neither approved nor admin-bypass-merged within 30m. PR left open. Re-run release.yaml after approving or merging."
+          exit 1
+
+      - name: Auto-merge bot PR
+        if: github.ref == 'refs/heads/main' && steps.wait_approval.outputs.already_merged != 'true'
+        # AC #7: --merge (merge-commit), NOT --squash / --rebase. Merge-commit
+        # preserves the bot's release commit SHA underneath main's new tip so
+        # AC #8's tag anchor on `origin/main` resolves to a reachable commit
+        # (the merge commit itself — see the tag step below). --auto blocks
+        # nothing because checks + approval are already green.
+        # Skipped if the maintainer bypass-merged at the approval step.
+        run: |
+          PR_NUMBER="${{ steps.open_pr.outputs.pr_number }}"
+          if ! gh pr merge "$PR_NUMBER" --auto --merge; then
+            echo "::error::Auto-merge failed for PR #$PR_NUMBER. If the error was 'auto merge is not allowed for this repository', run: gh api --method PATCH /repos/${{ github.repository }} -f allow_auto_merge=true  (see Story 3.4 AC #6 / Task 2)."
+            exit 1
+          fi
+          echo "::notice::Auto-merge enabled on PR #$PR_NUMBER"
+
+      - name: Wait for merge completion
+        if: github.ref == 'refs/heads/main' && steps.wait_approval.outputs.already_merged != 'true'
+        timeout-minutes: 5
+        # `gh pr merge --auto` schedules the merge; GitHub may take seconds to
+        # actually perform it. Poll `merged` until true so the downstream tag
+        # step sees the new main tip. Skipped if the maintainer bypass-merged
+        # (merged is already true).
+        run: |
+          PR_NUMBER="${{ steps.open_pr.outputs.pr_number }}"
+          while true; do
+            MERGED=$(gh pr view "$PR_NUMBER" --json merged --jq .merged)
+            if [ "$MERGED" = "true" ]; then
+              echo "::notice::PR #$PR_NUMBER merged"
+              break
+            fi
+            echo "Waiting for PR merge to complete (merged: $MERGED)"
+            sleep 10
+          done
+
+      - name: Skip PR flow (non-main dispatch ref)
+        if: github.ref != 'refs/heads/main'
+        # AC #9: feature-branch prereleases preserve the legacy tag-only pattern.
+        # The tag will anchor on the CI-ephemeral commit below (orphan; NFR12-
+        # compliant per the Story 3.2 alpha-cut precedent at v0.10.1-alpha.0).
+        run: |
+          echo "::notice::Dispatched from ${{ github.ref }} (not main); skipping PR auto-merge flow."
+          echo "Tag v${{ steps.version.outputs.new_version }} will anchor on the CI-ephemeral commit; main was NOT advanced."
+          echo "This is the expected path for prerelease cuts from feature branches (Story 3.2 alpha-cut pattern)."
+
+      - name: Create and push tag
+        # AC #8: tag creation moved to AFTER the PR auto-merges (main-dispatch
+        # path). The anchor is `origin/main`'s new tip (the merge commit), so
+        # `git describe --tags` from main resolves cleanly. For non-main dispatch
+        # (AC #9), anchor on HEAD (the CI-ephemeral release commit — unchanged
+        # from pre-3.4 behavior).
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            git fetch origin main
+            TAG_ANCHOR=$(git rev-parse origin/main)
+            echo "Main-dispatch: anchoring tag on origin/main tip $TAG_ANCHOR"
+          else
+            TAG_ANCHOR=HEAD
+            echo "Non-main-dispatch: anchoring tag on CI HEAD (orphan pattern per AC #9)"
+          fi
           if git rev-parse "v${{ steps.version.outputs.new_version }}" >/dev/null 2>&1; then
             echo "Tag v${{ steps.version.outputs.new_version }} already exists, skipping tag creation"
           else
-            git tag -a "v${{ steps.version.outputs.new_version }}" -m "Release v${{ steps.version.outputs.new_version }}"
+            git tag -a "v${{ steps.version.outputs.new_version }}" -m "Release v${{ steps.version.outputs.new_version }}" "$TAG_ANCHOR"
             git push origin "v${{ steps.version.outputs.new_version }}"
           fi
-
-      - name: Push commit to main
-        if: github.ref == 'refs/heads/main'
-        run: git push origin HEAD:main
-
-      - name: Skip main push (non-main dispatch ref)
-        if: github.ref != 'refs/heads/main'
-        run: |
-          echo "::notice::Dispatched from ${{ github.ref }} (not main); skipping 'git push origin HEAD:main'."
-          echo "Tag v${{ steps.version.outputs.new_version }} was pushed; main was NOT advanced."
-          echo "This is the expected path for prerelease cuts from feature branches (Story 3.2 alpha-cut pattern)."
 
       - name: Publish to npm via OIDC trusted publishing
         env:
@@ -264,6 +472,9 @@ jobs:
           prerelease: ${{ contains(steps.version.outputs.new_version, 'alpha') || contains(steps.version.outputs.new_version, 'beta') || contains(steps.version.outputs.new_version, 'rc') }}
 
       - name: Summary
+        # AC #15: extend the step summary with a "Release Flow" subsection so the
+        # operator sees at a glance whether the main-dispatch PR-auto-merge path
+        # or the non-main-dispatch tag-only path ran.
         run: |
           {
             echo "## 🎉 Released v${{ steps.version.outputs.new_version }}"
@@ -271,4 +482,18 @@ jobs:
             echo "**npm**: https://www.npmjs.com/package/bmad-module-skill-forge/v/${{ steps.version.outputs.new_version }}"
             echo "**GitHub**: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.new_version }}"
             echo "**Provenance**: auto-attached via OIDC trusted publishing"
+            echo
+            echo "### Release Flow"
+            echo
+            if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+              echo "- Dispatch ref: \`main\` (Story 3.4 PR-auto-merge path)"
+              echo "- Temp branch: \`${{ steps.temp_push.outputs.temp_branch }}\`"
+              echo "- Bot PR: ${{ steps.open_pr.outputs.pr_url }}"
+              echo "- Required checks: passed (7 contexts)"
+              echo "- PR approved + auto-merged via \`--merge\`"
+              echo "- Tag anchored on \`origin/main\` tip post-merge"
+            else
+              echo "- Dispatch ref: \`${{ github.ref }}\` (non-main; tag-only path per AC #9)"
+              echo "- Tag anchored on CI-ephemeral commit (orphan pattern)"
+            fi
           } >> $GITHUB_STEP_SUMMARY
