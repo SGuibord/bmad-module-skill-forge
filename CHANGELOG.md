@@ -5,6 +5,60 @@ All notable changes to this project will be documented in this file. The format 
 ## [Unreleased]
 
 ## [1.0.0](https://github.com/armelhbobdad/bmad-module-skill-forge/compare/v1.0.0-rc.3...v1.0.0) (2026-04-23)
+
+### First Major Release
+
+First major release of Skill Forge (SKF). Introduces the `INCONCLUSIVE` test verdict, atomic stack-skill writes, a shared feasibility schema across VS/RA/SS, and formalizes Linux/macOS-only support. Sets the stable contract for subsequent 1.x releases.
+
+### Initial Release
+
+Skill Forge (SKF) — an agent skill compiler that transforms code repositories, documentation, and developer discourse into [agentskills.io](https://agentskills.io)-compliant agent skills with AST-backed provenance.
+
+### Highlights
+
+- **1 agent** — Ferris (Skill Architect & Integrity Guardian) with 5 workflow-driven modes
+- **14 workflows** — full lifecycle from source analysis to ecosystem-ready export, with pre-code architecture verification
+- **Progressive capability tiers** — Quick (baseline), Forge (+ast-grep), Forge+ (+ccc), Deep (+gh+qmd)
+- **Source-traced instructions** — every documented symbol cites an upstream file and line
+- **Dual-output strategy** — active skills (SKILL.md) + passive context (context-snippet.md) in ADR-L v2 format
+- **CLI installer** — `npx bmad-module-skill-forge install` with skill directory installation for 23 IDEs
+- **14 knowledge fragments** — curated cross-cutting principles loaded just-in-time by workflows
+
+### Workflows
+
+| Trigger | Name                | Purpose                                                            |
+| ------- | ------------------- | ------------------------------------------------------------------ |
+| SF      | Setup Forge         | Initialize forge environment, detect tools, set tier               |
+| AN      | Analyze Source      | Discover what to skill in a large repo                             |
+| BS      | Brief Skill         | Design a skill scope through guided discovery                      |
+| CS      | Create Skill        | Compile a skill from brief with AST extraction                     |
+| QS      | Quick Skill         | Fast skill from package name or GitHub URL                         |
+| SS      | Stack Skill         | Consolidated project stack skill with integration patterns         |
+| US      | Update Skill        | Regenerate a skill while preserving manual sections                |
+| AS      | Audit Skill         | Drift detection between skill and current source                   |
+| TS      | Test Skill          | Verify whether a skill covers its target completely and accurately |
+| VS      | Verify Stack        | Pre-code stack feasibility verification against architecture       |
+| RA      | Refine Architecture | Improve architecture doc using verified skill data                 |
+| EX      | Export Skill        | Package for distribution, inject into CLAUDE.md                    |
+| RS      | Rename Skill        | Rename a skill and update all references                           |
+| DS      | Drop Skill          | Remove a skill and clean up references                             |
+
+### Confidence Tiers
+
+- **T1** — AST-verified signatures (Forge/Forge+/Deep)
+- **T1-low** — Source reading without structural verification (Quick)
+- **T2** — QMD-enriched temporal context (Deep)
+- **T3** — External documentation, quarantined as untrusted
+
+### IDE Support
+
+23 IDEs supported: Claude Code, Cursor, Windsurf, Cline, Roo Code, GitHub Copilot, Codex, Gemini CLI, Junie, Kiro, Trae, Google Antigravity, Auggie, CodeBuddy, Crush, iFlow, KiloCoder, Ona, OpenCode, Pi, Qoder, QwenCoder, Rovo Dev
+
+### Links
+
+- Documentation: <https://armelhbobdad.github.io/bmad-module-skill-forge>
+- npm: <https://www.npmjs.com/package/bmad-module-skill-forge>
+
 ## [1.0.0-rc.3](https://github.com/armelhbobdad/bmad-module-skill-forge/compare/v0.10.0...v1.0.0-rc.3) (2026-04-23)
 
 ### Features
@@ -394,67 +448,6 @@ All notable changes to this project will be documented in this file. The format 
 ### Reverts
 
 * Revert "chore(release): add temporary push trigger for Story 3.2 alpha cut (revert in same story)" ([7208ff4](https://github.com/armelhbobdad/bmad-module-skill-forge/commit/7208ff48640e97a2175b99b5d21dde192d85fdb3))
-## [1.0.0] - TBD
-
-<!--
-Hand-curated v1.0.0 release notes. Source: _bmad-output/planning-artifacts/v1-0-0-changelog-draft.md.
-Date placeholder "TBD" — replaced with actual publish date at Story 5.3's v1.0.0 final cut (see
-docs/RELEASING.md § Cutting v1.0.0-rc.1 for the reconciliation procedure).
--->
-
-### First Major Release
-
-First major release of Skill Forge (SKF). Introduces the `INCONCLUSIVE` test verdict, atomic stack-skill writes, a shared feasibility schema across VS/RA/SS, and formalizes Linux/macOS-only support. Sets the stable contract for subsequent 1.x releases.
-
-### Initial Release
-
-Skill Forge (SKF) — an agent skill compiler that transforms code repositories, documentation, and developer discourse into [agentskills.io](https://agentskills.io)-compliant agent skills with AST-backed provenance.
-
-### Highlights
-
-- **1 agent** — Ferris (Skill Architect & Integrity Guardian) with 5 workflow-driven modes
-- **14 workflows** — full lifecycle from source analysis to ecosystem-ready export, with pre-code architecture verification
-- **Progressive capability tiers** — Quick (baseline), Forge (+ast-grep), Forge+ (+ccc), Deep (+gh+qmd)
-- **Source-traced instructions** — every documented symbol cites an upstream file and line
-- **Dual-output strategy** — active skills (SKILL.md) + passive context (context-snippet.md) in ADR-L v2 format
-- **CLI installer** — `npx bmad-module-skill-forge install` with skill directory installation for 23 IDEs
-- **14 knowledge fragments** — curated cross-cutting principles loaded just-in-time by workflows
-
-### Workflows
-
-| Trigger | Name                | Purpose                                                            |
-| ------- | ------------------- | ------------------------------------------------------------------ |
-| SF      | Setup Forge         | Initialize forge environment, detect tools, set tier               |
-| AN      | Analyze Source      | Discover what to skill in a large repo                             |
-| BS      | Brief Skill         | Design a skill scope through guided discovery                      |
-| CS      | Create Skill        | Compile a skill from brief with AST extraction                     |
-| QS      | Quick Skill         | Fast skill from package name or GitHub URL                         |
-| SS      | Stack Skill         | Consolidated project stack skill with integration patterns         |
-| US      | Update Skill        | Regenerate a skill while preserving manual sections                |
-| AS      | Audit Skill         | Drift detection between skill and current source                   |
-| TS      | Test Skill          | Verify whether a skill covers its target completely and accurately |
-| VS      | Verify Stack        | Pre-code stack feasibility verification against architecture       |
-| RA      | Refine Architecture | Improve architecture doc using verified skill data                 |
-| EX      | Export Skill        | Package for distribution, inject into CLAUDE.md                    |
-| RS      | Rename Skill        | Rename a skill and update all references                           |
-| DS      | Drop Skill          | Remove a skill and clean up references                             |
-
-### Confidence Tiers
-
-- **T1** — AST-verified signatures (Forge/Forge+/Deep)
-- **T1-low** — Source reading without structural verification (Quick)
-- **T2** — QMD-enriched temporal context (Deep)
-- **T3** — External documentation, quarantined as untrusted
-
-### IDE Support
-
-23 IDEs supported: Claude Code, Cursor, Windsurf, Cline, Roo Code, GitHub Copilot, Codex, Gemini CLI, Junie, Kiro, Trae, Google Antigravity, Auggie, CodeBuddy, Crush, iFlow, KiloCoder, Ona, OpenCode, Pi, Qoder, QwenCoder, Rovo Dev
-
-### Links
-
-- Documentation: <https://armelhbobdad.github.io/bmad-module-skill-forge>
-- npm: <https://www.npmjs.com/package/bmad-module-skill-forge>
-
 ## [0.10.0](https://github.com/armelhbobdad/bmad-module-skill-forge/compare/v0.9.0...v0.10.0) (2026-04-06)
 
 ### Features

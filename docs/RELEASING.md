@@ -556,61 +556,78 @@ The `POST` body needs the same `name`, `target`, `enforcement`, `conditions`, `r
 
 For the `release` environment, a deletion+restore similarly uses the two-call pattern already documented at `## Release Environment § Restore / re-apply` — feed the environment-level baseline JSON to the `PUT .../environments/release` call, then re-POST each entry from the branch-policies baseline to `.../environments/release/deployment-branch-policies`.
 
-### Cutting v1.0.0-rc.1
+### Cutting v1.0.0 under --tag latest
 
-- **Trigger.** Story 5.1 audit ([`release-audits/v1.0.0-launch-audit.md`](https://github.com/armelhbobdad/bmad-module-skill-forge/blob/main/release-audits/v1.0.0-launch-audit.md)) signed off and all blockers cleared; Story 5.2 ready to cut the first release-candidate. `package.json` still on a `0.x` line (at audit time: `0.10.0`). Running `release.yaml` with `version_bump: rc` on `0.10.0` would produce `0.10.1-rc.0` — NOT `1.0.0-rc.0` — because `npm version prerelease --preid=rc` advances the patch segment of the current version. The one-time hand-bump below lifts `package.json` onto the `1.0.0` line so the next workflow dispatch advances that line cleanly.
+- **Trigger.** The passing RC has survived a clean-environment smoke test (`release-audits/v1.0.0-launch-audit.md § Story 5.2 RC Cut + Smoke Test § Decision: PASS — cleared for Story 5.3 promotion to v1.0.0 under --tag latest with manual approval`); `npm view bmad-module-skill-forge@rc version` returns the passing RC (at Story 5.3 dispatch time: `1.0.0-rc.3`); Story 5.3 is ready to promote to `latest` under manual approval.
 - **CLI.**
 
   ```bash
-  # Hand-bump main onto the 1.0.0 line. Do not tag; release.yaml owns tags.
   git checkout main && git pull
-  npm version 1.0.0-rc.0 --no-git-tag-version
-  # Leave .claude-plugin/marketplace.json alone — release.yaml's jq-based
-  # sync step rewrites .plugins[0].version atomically at RC cut time. A
-  # double-bump here would race against that step.
-  # Include package-lock.json — npm version bumps both files; committing
-  # only package.json leaves the lockfile out-of-sync and breaks `npm ci`.
-  git add package.json package-lock.json
-  git commit -m "chore(release): pre-RC bump to 1.0.0-rc.0 (Story 5.1 hand-off)"
-  # Push via the normal PR path (branch protection blocks direct push to main).
-  # Merge the PR to main after review.
 
-  # Dispatch the canonical release workflow. `version_bump: rc` runs
-  # `npm version prerelease --preid=rc` on 1.0.0-rc.0 → 1.0.0-rc.1.
-  gh workflow run release.yaml -f version_bump=rc
+  # Pre-dispatch sanity check (read version from remote, not local clone).
+  gh api repos/armelhbobdad/bmad-module-skill-forge/contents/package.json \
+    --jq '.content' | base64 -d | jq -r .version
+  # expected: the passing RC (e.g., 1.0.0-rc.3)
+
+  # Dispatch the canonical release workflow. `version_bump: major` on
+  # 1.0.0-rc.N strips the prerelease suffix and produces 1.0.0 (node-semver
+  # inc(ver, 'major') behavior on a prerelease). The --ref main is
+  # load-bearing — non-main dispatches take the legacy tag-only path.
+  gh workflow run release.yaml -f version_bump=major --ref main
+
+  # Capture the run id for monitoring + audit transcript.
+  RUN_ID=$(gh run list --workflow=release.yaml --limit 1 \
+    --json databaseId --jq '.[0].databaseId')
+  gh run watch $RUN_ID
   ```
 
-- **Expected outcome.** `main` tip at `1.0.0-rc.1`; `npm view bmad-module-skill-forge@rc version` returns `1.0.0-rc.1`; a GitHub Release `v1.0.0-rc.1` exists with `prerelease: true` and the auto-generated body; `CHANGELOG.md` now carries an auto-generated `## [1.0.0-rc.1]` entry prepended ABOVE the hand-curated `## [1.0.0] - TBD` placeholder (Story 5.1 staged that placeholder; Story 5.3 reconciles the date at the v1.0.0 final cut); `.claude-plugin/marketplace.json`'s `.plugins[0].version` reflects `1.0.0-rc.1`.
+  The workflow pauses at **two** gates that the maintainer must clear in the browser:
+
+  1. The `release` environment deployment gate (at job start). Approve via "Review deployments" → "Approve and deploy" on the run page.
+  2. The bot PR review-decision gate (after the 7 required status checks pass). EITHER approve the bot PR via the review UI, OR admin-bypass-merge via the PR merge button — both paths are accepted by `release.yaml`'s `Wait for PR approval or admin-bypass merge` step. Admin-bypass-merge is the observed pattern for prior cuts (PRs #209 and #213).
+
+  Expected wall-clock: ~5–8 minutes end-to-end when both gates are approved promptly.
+
+- **Expected outcome.** `main` tip advances by 2 commits (the `release: bump to v1.0.0` commit on the bot temp branch `release/bot/v1.0.0-<run_id>`, plus the merge commit from the auto-merged or admin-bypass-merged bot PR); `jq -r .version package.json` → `1.0.0`; `jq -r '.plugins[0].version' .claude-plugin/marketplace.json` → `1.0.0`; `npm view bmad-module-skill-forge dist-tags.latest` → `1.0.0` (flipped from the prior stable, e.g. `0.10.0`); `rc` dist-tag UNCHANGED at the prior RC; SLSA L2 provenance attached (NFR4); GitHub Release `v1.0.0` with `prerelease: false` (NFR6 threshold — `1.0.0` contains no `alpha|beta|rc` substring); tag `v1.0.0` anchors on the bot PR's merge commit per Story 3.4 P9 (the tag is annotated, so `git rev-parse 'v1.0.0^{}'` gives the commit SHA to compare against `main` tip).
+
 - **Constraints.**
-  - Execute ONLY after `v1.0.0-launch-audit.md § Sign-off` is populated with a date.
-  - The pre-RC bump commit subject MUST be `chore(release): pre-RC bump to 1.0.0-rc.0 (Story 5.1 hand-off)` — use the `chore(release):` prefix (not bare `release:`) or the commit-msg hook rejects it for non-conventional form.
-  - Do NOT bump `.claude-plugin/marketplace.json` in the hand-bump commit. `release.yaml`'s jq-based marketplace sync handles it atomically at RC cut time; a double-bump here would race the workflow.
-  - The RC cut is the FIRST time the jq-based marketplace.json update path runs in anger. A failure there (jq syntax error, missing `jq` on runner — unlikely on `ubuntu-latest` but treat as a real risk) would halt the cut mid-step, possibly leaving a half-updated `CHANGELOG.md` on `main` with no `marketplace.json` follow-through. Recovery: `git revert` the pre-RC bump PR + retry after fixing the workflow.
-  - If the workflow dispatch emits `1.0.1-rc.0` instead of `1.0.0-rc.1`, the hand-bump commit never landed on `main` OR `npm version prerelease --preid=rc` behavior diverged from the documented semantics. Abort the RC cut and investigate before retry.
+  - Execute ONLY after the RC audit `§ Sign-off` is populated AND the smoke-test `Decision` is `PASS`.
+  - The cut is IRREVERSIBLE — once `npm publish --tag latest` succeeds for `1.0.0`, NFR6 forbids unpublish regardless of eligibility window. Rollback is `npm deprecate` + ship-forward (Scenarios A / B).
+  - The CHANGELOG reconciliation is a POST-workflow step (authored as a separate sign-off commit on `feat/v1-final-signoff`). Do NOT hand-edit the `## [1.0.0] - TBD` placeholder BEFORE dispatch — let the workflow auto-generate its `## [1.0.0]` block (which may be EMPTY when there are zero conventional-commit `feat:` / `fix:` entries between the RC and the final cut, which is the normal case), then merge the hand-curated prose into the auto-gen header's position and delete the stale placeholder in one commit.
+  - Do NOT pre-bump `package.json` or `.claude-plugin/marketplace.json` — the workflow's `Bump version` and `Update marketplace.json version` steps handle both atomically and own those files.
+  - If `npm version major` unexpectedly emits `2.0.0` instead of `1.0.0` on `1.0.0-rc.N`, the node-semver engine behavior has regressed. Abort the dispatch and investigate before retry — a workflow override (`npm version 1.0.0 --no-git-tag-version`) would be required in `release.yaml`.
+
 - **Verification.**
 
   ```bash
-  # Confirm the rc dist-tag advanced.
-  npm view bmad-module-skill-forge@rc version
-  # expected: 1.0.0-rc.1
+  # Confirm the latest dist-tag flipped to 1.0.0.
+  npm view bmad-module-skill-forge dist-tags --json
+  # expected: {"latest":"1.0.0","alpha":"...","rc":"1.0.0-rc.N"}
 
-  npm view bmad-module-skill-forge dist-tags --json | jq -r .rc
-  # expected: 1.0.0-rc.1
+  npm view bmad-module-skill-forge@latest version
+  # expected: 1.0.0
 
-  # Confirm SLSA L2 provenance is attached (NFR4 reconfirm).
-  npm view bmad-module-skill-forge@1.0.0-rc.1 --json | jq '.dist.attestations'
-  # expected: non-null object containing a provenance url
+  # Confirm SLSA L2 provenance (NFR4 CRITICAL). A null attestation is a
+  # blocker — emergency-deprecate + cut 1.0.1 with provenance per Scenario B.
+  npm view bmad-module-skill-forge@1.0.0 --json | jq '.dist.attestations'
+  # expected: non-null object; .provenance.predicateType starts with
+  #           "https://slsa.dev/provenance/"
 
-  # Confirm the GitHub Release exists and is marked prerelease.
-  gh release view v1.0.0-rc.1 --json tagName,isPrerelease
-  # expected: {"tagName":"v1.0.0-rc.1","isPrerelease":true}
+  # Confirm the GitHub Release exists and is NOT a prerelease (NFR6 threshold).
+  gh release view v1.0.0 --json tagName,isPrerelease
+  # expected: {"tagName":"v1.0.0","isPrerelease":false}
 
-  # Confirm the CHANGELOG carries both the auto-generated rc entry and the
-  # hand-curated v1.0.0 placeholder (Story 5.3 reconciles the placeholder).
-  grep -c '^## \[1.0.0-rc.1\]' CHANGELOG.md   # expected: 1
-  grep -c '^## \[1.0.0\] - TBD' CHANGELOG.md  # expected: 1
+  # Confirm tag anchors on the merge commit (annotated tag — dereference with ^{}).
+  git fetch origin --tags
+  [ "$(git rev-parse 'v1.0.0^{}')" = "$(git log main -1 --format='%H')" ] && echo OK
+  # expected: OK
+
+  # Confirm CHANGELOG reconciliation after the sign-off commit lands on main.
+  grep -c '^## \[1\.0\.0\] - TBD' CHANGELOG.md    # expected: 0 (stale placeholder gone)
+  grep -cE '^## \[1\.0\.0\]' CHANGELOG.md         # expected: 1 (one reconciled block)
+  grep -cE '^## \[1\.0\.0\]\(https' CHANGELOG.md  # expected: 1 (compare-URL header survived)
   ```
 
-#### Story 3.4 refactor note — PR-auto-merge flow
+  **NFR6 immutability activation** is the `npm publish --tag latest` success timestamp for `1.0.0`, recorded verbatim in `release-audits/v1.0.0-launch-audit.md § Story 5.3 v1.0.0 Final Cut § NFR6 v1.0.0 immutability activation`. For Story 5.3's dispatch, that instant was **2026-04-23T18:56:39Z**. From that moment, `v1.0.0` is forever-burned — `npm deprecate` + ship-forward is the only rollback path.
 
-After Story 3.4 (GitHub issue [#198](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/198), [PR #199](https://github.com/armelhbobdad/bmad-module-skill-forge/pull/199)), `release.yaml` no longer pushes the `release: bump to vX.Y.Z` commit directly to `main`. Instead, a main-dispatched cut pushes the release commit to a temp branch `release/bot/vX.Y.Z-<run_id>`, opens a bot PR against `main`, force-triggers `quality.yaml` against the temp branch via `workflow_dispatch` (so the 7 required status checks run and gate the merge), then auto-merges once checks pass and a maintainer approves. Approval is required at **two** gates — the `release` environment gate at job start, and the PR review-decision gate before auto-merge. Non-main dispatches (feature-branch alpha cuts) skip the PR dance and keep the legacy tag-only behavior. Story 5.2's dev agent on resume will refresh the § Cutting v1.0.0-rc.1 prose above to describe the refactored flow directly.
+  The `release` environment + bot PR approval-or-admin-bypass-merge pattern is the canonical flow for all main-dispatched cuts since Story 3.4 ([GitHub issue #198](https://github.com/armelhbobdad/bmad-module-skill-forge/issues/198), [PR #199](https://github.com/armelhbobdad/bmad-module-skill-forge/pull/199)): the release commit is pushed to a temp branch `release/bot/vX.Y.Z-<run_id>`, a bot PR is opened against `main`, the 7 required status checks are force-triggered against the temp branch via `workflow_dispatch`, and the merge is gated behind maintainer approval at both the `release` environment gate and the PR review-decision gate. Non-main dispatches (feature-branch alpha cuts) skip the PR dance entirely and keep the legacy tag-only behavior.
