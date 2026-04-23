@@ -558,7 +558,7 @@ For the `release` environment, a deletion+restore similarly uses the two-call pa
 
 ### Cutting v1.0.0-rc.1
 
-- **Trigger.** Story 5.1 audit ([`v1.0.0-launch-audit.md`](./v1.0.0-launch-audit.md)) signed off and all blockers cleared; Story 5.2 ready to cut the first release-candidate. `package.json` still on a `0.x` line (at audit time: `0.10.0`). Running `release.yaml` with `version_bump: rc` on `0.10.0` would produce `0.10.1-rc.0` — NOT `1.0.0-rc.0` — because `npm version prerelease --preid=rc` advances the patch segment of the current version. The one-time hand-bump below lifts `package.json` onto the `1.0.0` line so the next workflow dispatch advances that line cleanly.
+- **Trigger.** Story 5.1 audit ([`release-audits/v1.0.0-launch-audit.md`](https://github.com/armelhbobdad/bmad-module-skill-forge/blob/main/release-audits/v1.0.0-launch-audit.md)) signed off and all blockers cleared; Story 5.2 ready to cut the first release-candidate. `package.json` still on a `0.x` line (at audit time: `0.10.0`). Running `release.yaml` with `version_bump: rc` on `0.10.0` would produce `0.10.1-rc.0` — NOT `1.0.0-rc.0` — because `npm version prerelease --preid=rc` advances the patch segment of the current version. The one-time hand-bump below lifts `package.json` onto the `1.0.0` line so the next workflow dispatch advances that line cleanly.
 - **CLI.**
 
   ```bash
@@ -568,7 +568,9 @@ For the `release` environment, a deletion+restore similarly uses the two-call pa
   # Leave .claude-plugin/marketplace.json alone — release.yaml's jq-based
   # sync step rewrites .plugins[0].version atomically at RC cut time. A
   # double-bump here would race against that step.
-  git add package.json
+  # Include package-lock.json — npm version bumps both files; committing
+  # only package.json leaves the lockfile out-of-sync and breaks `npm ci`.
+  git add package.json package-lock.json
   git commit -m "chore(release): pre-RC bump to 1.0.0-rc.0 (Story 5.1 hand-off)"
   # Push via the normal PR path (branch protection blocks direct push to main).
   # Merge the PR to main after review.
