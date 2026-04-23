@@ -506,7 +506,13 @@ jobs:
             # P6: guard against transient gh / API failures — empty or error VIEW
             # would yield empty DECISION / MERGED and wedge the loop in "none" state
             # while the 30m budget still burns.
-            if ! VIEW=$(gh pr view "$PR_NUMBER" --json reviewDecision,merged,mergeCommit,mergedAt,latestReviews 2>&1); then
+            # `merged` is NOT a valid `gh pr view --json` field (the valid
+            # name for merge status is `state`, which returns "OPEN" /
+            # "CLOSED" / "MERGED"). Querying `merged` made this whole call
+            # fail with "Unknown JSON field" and the guard below treated
+            # every tick as a transient error — the admin-bypass path was
+            # never detected. Empirical repro: run 24844278359.
+            if ! VIEW=$(gh pr view "$PR_NUMBER" --json reviewDecision,state,mergeCommit,mergedAt,latestReviews 2>&1); then
               echo "gh pr view failed (elapsed ${ELAPSED}s); retrying: $VIEW"
               sleep $POLL_INTERVAL
               ELAPSED=$((ELAPSED + POLL_INTERVAL))
@@ -519,8 +525,8 @@ jobs:
               continue
             fi
             DECISION=$(echo "$VIEW" | jq -r .reviewDecision)
-            MERGED=$(echo "$VIEW" | jq -r .merged)
-            if [ "$MERGED" = "true" ]; then
+            STATE=$(echo "$VIEW" | jq -r .state)
+            if [ "$STATE" = "MERGED" ]; then
               # P11: capture merge artifacts for the Summary step (admin-bypass path
               # skips Wait-for-merge, so merge_sha + merged_at must be emitted here).
               MERGE_SHA=$(echo "$VIEW" | jq -r '.mergeCommit.oid // "unknown"')
@@ -555,7 +561,7 @@ jobs:
               } >> "$GITHUB_OUTPUT"
               exit 0
             fi
-            echo "Waiting (reviewDecision: ${DECISION:-none}; merged: $MERGED; elapsed ${ELAPSED}s/${TIMEOUT_SECONDS}s)"
+            echo "Waiting (reviewDecision: ${DECISION:-none}; state: $STATE; elapsed ${ELAPSED}s/${TIMEOUT_SECONDS}s)"
             sleep $POLL_INTERVAL
             ELAPSED=$((ELAPSED + POLL_INTERVAL))
           done
@@ -594,7 +600,10 @@ jobs:
           while true; do
             # P6: guard transient gh / API failures (empty VIEW would hang until
             # the 5m step-level timeout with no diagnostic signal).
-            if ! VIEW=$(gh pr view "$PR_NUMBER" --json merged,closed,mergeCommit,mergedAt 2>&1); then
+            # `merged` is NOT a valid `gh pr view --json` field. `state`
+            # returns "OPEN" / "CLOSED" / "MERGED" and covers both the
+            # merged and closed-without-merge branches below.
+            if ! VIEW=$(gh pr view "$PR_NUMBER" --json state,mergeCommit,mergedAt 2>&1); then
               echo "gh pr view failed; retrying: $VIEW"
               sleep 10
               continue
@@ -604,16 +613,15 @@ jobs:
               sleep 10
               continue
             fi
-            MERGED=$(echo "$VIEW" | jq -r .merged)
-            CLOSED=$(echo "$VIEW" | jq -r .closed)
+            STATE=$(echo "$VIEW" | jq -r .state)
             # P8: PR closed without merge means auto-merge will never fire (operator
             # closed it, GitHub blocked it, mergeable state went bad). Fail fast
             # instead of hanging until the 5m timeout with no actionable diagnostic.
-            if [ "$CLOSED" = "true" ] && [ "$MERGED" != "true" ]; then
+            if [ "$STATE" = "CLOSED" ]; then
               echo "::error::PR #$PR_NUMBER was closed without being merged. Investigate: operator close, mergeable state regression, ruleset reject. PR left in closed state."
               exit 1
             fi
-            if [ "$MERGED" = "true" ]; then
+            if [ "$STATE" = "MERGED" ]; then
               # P11: capture merge artifacts for the Summary step.
               MERGE_SHA=$(echo "$VIEW" | jq -r '.mergeCommit.oid // "unknown"')
               MERGED_AT=$(echo "$VIEW" | jq -r '.mergedAt // "unknown"')
@@ -624,7 +632,7 @@ jobs:
               } >> "$GITHUB_OUTPUT"
               break
             fi
-            echo "Waiting for PR merge to complete (merged: $MERGED; closed: $CLOSED)"
+            echo "Waiting for PR merge to complete (state: $STATE)"
             sleep 10
           done
 
