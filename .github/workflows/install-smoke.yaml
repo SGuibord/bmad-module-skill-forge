@@ -56,11 +56,18 @@ jobs:
 
       - name: Run npx bmad-module-skill-forge --version
         shell: bash
+        env:
+          # Pass workflow_dispatch input via env (not `${{ inputs.version }}`
+          # interpolation in `run:`) to prevent GitHub Actions script injection.
+          VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
-          OUTPUT="$(npx --yes "bmad-module-skill-forge@${{ inputs.version }}" --version)"
+          OUTPUT="$(npx --yes "bmad-module-skill-forge@${VERSION}" --version)"
+          # Strip trailing CR that Windows Git Bash can leave on captured stdout
+          # so the semver assertion below is CR-insensitive.
+          OUTPUT="${OUTPUT//$'\r'/}"
           echo "stdout: ${OUTPUT}"
-          if [ -z "${OUTPUT}" ]; then
-            echo "::error::--version produced empty stdout"
+          if [[ ! "${OUTPUT}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::--version stdout '${OUTPUT}' is not a valid semver — smoke failed"
             exit 1
           fi
