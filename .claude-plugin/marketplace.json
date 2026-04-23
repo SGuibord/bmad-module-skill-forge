@@ -30,7 +30,7 @@
       "name": "skill-forge",
       "source": "./",
       "description": "Evidence-based agent skills compiler with progressive capability tiers (Quick/Forge/Forge+/Deep).",
-      "version": "1.0.0-rc.2",
+      "version": "1.0.0-rc.3",
       "author": {
         "name": "Armel"
       },
