@@ -3,7 +3,7 @@ title: SKF Stability & Public API Contract
 description: What SemVer covers at v1.0.0 — the surfaces downstream consumers may pin against, and the surfaces explicitly excluded.
 ---
 
-> **Status:** DRAFT — locks at v1.0.0 cut (Story 5.1 pre-flight audit). Review-window open until then.
+> **Status:** STABLE — locked at v1.0.0. Amendments follow the "Changes to This Contract" section below.
 
 This document is the public API contract for `bmad-module-skill-forge` at v1.0.0. It enumerates exactly which SKF surfaces [Semantic Versioning 2.0.0](https://semver.org/) covers and which are explicitly `@internal`. The goal is that a downstream consumer pinning `"bmad-module-skill-forge": "^1.0.0"` can identify — unambiguously — whether a given SKF change is breaking, additive, or internal. Breaking changes to covered surfaces require a major-version bump; additive changes to covered surfaces are minor bumps; changes to `@internal` surfaces are free to land in any release.
 

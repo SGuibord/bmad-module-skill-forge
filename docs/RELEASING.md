@@ -196,6 +196,9 @@ Placeholder substitutions used throughout:
 ### Scenario A — "Bad version published to `latest`, no users yet (within ~minutes)"
 
 - **Trigger.** Maintainer notices a defect within minutes of publish; `npm view bmad-module-skill-forge dist-tags` still shows `<bad>` on `latest`; download count is negligible; no dependents have pinned `<bad>` yet.
+
+  > **Note on cache lag.** `npm view … dist-tags` reads through a CDN with multi-second to multi-minute eventual consistency. "Still shows `<bad>` on `latest`" is not an authoritative "no users yet" signal. For freshness, cross-check with `npm view bmad-module-skill-forge@<bad> time --json | jq '. | to_entries | last'`.
+
 - **CLI.**
 
   ```bash
@@ -251,14 +254,17 @@ Placeholder substitutions used throughout:
 
 ### Scenario C — "Bad version within last 72h, zero downloads, zero dependents"
 
-- **Trigger.** A narrow eligibility window per the [npm unpublish policy](https://docs.npmjs.com/policies/unpublish/): less than 72 hours since publish **AND** zero downloads **AND** zero dependent packages registered on npmjs.com. All three conditions must be true.
+- **Trigger.** A narrow eligibility window per the [npm unpublish policy](https://docs.npmjs.com/policies/unpublish/): less than 72 hours since publish **AND** zero downloads **AND** zero dependent packages registered on npmjs.com. All three conditions must be true. Compute the 72-hour boundary from the `time.modified` field of `npm view bmad-module-skill-forge@<bad> --json`, NOT from the responder's local clock — npm's policy engine uses its server timestamp and a drift of even a few minutes at the boundary will 422 the unpublish.
+
+  > **Caveat on the "zero downloads" criterion.** npm's downloads API is documented as eventually consistent with up to 24–48h lag post-publish. A version can show "0 downloads" while having been installed by hundreds of CI runs in that window. When in doubt in the first 24–48 hours, treat C as Scenario B.
+
 - **CLI.**
 
   ```bash
   npm unpublish bmad-module-skill-forge@<bad>
   ```
 
-- **Expected outcome.** The version disappears from `npm view`. **But** the version *number* is permanently burned — npm rejects any future publish of that same version string forever.
+- **Expected outcome.** The version disappears from `npm view`. **But** the version _number_ is permanently burned — npm rejects any future publish of that same version string forever.
 
   > **Permanent-burn warning.** The version number is burned. After `npm unpublish bmad-module-skill-forge@0.10.1`, the next `release.yaml` dispatch with `version_bump: patch` on `0.10.0` will produce `0.10.2`, **not** `0.10.1` again. Attempting `npm version 0.10.1 --no-git-tag-version` would drive the workflow's `npm publish` toward an npm-burned version and return `403`. Treat the unpublish as a one-way jump in the version number line, not a true undo.
 
@@ -291,7 +297,7 @@ Placeholder substitutions used throughout:
   ```
 
 - **Expected outcome.** Tag cleared from origin; re-run produces a fresh clean tag plus a successful publish under the next version number.
-- **Constraints.** Only safe if publish failed. If npm *did* publish, use Scenario E — tag-deletion after a successful publish leaves the npm artifact without a matching git ref.
+- **Constraints.** Only safe if publish failed. If npm _did_ publish, use Scenario E — tag-deletion after a successful publish leaves the npm artifact without a matching git ref.
 - **Do-NOT clause.** Never re-use the burned `<version>` number. `release.yaml` will produce the next version on redispatch (for example, re-running an `alpha` bump over `0.10.1-alpha.0` produces `0.10.1-alpha.1`, not `0.10.1-alpha.0` again). Forcing the original version back via `npm version <exact> --no-git-tag-version` is out of scope for rollback.
 - **Story 3.2 load-bearing context.** The current `release.yaml` pushes the git tag **before** the npm publish step (see the `Create and push tag` job step vs. the `Publish to npm via OIDC trusted publishing` step). This ordering is pre-existing from Story 3.1 and tracked in `_bmad-output/implementation-artifacts/deferred-work.md` under `§ 3-1/3-2 code review "Create and push tag pushes the git tag BEFORE Publish to npm"` as a post-v1.0.0 hardening candidate. Until that lands, Scenario D's tag-delete path **is** the recovery.
 - **Verification.**
@@ -368,7 +374,7 @@ Placeholder substitutions used throughout:
   - npm support notifies of suspected compromise.
 - **Immediate CLI (within minutes of detection).** Revoke the OIDC trust surface before doing anything else:
   - Visit `https://www.npmjs.com/package/bmad-module-skill-forge` → **Settings** tab → **Trusted Publisher** section → **Delete** the registration.
-  - This blocks *all* future OIDC publishes until re-registered, stopping any further unauthorized use of the OIDC path mid-incident.
+  - This blocks _all_ future OIDC publishes until re-registered, stopping any further unauthorized use of the OIDC path mid-incident.
 - **Audit CLI.**
 
   ```bash
@@ -417,8 +423,8 @@ Placeholder substitutions used throughout:
 - **Post-incident reactivation.** After audit completes and root cause is identified and patched, re-register the Trusted Publisher via the npm UI with the four fields matching the table in `## npm Trusted Publisher` above (`organization=armelhbobdad`, `repository=bmad-module-skill-forge`, `workflow filename=release.yaml`, `environment=release`). Re-verify via an alpha cut (dispatch `release.yaml` from a temporarily-allowed feature branch per the `## Release Environment § Temporarily allowing a feature branch` procedure) before any stable release.
 - **Pre-v1.0.0 context.** Trusted Publisher was pre-registered on 2026-04-20 (Story 1.3). A compromise discovered pre-v1.0.0 is recoverable via delete-and-re-register with no downstream-consumer blast radius (no stable release users yet). Post-v1.0.0, the incident has downstream blast radius and the `support@npmjs.com` coordination path is load-bearing.
 - **Do-NOT clause — `NPM_TOKEN` rotation is not OIDC incident response.** Do NOT rotate `NPM_TOKEN` as a first response. The token is not on the OIDC path; rotating it does nothing to stop an OIDC compromise.
-  - If `NPM_TOKEN` itself is *also* suspected compromised, revoke via `https://www.npmjs.com` → **Access Tokens** and remove from the repo: `gh secret delete NPM_TOKEN --repo armelhbobdad/bmad-module-skill-forge`. This is separate from the OIDC incident response above.
-  - `NPM_TOKEN` still exists at repo scope until Story 6.3 (post-v1.0.0). A compromised `NPM_TOKEN` is a **separate incident class** from OIDC compromise. During the window where OIDC is revoked *and* `NPM_TOKEN` is also compromised, there is no valid publish path — the repo enters lockdown until Trusted Publisher is re-registered. Document the flip in the incident post-mortem; do not publish via any stale path.
+  - If `NPM_TOKEN` itself is _also_ suspected compromised, revoke via `https://www.npmjs.com` → **Access Tokens** and remove from the repo: `gh secret delete NPM_TOKEN --repo armelhbobdad/bmad-module-skill-forge`. This is separate from the OIDC incident response above.
+  - `NPM_TOKEN` still exists at repo scope until Story 6.3 (post-v1.0.0). A compromised `NPM_TOKEN` is a **separate incident class** from OIDC compromise. During the window where OIDC is revoked _and_ `NPM_TOKEN` is also compromised, there is no valid publish path — the repo enters lockdown until Trusted Publisher is re-registered. Document the flip in the incident post-mortem; do not publish via any stale path.
 
 ### Scenario G — "release.yaml disabled, reverted, or missing from main"
 
@@ -478,7 +484,6 @@ Placeholder substitutions used throughout:
   ```
 
   Read the next two paragraphs **before** dispatching:
-
   - **Auth vs. provenance — they are independent.** `publish.yaml` authenticates to npm with `NODE_AUTH_TOKEN=${{ secrets.NPM_TOKEN }}` (token-based; NOT OIDC trusted publishing — that path is `release.yaml`-only). However, the workflow also has `id-token: write` permission and calls `npm publish --provenance`, so npm WILL attach a SLSA-L2 provenance attestation derived from the GitHub Actions OIDC token. Provenance is independent of the auth-to-npm path. The trade-off is auth lineage (token vs. trusted-publisher OIDC), not attestation presence.
   - **State divergence — `publish.yaml` does NOT bump version, push the `v*` tag, update `CHANGELOG.md`, or create a GitHub Release.** It only runs `npm publish` against whatever `package.json` is at HEAD of the dispatched ref. Every emergency-hatch use therefore leaves npm + git state diverged and requires a Scenario E-style reconciliation afterward: bump `package.json` manually on `main` (so the next release does not collide), then recreate the tag and GitHub Release per Scenario E.
 
@@ -488,15 +493,15 @@ Placeholder substitutions used throughout:
 
 ### Cross-reference matrix
 
-| Scenario | Trigger class                   | Primary CLI verb              | NFR linkage           |
-| -------- | ------------------------------- | ----------------------------- | --------------------- |
-| A        | Fresh bad latest                | `dist-tag` + `deprecate`      | NFR3                  |
-| B        | Stale bad latest                | `deprecate` + ship forward    | NFR3, NFR6            |
-| C        | Eligible unpublish              | `unpublish`                   | (pre-v1.0.0 only)     |
-| D        | Tag orphan (publish failed)     | `tag -d` + `push --delete`    | NFR12                 |
-| E        | Post-publish state drift        | `tag -a` + `gh release create`| NFR5                  |
-| F        | OIDC compromise                 | revoke Trusted Publisher + audit | NFR7               |
-| G        | `release.yaml` disabled/missing | `workflow enable` / `pr revert` | NFR5, NFR10         |
+| Scenario | Trigger class                   | Primary CLI verb                 | NFR linkage       |
+| -------- | ------------------------------- | -------------------------------- | ----------------- |
+| A        | Fresh bad latest                | `dist-tag` + `deprecate`         | NFR3              |
+| B        | Stale bad latest                | `deprecate` + ship forward       | NFR3, NFR6        |
+| C        | Eligible unpublish              | `unpublish`                      | (pre-v1.0.0 only) |
+| D        | Tag orphan (publish failed)     | `tag -d` + `push --delete`       | NFR12             |
+| E        | Post-publish state drift        | `tag -a` + `gh release create`   | NFR5              |
+| F        | OIDC compromise                 | revoke Trusted Publisher + audit | NFR7              |
+| G        | `release.yaml` disabled/missing | `workflow enable` / `pr revert`  | NFR5, NFR10       |
 
 ### Baseline snapshots
 
@@ -550,3 +555,56 @@ Baselines live in `_bmad-output/planning-artifacts/` (already git-tracked, not s
 The `POST` body needs the same `name`, `target`, `enforcement`, `conditions`, `rules`, and `bypass_actors` fields as the PUT — all captured by the baseline snapshot above. Try `PUT` first; on `404`, `POST` recreates with identical semantics. The ruleset gets a new id on re-creation (IDs are not stable across delete+create cycles); update any hard-coded id references in this document on the next planned edit pass.
 
 For the `release` environment, a deletion+restore similarly uses the two-call pattern already documented at `## Release Environment § Restore / re-apply` — feed the environment-level baseline JSON to the `PUT .../environments/release` call, then re-POST each entry from the branch-policies baseline to `.../environments/release/deployment-branch-policies`.
+
+### Cutting v1.0.0-rc.1
+
+- **Trigger.** Story 5.1 audit ([`v1.0.0-launch-audit.md`](./v1.0.0-launch-audit.md)) signed off and all blockers cleared; Story 5.2 ready to cut the first release-candidate. `package.json` still on a `0.x` line (at audit time: `0.10.0`). Running `release.yaml` with `version_bump: rc` on `0.10.0` would produce `0.10.1-rc.0` — NOT `1.0.0-rc.0` — because `npm version prerelease --preid=rc` advances the patch segment of the current version. The one-time hand-bump below lifts `package.json` onto the `1.0.0` line so the next workflow dispatch advances that line cleanly.
+- **CLI.**
+
+  ```bash
+  # Hand-bump main onto the 1.0.0 line. Do not tag; release.yaml owns tags.
+  git checkout main && git pull
+  npm version 1.0.0-rc.0 --no-git-tag-version
+  # Leave .claude-plugin/marketplace.json alone — release.yaml's jq-based
+  # sync step rewrites .plugins[0].version atomically at RC cut time. A
+  # double-bump here would race against that step.
+  git add package.json
+  git commit -m "chore(release): pre-RC bump to 1.0.0-rc.0 (Story 5.1 hand-off)"
+  # Push via the normal PR path (branch protection blocks direct push to main).
+  # Merge the PR to main after review.
+
+  # Dispatch the canonical release workflow. `version_bump: rc` runs
+  # `npm version prerelease --preid=rc` on 1.0.0-rc.0 → 1.0.0-rc.1.
+  gh workflow run release.yaml -f version_bump=rc
+  ```
+
+- **Expected outcome.** `main` tip at `1.0.0-rc.1`; `npm view bmad-module-skill-forge@rc version` returns `1.0.0-rc.1`; a GitHub Release `v1.0.0-rc.1` exists with `prerelease: true` and the auto-generated body; `CHANGELOG.md` now carries an auto-generated `## [1.0.0-rc.1]` entry prepended ABOVE the hand-curated `## [1.0.0] - TBD` placeholder (Story 5.1 staged that placeholder; Story 5.3 reconciles the date at the v1.0.0 final cut); `.claude-plugin/marketplace.json`'s `.plugins[0].version` reflects `1.0.0-rc.1`.
+- **Constraints.**
+  - Execute ONLY after `v1.0.0-launch-audit.md § Sign-off` is populated with a date.
+  - The pre-RC bump commit subject MUST be `chore(release): pre-RC bump to 1.0.0-rc.0 (Story 5.1 hand-off)` — use the `chore(release):` prefix (not bare `release:`) or the commit-msg hook rejects it for non-conventional form.
+  - Do NOT bump `.claude-plugin/marketplace.json` in the hand-bump commit. `release.yaml`'s jq-based marketplace sync handles it atomically at RC cut time; a double-bump here would race the workflow.
+  - The RC cut is the FIRST time the jq-based marketplace.json update path runs in anger. A failure there (jq syntax error, missing `jq` on runner — unlikely on `ubuntu-latest` but treat as a real risk) would halt the cut mid-step, possibly leaving a half-updated `CHANGELOG.md` on `main` with no `marketplace.json` follow-through. Recovery: `git revert` the pre-RC bump PR + retry after fixing the workflow.
+  - If the workflow dispatch emits `1.0.1-rc.0` instead of `1.0.0-rc.1`, the hand-bump commit never landed on `main` OR `npm version prerelease --preid=rc` behavior diverged from the documented semantics. Abort the RC cut and investigate before retry.
+- **Verification.**
+
+  ```bash
+  # Confirm the rc dist-tag advanced.
+  npm view bmad-module-skill-forge@rc version
+  # expected: 1.0.0-rc.1
+
+  npm view bmad-module-skill-forge dist-tags --json | jq -r .rc
+  # expected: 1.0.0-rc.1
+
+  # Confirm SLSA L2 provenance is attached (NFR4 reconfirm).
+  npm view bmad-module-skill-forge@1.0.0-rc.1 --json | jq '.dist.attestations'
+  # expected: non-null object containing a provenance url
+
+  # Confirm the GitHub Release exists and is marked prerelease.
+  gh release view v1.0.0-rc.1 --json tagName,isPrerelease
+  # expected: {"tagName":"v1.0.0-rc.1","isPrerelease":true}
+
+  # Confirm the CHANGELOG carries both the auto-generated rc entry and the
+  # hand-curated v1.0.0 placeholder (Story 5.3 reconciles the placeholder).
+  grep -c '^## \[1.0.0-rc.1\]' CHANGELOG.md   # expected: 1
+  grep -c '^## \[1.0.0\] - TBD' CHANGELOG.md  # expected: 1
+  ```

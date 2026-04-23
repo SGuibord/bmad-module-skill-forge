@@ -112,7 +112,19 @@ jobs:
 
       - name: Update marketplace.json version
         run: |
-          sed -i 's/"version": "[^"]*"/"version": "${{ steps.version.outputs.new_version }}"/' .claude-plugin/marketplace.json
+          # Targeted JSON edit scoped to .plugins[0].version — resistant to future
+          # schema additions of other `version` keys. Uses a temp file + atomic
+          # rename so a partial-write mid-step cannot leave the file in a broken
+          # shape (jq has no in-place edit). The VERSION variable is interpolated
+          # via jq --arg to avoid shell-quote hazards.
+          VERSION='${{ steps.version.outputs.new_version }}'
+          jq --arg v "$VERSION" '.plugins[0].version = $v' .claude-plugin/marketplace.json > .claude-plugin/marketplace.json.tmp
+          mv .claude-plugin/marketplace.json.tmp .claude-plugin/marketplace.json
+          # Sanity check: the written version matches what we set.
+          WROTE=$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)
+          if [ "$WROTE" != "$VERSION" ]; then
+            echo "::error::marketplace.json version write failed: expected $VERSION, got $WROTE"; exit 1
+          fi
 
       - name: Update CHANGELOG.md
         run: |
