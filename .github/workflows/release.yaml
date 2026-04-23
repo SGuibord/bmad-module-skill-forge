@@ -430,7 +430,12 @@ jobs:
             ALL_GREEN=true
             PENDING=()
             FAILED=()
-            for CTX in $(echo "$REQUIRED_JSON" | jq -r '.[]'); do
+            # Iterate with `while IFS= read -r` to preserve spaces in context
+            # names. Unquoted `$(jq -r '.[]')` in a `for` loop word-splits on
+            # whitespace, so contexts like "validate (ubuntu-latest)" get
+            # split into "validate" + "(ubuntu-latest)" — neither of which
+            # matches any check-run name. Empirical repro: run 24842070205.
+            while IFS= read -r CTX; do
               CTX_RUN=$(echo "$CHECKS" | jq -c --arg n "$CTX" '[.[] | select(.name==$n)] | sort_by(.started_at) | last')
               if [ "$CTX_RUN" = "null" ] || [ -z "$CTX_RUN" ]; then
                 PENDING+=("$CTX(unregistered)")
@@ -457,7 +462,7 @@ jobs:
                   echo "::warning::Unexpected conclusion '$CONCL' on $CTX; treating as green"
                   ;;
               esac
-            done
+            done < <(echo "$REQUIRED_JSON" | jq -r '.[]')
             if [ ${#FAILED[@]} -gt 0 ]; then
               echo "::error::Required context(s) failed: ${FAILED[*]}. PR left open for manual inspection. Re-run release.yaml after the underlying defect is fixed on main."
               exit 1
